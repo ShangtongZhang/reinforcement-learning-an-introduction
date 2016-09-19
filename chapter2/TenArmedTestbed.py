@@ -188,4 +188,4 @@ def gradientBandit(nBandits, time):
     plt.legend()
     plt.show()
 
-gradientBandit(200, 1000)
+# gradientBandit(200, 1000)

@@ -7,11 +7,16 @@ BOARD_SIZE = BOARD_ROWS * BOARD_COLS
 
 class State:
     def __init__(self):
+        # the board is represented by a n * n array,
+        # 1 represents chessman of the player who moves first,
+        # -1 represents chessman of another player
+        # 0 represents empty position
         self.data = np.zeros((BOARD_ROWS, BOARD_COLS))
         self.winner = None
         self.hashVal = None
         self.end = None
 
+    # calculate the hash value for one state, it's unique
     def getHash(self):
         if self.hashVal is None:
             self.hashVal = 0
@@ -21,6 +26,7 @@ class State:
                 self.hashVal = self.hashVal * 3 + i
         return int(self.hashVal)
 
+    # determine whether a player has won the game, or it's a tie
     def isEnd(self):
         if not (self.end is None):
             return self.end
@@ -48,12 +54,15 @@ class State:
             return True
         return False
 
+    # @symbol 1 or -1
+    # put chessman symbol in position (i, j)
     def nextState(self, i, j, symbol):
         newState = State()
         newState.data = np.copy(self.data)
         newState.data[i, j] = symbol
         return newState
 
+    # print the board
     def show(self):
         for i in range(0, BOARD_ROWS):
             print '-------------'
@@ -89,9 +98,13 @@ def getAllStates():
     getAllStatesImpl(currentState, currentSymbol, allStates)
     return allStates
 
+# all possible board configurations
 allStates = getAllStates()
 
 class Judger:
+    # @player1: player who will move first, its chessman will be 1
+    # @player2: another player with chessman -1
+    # @feedback: if True, both players will receive rewards when game is end
     def __init__(self, player1, player2, feedback=True):
         self.p1 = player1
         self.p2 = player2
@@ -108,6 +121,7 @@ class Judger:
         self.currentState = State()
         self.currentPlayer = None
 
+    # give reward to two players
     def giveReward(self):
         if self.currentState.winner == self.p1Symbol:
             self.p1.feedReward(1)
@@ -119,9 +133,10 @@ class Judger:
             self.p1.feedReward(0)
             self.p2.feedReward(0)
         
-
+    # @show: if True, print each board during the game
     def play(self, show=False):
         while True:
+            # set current player
             if self.currentPlayer == self.p1:
                 self.currentPlayer = self.p2
             else:
@@ -133,8 +148,6 @@ class Judger:
             [i, j, symbol] = self.currentPlayer.takeAction()
             self.currentState = self.currentState.nextState(i, j, symbol)
             hashValue = self.currentState.getHash()
-            if self.allStates[hashValue] is None:
-                print "wrong"
             self.currentState, isEnd = self.allStates[hashValue]
             self.currentPlayer.feedState(self.currentState)
             if isEnd:
@@ -144,7 +157,10 @@ class Judger:
                     self.currentState.show()
                 return self.currentState.winner
 
+# AI player
 class Player:
+    # @stepSize: step size to update estimations
+    # @exploreRate: possibility to explore
     def __init__(self, stepSize = 0.1, exploreRate=0.1):
         self.allStates = allStates
         self.estimations = dict()
@@ -160,8 +176,6 @@ class Player:
         for hash in self.allStates.keys():
             (state, isEnd) = self.allStates[hash]
             if isEnd:
-                if state.winner not in [-1, 0, 1]:
-                    print "Wrong end state"
                 if state.winner == self.symbol:
                     self.estimations[hash] = 1.0
                 else:
@@ -169,9 +183,11 @@ class Player:
             else:
                 self.estimations[hash] = 0.5
 
+    # accept a state
     def feedState(self, state):
         self.states.append(state)
 
+    # update estimation according to reward
     def feedReward(self, reward):
         if len(self.states) == 0:
             return
@@ -184,6 +200,7 @@ class Player:
             self.estimations[currentState] += self.stepSize * (self.estimations[nextState] - self.estimations[currentState])
         self.states = []
 
+    # determine next action
     def takeAction(self): 
         state = self.states[-1]
         nextStates = []
@@ -202,12 +219,9 @@ class Player:
 
         values = []
         for hash, pos in zip(nextStates, nextPositions):
-            if hash not in self.estimations.keys():
-                print "Imcomplete states"
             values.append((self.estimations[hash], pos))
         np.random.shuffle(values)
         values.sort(key=lambda x: x[0], reverse=True)
-        # print values
         action = values[0][1]
         action.append(self.symbol)
         return action
@@ -222,6 +236,11 @@ class Player:
         self.estimations = pickle.load(fr)
         fr.close()
 
+# human interface
+# input a number to put a chessman
+# | 1 | 2 | 3 |
+# | 4 | 5 | 6 |
+# | 7 | 8 | 9 |
 class HumanPlayer:
     def __init__(self, stepSize = 0.1, exploreRate=0.1):
         self.symbol = None
@@ -243,7 +262,6 @@ class HumanPlayer:
         i = int(data) / BOARD_COLS
         j = int(data) % BOARD_COLS
         if self.currentState.data[i, j] != 0:
-            print "Invalid position"
             return self.takeAction()
         return (i, j, self.symbol)
 
