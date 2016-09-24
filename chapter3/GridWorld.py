@@ -66,6 +66,7 @@ for i in range(0, WORLD_SIZE):
         nextState[i].append(next)
         actionReward[i].append(reward)
 
+# for figure 3.5
 while True:
     # keep iteration until convergence
     newWorld = np.zeros((WORLD_SIZE, WORLD_SIZE))
@@ -76,6 +77,28 @@ while True:
                 # bellman equation
                 newWorld[i, j] += actionProb[i][j][action] * (actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
     if np.abs(np.sum(world - newWorld)) < 1e-4:
+        print 'Random Policy'
         print newWorld
         break
     world = newWorld
+
+# for figure 3.8
+world = np.zeros((WORLD_SIZE, WORLD_SIZE))
+while True:
+    # keep iteration until convergence
+    newWorld = np.zeros((WORLD_SIZE, WORLD_SIZE))
+    for i in range(0, WORLD_SIZE):
+        for j in range(0, WORLD_SIZE):
+            values = []
+            for action in actions:
+                newPosition = nextState[i][j][action]
+                # value iteration
+                values.append(actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
+            newWorld[i][j] = np.max(values)
+    if np.abs(np.sum(world - newWorld)) < 1e-4:
+        print 'Optimal Policy'
+        print newWorld
+        break
+    world = newWorld
+
+
