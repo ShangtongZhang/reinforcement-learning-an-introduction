@@ -76,7 +76,7 @@ while True:
                 newPosition = nextState[i][j][action]
                 # bellman equation
                 newWorld[i, j] += actionProb[i][j][action] * (actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
-    if np.abs(np.sum(world - newWorld)) < 1e-4:
+    if np.sum(np.abs(world - newWorld)) < 1e-4:
         print 'Random Policy'
         print newWorld
         break
@@ -95,7 +95,7 @@ while True:
                 # value iteration
                 values.append(actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
             newWorld[i][j] = np.max(values)
-    if np.abs(np.sum(world - newWorld)) < 1e-4:
+    if np.sum(np.abs(world - newWorld)) < 1e-4:
         print 'Optimal Policy'
         print newWorld
         break
