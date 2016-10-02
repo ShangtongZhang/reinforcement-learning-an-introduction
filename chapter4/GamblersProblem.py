@@ -8,45 +8,52 @@ import numpy as np
 from utils import *
 import matplotlib.pyplot as plt
 
+# goal
 GOAL = 100
+
+# all states, including state 0 and state 100
 states = np.arange(GOAL + 1)
+
+# probability of head
 headProb = 0.4
+
+# optimal policy
 policy = np.zeros(GOAL + 1)
+
+# state value
 stateValue = np.zeros(GOAL + 1)
 stateValue[GOAL] = 1.0
 
-k = 0
-while k < 500:
-    newStateValue = np.zeros(GOAL + 1)
+# value iteration
+while True:
+    delta = 0.0
     for state in states[1:GOAL]:
+        # get possilbe actions for current state
         actions = np.arange(min(state, GOAL - state) + 1)
         actionReturns = []
         for action in actions:
             actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
-        newStateValue[state] = np.max(actionReturns)
-    newStateValue[0] = 0
-    newStateValue[GOAL] = 1
-    # print np.sum(np.abs(newStateValue - stateValue))
-    # if np.sum(newStateValue != stateValue) == 0:
-    # if np.sum(np.abs(newStateValue - stateValue)) < 1e-4:
-    #     stateValue = newStateValue
-    #     break
-    k += 1
-    stateValue = newStateValue
+        newValue = np.max(actionReturns)
+        delta += np.abs(stateValue[state] - newValue)
+        # update state value
+        stateValue[state] = newValue
+    if delta < 1e-9:
+        break
 
+# calculate the optimal policy
 for state in states[1:GOAL]:
     actions = np.arange(min(state, GOAL - state) + 1)
     actionReturns = []
     for action in actions:
         actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
-    maxReturns = np.max(actionReturns)
-    print [actions[i] for i in range(0, len(actionReturns)) if actionReturns[i] == maxReturns]
-    # policy[state] = actions[argmax(actionReturns)]
+    # due to tie and precision, can't reproduce the optimal policy in book
+    policy[state] = actions[argmax(actionReturns)]
 
-# print stateValue
-# plt.plot(stateValue)
-# plt.show()
-# print policy
-# plt.scatter(states, policy)
-# plt.plot(policy)
-# plt.show()
+# figure 4.3
+plt.figure(1)
+plt.title('Stave Value')
+plt.plot(stateValue)
+plt.figure(2)
+plt.title('Optimal Policy')
+plt.scatter(states, policy)
+plt.show()
