@@ -31,6 +31,7 @@ def play():
         if np.random.binomial(1, 0.9) == 0:
             return 1, trajectory
 
+# Figure 5.5
 def monteCarloSample():
     runs = 10
     episodes = 100000
