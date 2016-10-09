@@ -26,8 +26,13 @@ trueValue[6] = 1
 ACTION_LEFT = 0
 ACTION_RIGHT = 1
 
-def temporalDifference(states, alpha=0.1):
+# @states: current states value, will be updated if @batch is True
+# @alpha: step size
+# @batch: whether to update @states
+def temporalDifference(states, alpha=0.1, batch=False):
     state = 3
+    trajectory = [state]
+    rewards = [0]
     while True:
         oldState = state
         if np.random.binomial(1, 0.5) == ACTION_LEFT:
@@ -36,13 +41,19 @@ def temporalDifference(states, alpha=0.1):
             state += 1
         # Assume all rewards are 0
         reward = 0
+        trajectory.append(state)
         # TD update
-        states[oldState] += alpha * (reward + states[state] - states[oldState])
+        if not batch:
+            states[oldState] += alpha * (reward + states[state] - states[oldState])
         if state == 6 or state == 0:
             break
-    return states
+        rewards.append(reward)
+    return trajectory, rewards
 
-def monteCarlo(states, alpha=0.1):
+# @states: current states value, will be updated if @batch is True
+# @alpha: step size
+# @batch: whether to update @states
+def monteCarlo(states, alpha=0.1, batch=False):
     state = 3
     trajectory = [3]
     # if end up with left terminal state, all returns are 0
@@ -60,10 +71,11 @@ def monteCarlo(states, alpha=0.1):
         elif state == 0:
             returns = 0.0
             break
-    for state_ in trajectory[:-1]:
-        # MC update
-        states[state_] += alpha * (returns - states[state_])
-    return states
+    if not batch:
+        for state_ in trajectory[:-1]:
+            # MC update
+            states[state_] += alpha * (returns - states[state_])
+    return trajectory, [returns] * (len(trajectory) - 1)
 
 # Figure 6.2 left
 def stateValue():
@@ -108,6 +120,65 @@ def RMSError():
     plt.xlabel('episodes')
     plt.legend()
 
-stateValue()
-RMSError()
+# Figure 6.3
+# @method: 'TD' or 'MC'
+def batchUpdating(method, episodes, alpha=0.001):
+    # perform 100 independent runs
+    runs = 100
+    totalErrors = np.zeros(episodes - 1)
+    for run in range(0, runs):
+        currentStates = np.copy(states)
+        errors = []
+        # track shown trajectories and reward/return sequences
+        trajectories = []
+        rewards = []
+        for ep in range(1, episodes):
+            print 'Run:', run, 'Episode:', ep
+            if method == 'TD':
+                trajectory_, rewards_ = temporalDifference(currentStates, batch=True)
+            else:
+                trajectory_, rewards_ = monteCarlo(currentStates, batch=True)
+            trajectories.append(trajectory_)
+            rewards.append(rewards_)
+            while True:
+                # keep feeding our algorithm with trajectories seen so far until state value function converges
+                updates = np.zeros(7)
+                for trajectory_, rewards_ in zip(trajectories, rewards):
+                    for i in range(0, len(trajectory_) - 1):
+                        if method == 'TD':
+                            updates[trajectory_[i]] += rewards_[i] + currentStates[trajectory_[i + 1]] - currentStates[trajectory_[i]]
+                        else:
+                            updates[trajectory_[i]] += rewards_[i] - currentStates[trajectory_[i]]
+                updates *= alpha
+                if np.sum(np.abs(updates)) < 1e-3:
+                    break
+                # perform batch updating
+                currentStates += updates
+            # calculate rms error
+            errors.append(np.sqrt(np.sum(np.power(currentStates - trueValue, 2)) / 5.0))
+        totalErrors += np.asarray(errors)
+    totalErrors /= episodes - 1
+    return totalErrors
+
+def figure6_2():
+    stateValue()
+    RMSError()
+
+def figure6_3():
+    episodes = 100 + 1
+    TDErrors = batchUpdating('TD', episodes)
+    MCErrors = batchUpdating('MC', episodes)
+    axisX = np.arange(1, episodes)
+    plt.figure(3)
+    plt.plot(axisX, TDErrors, label='TD')
+    plt.plot(axisX, MCErrors, label='MC')
+    plt.xlabel('episodes')
+    plt.ylabel('RMS error')
+    plt.legend()
+
+figure6_2()
+
+# Figure 6.3 may take a while to calculate
+# figure6_3()
+
 plt.show()
