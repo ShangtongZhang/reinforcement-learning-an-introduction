@@ -63,8 +63,10 @@ def chooseAction(state, stateActionValues):
 
 # an episode with Sarsa
 # @stateActionValues: values for state action pair, will be updated
+# @expected: if True, will use expected Sarsa algorithm
+# @stepSize: step size for updating
 # @return: total rewards within this episode
-def sarsa(stateActionValues):
+def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
     currentState = startState
     currentAction = chooseAction(currentState, stateActionValues)
     rewards = 0.0
@@ -73,17 +75,30 @@ def sarsa(stateActionValues):
         newAction = chooseAction(newState, stateActionValues)
         reward = actionRewards[currentState[0], currentState[1], currentAction]
         rewards += reward
+        if not expected:
+            valueTarget = stateActionValues[newState[0], newState[1], newAction]
+        else:
+            # calculate the expected value of new state
+            valueTarget = 0.0
+            bestActions = argmax(stateActionValues[newState[0], newState[1], :], unique=False)
+            for action in actions:
+                if action in bestActions:
+                    valueTarget += (1.0 - EPSILON) / len(bestActions) * stateActionValues[newState[0], newState[1], action]
+                else:
+                    valueTarget += EPSILON / (len(actions) - len(bestActions)) * stateActionValues[newState[0], newState[1], action]
         # Sarsa update
-        stateActionValues[currentState[0], currentState[1], currentAction] += ALPHA * (reward +
-            stateActionValues[newState[0], newState[1], newAction] - stateActionValues[currentState[0], currentState[1], currentAction])
+        stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (reward +
+            valueTarget - stateActionValues[currentState[0], currentState[1], currentAction])
         currentState = newState
         currentAction = newAction
     return rewards
 
 # an episode with Q-Learning
 # @stateActionValues: values for state action pair, will be updated
+# @expected: if True, will use expected Sarsa algorithm
+# @stepSize: step size for updating
 # @return: total rewards within this episode
-def qLearning(stateActionValues):
+def qLearning(stateActionValues, stepSize=ALPHA):
     currentState = startState
     rewards = 0.0
     while currentState != goalState:
@@ -92,7 +107,7 @@ def qLearning(stateActionValues):
         rewards += reward
         newState = actionDestination[currentState[0]][currentState[1]][currentAction]
         # Q-Learning update
-        stateActionValues[currentState[0], currentState[1], currentAction] += ALPHA * (
+        stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (
             reward + np.max(stateActionValues[newState[0], newState[1], :]) -
             stateActionValues[currentState[0], currentState[1], currentAction])
         currentState = newState
@@ -168,6 +183,64 @@ def figure6_5():
     plt.xlabel('Episodes')
     plt.ylabel('Sum of rewards during episode')
     plt.legend()
+
+# Curves for asymptotic performance is well replicated, even I only play 1000 episodes rather than 100,000
+# However I'm not sure what's the exact method to calculate the interim performance and
+# due to limited capacity of calculation of my machine, I can't complete this experiment
+# with 100,000 episodes and 50,000 runs to get the fully averaged interim performance
+def figure6_7():
+    stepSizes = np.arange(0.1, 1.1, 0.1)
+    nEpisodes = 1000
+    runs = 10
+
+    # I tried to use this combination to calculate the interim performance
+    # However it didn't work as expected
+    # nEpisodes = 101
+    # runs = 50
+
+    ASY_SARSA = 0
+    ASY_EXPECTED_SARSA = 1
+    ASY_QLEARNING = 2
+    INT_SARSA = 3
+    INT_EXPECTED_SARSA = 4
+    INT_QLEARNING = 5
+    methods = range(0, 6)
+
+    performace = np.zeros((6, len(stepSizes)))
+    for run in range(0, runs):
+        for ind, stepSize in zip(range(0, len(stepSizes)), stepSizes):
+            stateActionValuesSarsa = np.copy(stateActionValues)
+            stateActionValuesExpectedSarsa = np.copy(stateActionValues)
+            stateActionValuesQLearning = np.copy(stateActionValues)
+            for ep in range(0, nEpisodes):
+                print 'run:', run, 'step size:', stepSize, 'episode:', ep
+                sarsaReward = sarsa(stateActionValuesSarsa, expected=False, stepSize=stepSize)
+                expectedSarsaReward = sarsa(stateActionValuesExpectedSarsa, expected=True, stepSize=stepSize)
+                qLearningReward = qLearning(stateActionValuesQLearning, stepSize=stepSize)
+                performace[ASY_SARSA, ind] += sarsaReward
+                performace[ASY_EXPECTED_SARSA, ind] += expectedSarsaReward
+                performace[ASY_QLEARNING, ind] += qLearningReward
+
+                # I'm not sure if this is the correct way to get the interim performance
+                if ep == 100:
+                    performace[INT_SARSA, ind] += sarsaReward
+                    performace[INT_EXPECTED_SARSA, ind] += expectedSarsaReward
+                    performace[INT_QLEARNING, ind] += qLearningReward
+
+    performace[:3, :] /= nEpisodes * runs
+    performace[3:, :] /= runs
+    labels = ['Asymptotic Sarsa', 'Asymptotic Expected Sarsa', 'Asymptotic Q-Learning',
+              'Interim Sarsa', 'Interim Expected Sarsa', 'Interim Q-Learning']
+    plt.figure(2)
+
+    # Uncomment the following line to draw both asymptotic and interim performance
+    # for method, label in zip(methods, labels):
+    for method, label in zip(methods[:3], labels[:3]):
+        plt.plot(stepSizes, performace[method, :], label=label)
+    plt.legend()
+
+# Drawing figure 6.7 may take a while
+# figure6_7()
 
 figure6_5()
 plt.show()
