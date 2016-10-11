@@ -9,7 +9,7 @@ from utils import *
 import matplotlib.pyplot as plt
 
 # world height
-WORLD_HIGHT = 7
+WORLD_HEIGHT = 7
 
 # world width
 WORLD_WIDTH = 10
@@ -33,19 +33,19 @@ ALPHA = 0.5
 REWARD = -1.0
 
 # state action pair value
-stateActionValues = np.zeros((WORLD_HIGHT, WORLD_WIDTH, 4))
+stateActionValues = np.zeros((WORLD_HEIGHT, WORLD_WIDTH, 4))
 startState = [3, 0]
 goalState = [3, 7]
 actions = [ACTION_UP, ACTION_DOWN, ACTION_LEFT, ACTION_RIGHT]
 
 # set up destinations for each action in each state
 actionDestination = []
-for i in range(0, WORLD_HIGHT):
+for i in range(0, WORLD_HEIGHT):
     actionDestination.append([])
     for j in range(0, WORLD_WIDTH):
         destination = dict()
         destination[ACTION_UP] = [max(i - 1 - WIND[j], 0), j]
-        destination[ACTION_DOWN] = [max(min(i + 1 - WIND[j], WORLD_HIGHT - 1), 0), j]
+        destination[ACTION_DOWN] = [max(min(i + 1 - WIND[j], WORLD_HEIGHT - 1), 0), j]
         destination[ACTION_LEFT] = [max(i - WIND[j], 0), max(j - 1, 0)]
         destination[ACTION_RIGHT] = [max(i - WIND[j], 0), min(j + 1, WORLD_WIDTH - 1)]
         actionDestination[-1].append(destination)
@@ -98,7 +98,7 @@ plt.show()
 
 # display the optimal policy
 optimalPolicy = []
-for i in range(0, WORLD_HIGHT):
+for i in range(0, WORLD_HEIGHT):
     optimalPolicy.append([])
     for j in range(0, WORLD_WIDTH):
         if [i, j] == goalState:
