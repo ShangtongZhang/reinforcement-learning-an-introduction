@@ -20,6 +20,9 @@ EPSILON = 0.1
 # step size
 ALPHA = 0.5
 
+# gamma for Q-Learning and Expected Sarsa
+GAMMA = 1
+
 # all possible actions
 ACTION_UP = 0
 ACTION_DOWN = 1
@@ -86,6 +89,7 @@ def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
                     valueTarget += (1.0 - EPSILON) / len(bestActions) * stateActionValues[newState[0], newState[1], action]
                 else:
                     valueTarget += EPSILON / (len(actions) - len(bestActions)) * stateActionValues[newState[0], newState[1], action]
+            valueTarget *= GAMMA
         # Sarsa update
         stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (reward +
             valueTarget - stateActionValues[currentState[0], currentState[1], currentAction])
@@ -108,7 +112,7 @@ def qLearning(stateActionValues, stepSize=ALPHA):
         newState = actionDestination[currentState[0]][currentState[1]][currentAction]
         # Q-Learning update
         stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (
-            reward + np.max(stateActionValues[newState[0], newState[1], :]) -
+            reward + GAMMA * np.max(stateActionValues[newState[0], newState[1], :]) -
             stateActionValues[currentState[0], currentState[1], currentAction])
         currentState = newState
     return rewards
@@ -184,19 +188,13 @@ def figure6_5():
     plt.ylabel('Sum of rewards during episode')
     plt.legend()
 
-# Curves for asymptotic performance is well replicated, even I only play 1000 episodes rather than 100,000
-# However I'm not sure what's the exact method to calculate the interim performance and
-# due to limited capacity of calculation of my machine, I can't complete this experiment
-# with 100,000 episodes and 50,000 runs to get the fully averaged interim performance
+# Due to limited capacity of calculation of my machine, I can't complete this experiment
+# with 100,000 episodes and 50,000 runs to get the fully averaged performance
+# However even I only play for 1,000 episodes and 10 runs, the curves looks still good.
 def figure6_7():
     stepSizes = np.arange(0.1, 1.1, 0.1)
     nEpisodes = 1000
     runs = 10
-
-    # I tried to use this combination to calculate the interim performance
-    # However it didn't work as expected
-    # nEpisodes = 101
-    # runs = 50
 
     ASY_SARSA = 0
     ASY_EXPECTED_SARSA = 1
@@ -221,26 +219,22 @@ def figure6_7():
                 performace[ASY_EXPECTED_SARSA, ind] += expectedSarsaReward
                 performace[ASY_QLEARNING, ind] += qLearningReward
 
-                # I'm not sure if this is the correct way to get the interim performance
-                if ep == 100:
+                if ep < 100:
                     performace[INT_SARSA, ind] += sarsaReward
                     performace[INT_EXPECTED_SARSA, ind] += expectedSarsaReward
                     performace[INT_QLEARNING, ind] += qLearningReward
 
     performace[:3, :] /= nEpisodes * runs
-    performace[3:, :] /= runs
+    performace[3:, :] /= runs * 100
     labels = ['Asymptotic Sarsa', 'Asymptotic Expected Sarsa', 'Asymptotic Q-Learning',
               'Interim Sarsa', 'Interim Expected Sarsa', 'Interim Q-Learning']
     plt.figure(2)
-
-    # Uncomment the following line to draw both asymptotic and interim performance
-    # for method, label in zip(methods, labels):
-    for method, label in zip(methods[:3], labels[:3]):
+    for method, label in zip(methods, labels):
         plt.plot(stepSizes, performace[method, :], label=label)
     plt.legend()
 
 # Drawing figure 6.7 may take a while
-# figure6_7()
+figure6_7()
 
 figure6_5()
 plt.show()
