@@ -33,3 +33,4 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 3. Figure 6.4: Sarsa applied to windy grid world
 4. Figure 6.5: The cliff-walking task
 5. Figure 6.7: Interim and asymptotic performance of TD control methods
+6. Figure 6.8: Comparison of Q-learning and Double Q-learning
