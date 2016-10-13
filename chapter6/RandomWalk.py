@@ -93,6 +93,8 @@ def stateValue():
 
 # Figure 6.2 right
 def RMSError():
+    # I'm lazy here, so do not let same alpha value appear in both arrays
+    # For example, if in TD you want to use alpha = 0.2, then in MC you can use alpha = 0.201
     TDAlpha = [0.15, 0.1, 0.05]
     MCAlpha = [0.01, 0.02, 0.03, 0.04]
     episodes = 100 + 1
