@@ -86,9 +86,9 @@ def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
             bestActions = argmax(stateActionValues[newState[0], newState[1], :], unique=False)
             for action in actions:
                 if action in bestActions:
-                    valueTarget += (1.0 - EPSILON) / len(bestActions) * stateActionValues[newState[0], newState[1], action]
+                    valueTarget += ((1.0 - EPSILON) / len(bestActions) + EPSILON / len(actions)) * stateActionValues[newState[0], newState[1], action]
                 else:
-                    valueTarget += EPSILON / (len(actions) - len(bestActions)) * stateActionValues[newState[0], newState[1], action]
+                    valueTarget += EPSILON / len(actions) * stateActionValues[newState[0], newState[1], action]
             valueTarget *= GAMMA
         # Sarsa update
         stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (reward +
