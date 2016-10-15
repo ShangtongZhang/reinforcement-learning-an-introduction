@@ -34,3 +34,6 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 4. Figure 6.5: The cliff-walking task
 5. Figure 6.7: Interim and asymptotic performance of TD control methods
 6. Figure 6.8: Comparison of Q-learning and Double Q-learning
+
+### Chapter 7
+1. Figure 7.2: Performance of n-step TD methods on 19-state random walk
