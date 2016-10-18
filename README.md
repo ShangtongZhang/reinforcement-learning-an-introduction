@@ -37,3 +37,6 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 
 ### Chapter 7
 1. Figure 7.2: Performance of n-step TD methods on 19-state random walk
+
+### Chapter 8
+1. Figure 8.3: Average learning curves for Dyna-Q agents varying in their number of planning steps
