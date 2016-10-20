@@ -35,22 +35,14 @@ class Maze:
 
         # all obstacles
         self.obstacles = [[1, 2], [2, 2], [3, 2], [0, 7], [1, 7], [2, 7], [4, 5]]
+        self.oldObstacles = None
+        self.newObstacles = None
+
+        # time to change obstacles
+        self.changingPoint = None
 
         # initial state action pair values
         self.stateActionValues = np.zeros((self.WORLD_HEIGHT, self.WORLD_WIDTH, len(self.actions)))
-
-        # Following are some parameters for algorithms, maybe they shouldn't be enclosed in this class
-        # However I'm lazy and don't want to create a separate class and pass it as parameter
-        # to every function again
-
-        # discount
-        self.GAMMA = 0.95
-
-        # probability for exploration
-        self.EPSILON = 0.1
-
-        # step size
-        self.ALPHA = 0.1
 
         # max steps
         self.maxSteps = float('inf')
@@ -75,9 +67,35 @@ class Maze:
             reward = 0.0
         return [x, y], reward
 
+# a wrapper class for parameters of dyna algorithms
+class DynaParams:
+
+    def __init__(self):
+        # discount
+        self.gamma = 0.95
+
+        # probability for exploration
+        self.epsilon = 0.1
+
+        # step size
+        self.alpha = 0.1
+
+        # weight for elapsed time
+        self.timeWeight = 0
+
+        # n-step planning
+        self.planningSteps = 5
+
+        # average over several independent runs
+        self.runs = 10
+
+        # algorithm names
+        self.methods = ['Dyna-Q', 'Dyna-Q+']
+
+
 # choose an action based on epsilon-greedy algorithm
-def chooseAction(state, stateActionValues, maze):
-    if np.random.binomial(1, maze.EPSILON) == 1:
+def chooseAction(state, stateActionValues, maze, dynaParams):
+    if np.random.binomial(1, dynaParams.epsilon) == 1:
         return np.random.choice(maze.actions)
     else:
         return argmax(stateActionValues[state[0], state[1], :])
@@ -154,7 +172,8 @@ class TimeModel:
 # @model: model instance for planning
 # @planningSteps: steps for planning
 # @maze: a maze instance containing all information about the environment
-def dynaQ(stateActionValues, model, planningSteps, maze):
+# @dynaParams: several params for the algorithm
+def dynaQ(stateActionValues, model, maze, dynaParams):
     currentState = maze.START_STATE
     steps = 0
     while currentState != maze.GOAL_STATE:
@@ -162,24 +181,24 @@ def dynaQ(stateActionValues, model, planningSteps, maze):
         steps += 1
 
         # get action
-        action = chooseAction(currentState, stateActionValues, maze)
+        action = chooseAction(currentState, stateActionValues, maze, dynaParams)
 
         # take action
         newState, reward = maze.takeAction(currentState, action)
 
         # Q-Learning update
         stateActionValues[currentState[0], currentState[1], action] += \
-            maze.ALPHA * (reward + maze.GAMMA * np.max(stateActionValues[newState[0], newState[1], :]) -
+            dynaParams.alpha * (reward + dynaParams.gamma * np.max(stateActionValues[newState[0], newState[1], :]) -
             stateActionValues[currentState[0], currentState[1], action])
 
         # feed the model with experience
         model.feed(currentState, action, newState, reward)
 
         # sample experience from the model
-        for t in range(0, planningSteps):
+        for t in range(0, dynaParams.planningSteps):
             stateSample, actionSample, newStateSample, rewardSample = model.sample()
             stateActionValues[stateSample[0], stateSample[1], actionSample] += \
-                maze.ALPHA * (rewardSample + maze.GAMMA * np.max(stateActionValues[newStateSample[0], newStateSample[1], :]) -
+                dynaParams.alpha * (rewardSample + dynaParams.gamma * np.max(stateActionValues[newStateSample[0], newStateSample[1], :]) -
                 stateActionValues[stateSample[0], stateSample[1], actionSample])
 
         currentState = newState
@@ -195,6 +214,7 @@ def figure8_3():
 
     # set up an instance for DynaMaze
     dynaMaze = Maze()
+    dynaParams = DynaParams()
 
     runs = 10
     episodes = 50
@@ -207,6 +227,8 @@ def figure8_3():
 
     for run in range(0, runs):
         for index, planningStep in zip(range(0, len(planningSteps)), planningSteps):
+            dynaParams.planningSteps = planningStep
+
             # set same random seed for each planning step
             np.random.seed(run)
 
@@ -216,7 +238,7 @@ def figure8_3():
             model = TrivialModel(rand)
             for ep in range(0, episodes):
                 print 'run:', run, 'planning step:', planningStep, 'episode:', ep
-                steps[index, ep] += dynaQ(currentStateActionValues, model, planningStep, dynaMaze)
+                steps[index, ep] += dynaQ(currentStateActionValues, model, dynaMaze, dynaParams)
 
     # averaging over runs
     steps /= runs
@@ -228,61 +250,38 @@ def figure8_3():
     plt.ylabel('steps per episode')
     plt.legend()
 
-# Figure 8.5, BlockingMaze
-def figure8_5():
-
-    # set up a blocking maze instance
-    blockingMaze = Maze()
-    blockingMaze.START_STATE = [5, 3]
-    blockingMaze.GOAL_STATE = [0, 8]
-    oldObstacles = [[3, i] for i in range(0, 8)]
-    newObstacles = [[3, i] for i in range(1, 9)]
-
-    # it's a tricky alpha...
-    blockingMaze.ALPHA = 0.7
+# wrapper function for changing maze
+# @maze: a maze instance
+# @dynaParams: several parameters for dyna algorithms
+def changingMaze(maze, dynaParams):
 
     # set up max steps
-    maxSteps = 3000
-    blockingMaze.maxSteps = maxSteps
-
-    # obstacles will change after 1000 steps
-    # the exact step for changing will be different
-    # However given that 1000 steps is long enough for both algorithms to converge,
-    # the difference is guaranteed to be very small
-    blockingPoints = 1000
-
-    # planning step
-    planningSteps = 5
-
-    # average over 20 runs
-    runs = 20
+    maxSteps = maze.maxSteps
 
     # track the cumulative rewards
     rewards = np.zeros((2, maxSteps))
 
-    for run in range(0, runs):
-        methods = ['Dyna-Q', 'Dyna-Q+']
-
+    for run in range(0, dynaParams.runs):
         # set up models
-        models = [TrivialModel(), TimeModel(blockingMaze)]
+        models = [TrivialModel(), TimeModel(maze, timeWeight=dynaParams.timeWeight)]
 
         # track cumulative reward in current run
         rewards_ = np.zeros((2, maxSteps))
 
         # initialize state action values
-        stateActionValues = [np.copy(blockingMaze.stateActionValues), np.copy(blockingMaze.stateActionValues)]
+        stateActionValues = [np.copy(maze.stateActionValues), np.copy(maze.stateActionValues)]
 
-        for i in range(0, len(methods)):
-            print 'run:', run, methods[i]
+        for i in range(0, len(dynaParams.methods)):
+            print 'run:', run, dynaParams.methods[i]
 
             # set old obstacles for the maze
-            blockingMaze.obstacles = oldObstacles
+            maze.obstacles = maze.oldObstacles
 
             steps = 0
             lastSteps = steps
             while steps < maxSteps:
                 # play for an episode
-                steps += dynaQ(stateActionValues[i], models[i], planningSteps, blockingMaze)
+                steps += dynaQ(stateActionValues[i], models[i], maze, dynaParams)
 
                 # update cumulative rewards
                 steps_ = min(steps, maxSteps - 1)
@@ -290,21 +289,106 @@ def figure8_5():
                 rewards_[i, steps_] = rewards_[i, lastSteps] + 1
                 lastSteps = steps
 
-                if steps > blockingPoints:
+                if steps > maze.changingPoint:
                     # change the obstacles
-                    blockingMaze.obstacles = newObstacles
+                    maze.obstacles = maze.newObstacles
         rewards += rewards_
 
     # averaging over runs
-    rewards /= runs
+    rewards /= dynaParams.runs
+
+    return rewards
+
+# Figure 8.5, BlockingMaze
+def figure8_5():
+    # set up a blocking maze instance
+    blockingMaze = Maze()
+    blockingMaze.START_STATE = [5, 3]
+    blockingMaze.GOAL_STATE = [0, 8]
+    blockingMaze.oldObstacles = [[3, i] for i in range(0, 8)]
+
+    # new obstalces will block the optimal path
+    blockingMaze.newObstacles = [[3, i] for i in range(1, 9)]
+
+    # step limit
+    blockingMaze.maxSteps = 3000
+
+    # obstacles will change after 1000 steps
+    # the exact step for changing will be different
+    # However given that 1000 steps is long enough for both algorithms to converge,
+    # the difference is guaranteed to be very small
+    blockingMaze.changingPoint = 1000
+
+    # set up parameters
+    dynaParams = DynaParams()
+
+    # it's a tricky alpha ...
+    dynaParams.alpha = 0.7
+
+    # 5-step planning
+    dynaParams.planningSteps = 5
+
+    # average over 20 runs
+    dynaParams.runs = 20
+
+    # kappa must be small, as the reward for getting the goal is only 1
+    dynaParams.timeWeight = 1e-4
+
+    # play
+    rewards = changingMaze(blockingMaze, dynaParams)
 
     plt.figure(1)
-    for i in range(0, len(methods)):
-        plt.plot(range(0, maxSteps), rewards[i, :], label=methods[i])
+    for i in range(0, len(dynaParams.methods)):
+        plt.plot(range(0, blockingMaze.maxSteps), rewards[i, :], label=dynaParams.methods[i])
     plt.xlabel('time steps')
     plt.ylabel('cumulative reward')
     plt.legend()
 
-# figure8_3()
+def figure8_6():
+    # set up a shortcut maze instance
+    shortcutMaze = Maze()
+    shortcutMaze.START_STATE = [5, 3]
+    shortcutMaze.GOAL_STATE = [0, 8]
+    shortcutMaze.oldObstacles = [[3, i] for i in range(1, 9)]
+
+    # new obstacles will have a shorter path
+    shortcutMaze.newObstacles = [[3, i] for i in range(1, 8)]
+
+    # step limit
+    shortcutMaze.maxSteps = 6000
+
+    # obstacles will change after 3000 steps
+    # the exact step for changing will be different
+    # However given that 3000 steps is long enough for both algorithms to converge,
+    # the difference is guaranteed to be very small
+    shortcutMaze.changingPoint = 3000
+
+    # set up parameters
+    dynaParams = DynaParams()
+
+    # 50-step planning
+    dynaParams.planningSteps = 50
+
+    # average over 5 independent runs
+    dynaParams.runs = 5
+
+    # weight for elapsed time sine last visit
+    dynaParams.timeWeight = 1e-3
+
+    # also a tricky alpha ...
+    dynaParams.alpha = 0.7
+
+    # play
+    rewards = changingMaze(shortcutMaze, dynaParams)
+
+    plt.figure(2)
+    for i in range(0, len(dynaParams.methods)):
+        plt.plot(range(0, shortcutMaze.maxSteps), rewards[i, :], label=dynaParams.methods[i])
+    plt.xlabel('time steps')
+    plt.ylabel('cumulative reward')
+    plt.legend()
+
+figure8_3()
 figure8_5()
+figure8_6()
 plt.show()

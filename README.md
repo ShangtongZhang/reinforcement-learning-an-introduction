@@ -41,3 +41,4 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 ### Chapter 8
 1. Figure 8.3: Average learning curves for Dyna-Q agents varying in their number of planning steps
 2. Figure 8.5: Average performance of Dyna agents on a blocking task
+3. Figure 8.6: Average performance of Dyna agents on a shortcut task
