@@ -344,6 +344,7 @@ def figure8_5():
     plt.ylabel('cumulative reward')
     plt.legend()
 
+# Figure 8.6, ShortcutMaze
 def figure8_6():
     # set up a shortcut maze instance
     shortcutMaze = Maze()
