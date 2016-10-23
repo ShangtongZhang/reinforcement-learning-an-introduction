@@ -5,9 +5,42 @@
 #######################################################################
 
 import numpy as np
+import itertools
+import heapq
 def argmax(elements, unique=True):
     maxValue = np.max(elements)
     candidates = [i for i in range(0, len(elements)) if elements[i] == maxValue]
     if unique:
         return np.random.choice(candidates)
     return candidates
+
+class PriorityQueue:
+
+    def __init__(self):
+        self.pq = []
+        self.entry_finder = {}
+        self.REMOVED = '<removed-task>'
+        self.counter = itertools.count()
+
+    def addItem(self, item, priority=0):
+        if item in self.entry_finder:
+            self.removeItem(item)
+        count = next(self.counter)
+        entry = [priority, count, item]
+        self.entry_finder[item] = entry
+        heapq.heappush(self.pq, entry)
+
+    def removeItem(self, item):
+        entry = self.entry_finder.pop(item)
+        entry[-1] = self.REMOVED
+
+    def popTask(self):
+        while self.pq:
+            priority, count, item = heapq.heappop(self.pq)
+            if item is not self.REMOVED:
+                del self.entry_finder[item]
+                return item, priority
+        raise KeyError('pop from an empty priority queue')
+
+    def empty(self):
+        return not self.entry_finder
