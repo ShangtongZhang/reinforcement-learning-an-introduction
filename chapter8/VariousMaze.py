@@ -47,6 +47,9 @@ class Maze:
         # max steps
         self.maxSteps = float('inf')
 
+        # track the resolution for this maze
+        self.resolution = 1
+
     # extend a state to a higher resolution maze
     # @state: state in lower resoultion maze
     # @factor: extension factor, one state will become factor^2 states after extension
@@ -70,6 +73,7 @@ class Maze:
         for state in self.obstacles:
             newMaze.obstacles.extend(self.extendState(state, factor))
         newMaze.stateActionValues = np.zeros((newMaze.WORLD_HEIGHT, newMaze.WORLD_WIDTH, len(newMaze.actions)))
+        newMaze.resolution = factor
         return newMaze
 
     # take @action in @state
@@ -315,8 +319,10 @@ def prioritizedSweeping(stateActionValues, model, maze, dynaParams):
 
         # start planning
         planningStep = 0
-        # keep planning until the priority queue becomes empty
-        while not model.empty():
+
+        # planning for several steps,
+        # although keep planning until the priority queue becomes empty will converge much faster
+        while planningStep < dynaParams.planningSteps and not model.empty():
             # get a sample with highest priority from the model
             priority, sampleState, sampleAction, sampleNewState, sampleReward = model.sample()
 
@@ -335,9 +341,6 @@ def prioritizedSweeping(stateActionValues, model, maze, dynaParams):
 
         # update the # of backups
         backups += planningStep
-
-    # print the # of steps to verify that it indeed finds the optimal path
-    # print steps
 
     return backups
 
@@ -546,6 +549,22 @@ def printActions(stateActionValues, maze):
         print row
     print ''
 
+# Check whether state-action values are already optimal
+def checkPath(stateActionValues, maze):
+    # get the length of optimal path
+    # 14 is the length of optimal path of the original maze
+    # 1.2 means it's a relaxed optimal path
+    maxSteps = 14 * maze.resolution * 1.2
+    currentState = maze.START_STATE
+    steps = 0
+    while currentState not in maze.GOAL_STATES:
+        bestAction = argmax(stateActionValues[currentState[0], currentState[1], :])
+        currentState, _ = maze.takeAction(currentState, bestAction)
+        steps += 1
+        if steps > maxSteps:
+            return False
+    return True
+
 # Figure 8.7, mazes with different resolution
 def figure8_7():
     # get the original 6 * 9 maze
@@ -554,14 +573,13 @@ def figure8_7():
     # set up the parameters for each algorithm
     paramsDyna = DynaParams()
     paramsDyna.planningSteps = 5
-    # Dyna-Q doesn't want a big alpha
-    paramsDyna.alpha = 0.1
+    paramsDyna.alpha = 0.5
     paramsDyna.gamma = 0.95
 
     paramsPrioritized = DynaParams()
-    paramsPrioritized.theta = 0.001
-    # A tricky alpha, prioritized sweeping needs a big alpha
-    paramsPrioritized.alpha = 1.0
+    paramsPrioritized.theta = 0.0001
+    paramsPrioritized.planningSteps = 5
+    paramsPrioritized.alpha = 0.5
     paramsPrioritized.gamma = 0.95
 
     params = [paramsPrioritized, paramsDyna]
@@ -570,9 +588,9 @@ def figure8_7():
     models = [PriorityModel, TrivialModel]
     methodNames = ['Prioritized Sweeping', 'Dyna-Q']
 
-    # due to limitation of my machine, I can only perform experiments for 6 mazes
+    # due to limitation of my machine, I can only perform experiments for 5 mazes
     # say 1st maze has w * h states, then k-th maze has w * h * k * k states
-    numOfMazes = 6
+    numOfMazes = 5
 
     # build all the mazes
     mazes = [originalMaze.extendMaze(i) for i in range(1, numOfMazes + 1)]
@@ -582,7 +600,7 @@ def figure8_7():
     backups = np.zeros((2, numOfMazes))
 
     # My machine cannot afford too many runs...
-    runs = 2
+    runs = 5
     for run in range(0, runs):
         for i in range(0, len(methodNames)):
             for mazeIndex, maze in zip(range(0, len(mazes)), mazes):
@@ -604,10 +622,8 @@ def figure8_7():
                     # print best actions w.r.t. current state-action values
                     # printActions(currentStateActionValues, maze)
 
-                    # if the # of backups or steps becomes stable,
-                    # then optimal path is found
-                    # it's an easy but effective approach for stop
-                    if len(steps) > 5 and np.sqrt(np.var(steps[-6: -1])) < 1:
+                    # check whether the (relaxed) optimal path is found
+                    if checkPath(currentStateActionValues, maze):
                         break
 
                 # update the total steps / backups for this maze
@@ -621,14 +637,14 @@ def figure8_7():
 
     plt.figure(3)
     for i in range(0, len(methodNames)):
-        plt.plot(np.arange(0, numOfMazes), backups[i, :], label=methodNames[i])
+        plt.plot(np.arange(1, numOfMazes + 1), backups[i, :], label=methodNames[i])
     plt.xlabel('maze resolution factor')
     plt.ylabel('backups until optimal solution')
     plt.yscale('log')
     plt.legend()
 
-figure8_3()
-figure8_5()
-figure8_6()
+# figure8_3()
+# figure8_5()
+# figure8_6()
 figure8_7()
 plt.show()
