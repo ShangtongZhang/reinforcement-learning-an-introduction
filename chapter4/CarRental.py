@@ -178,10 +178,10 @@ while True:
     for i, j in states:
         newStateValue[i, j] = expectedReturn([i, j], policy[i, j], stateValue)
     if np.sum(np.abs(newStateValue - stateValue)) < 1e-4:
-        stateValue = newStateValue
+        stateValue[:] = newStateValue
         improvePolicy = True
         continue
-    stateValue = newStateValue
+    stateValue[:] = newStateValue
 
 prettyPrint(policy, ['# of cars in first location', '# of cars in second location', '# of cars to move during night'])
 prettyPrint(stateValue, ['# of cars in first location', '# of cars in second location', 'expectd returns'])
