@@ -43,3 +43,6 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 2. Figure 8.5: Average performance of Dyna agents on a blocking task
 3. Figure 8.6: Average performance of Dyna agents on a shortcut task
 4. Figure 8.7: Prioritized sweeping significantly shortens learning time on the Dyna maze task
+
+### Chapter 9
+1. Figure 9.1: Gradient Monte Carlo algorithm on the 1000-state random walk task 
