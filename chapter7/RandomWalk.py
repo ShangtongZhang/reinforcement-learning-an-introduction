@@ -41,7 +41,7 @@ def temporalDifference(stateValues, n, alpha):
     currentState = START_STATE
 
     # arrays to store states and rewards for an episode
-    # space isn't a major consideration, so I don't use mod trick
+    # space isn't a major consideration, so I didn't use the mod trick
     states = [currentState]
     rewards = [0]
 

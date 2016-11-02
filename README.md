@@ -46,3 +46,4 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction*
 
 ### Chapter 9
 1. Figure 9.1: Gradient Monte Carlo algorithm on the 1000-state random walk task 
+2. Figure 9.2: Semi-gradient n-steps TD algorithm on the 1000-state random walk task
