@@ -89,8 +89,6 @@ class ValueFunction:
         return self.params[groupIndex]
 
     # update parameters
-    # Notice that there is only 1 parameter to be updated each time in aggregation value function,
-    # so there is no difference between synchronous and asynchronous update
     # @delta: step size * (return - old estimation)
     # @state: state of current sample
     def update(self, delta, state):
