@@ -89,11 +89,57 @@ class ValueFunction:
         return self.params[groupIndex]
 
     # update parameters
-    # @delta: step size * (return - old estimation)
+    # @delta: step size * (target - old estimation)
     # @state: state of current sample
     def update(self, delta, state):
         groupIndex = (state - 1) / self.groupSize
         self.params[groupIndex] += delta
+
+# a wrapper class for tile coding value function
+class TilingsValueFunction:
+    # @numOfTilings: # of tilings
+    # @tileWidth: each tiling has several tiles, this parameter specifies the width of each tile
+    # @tilingOffset: specifies how tilings are put together
+    def __init__(self, numOfTilings, tileWidth, tilingOffset):
+        self.numOfTilings = numOfTilings
+        self.tileWidth = tileWidth
+        self.tilingOffset = tilingOffset
+
+        # To make sure that each sate is covered by same number of tiles,
+        # we need one more tile for each tiling
+        self.tilingSize = N_STATES / tileWidth + 1
+
+        # weight for each tile
+        self.params = np.zeros((self.numOfTilings, self.tilingSize))
+
+        # For performance, only track the starting position for each tiling
+        # As we have one more tile for each tiling, the starting position will be negative
+        self.tilings = np.arange(-tileWidth + 1, 0, tilingOffset)
+
+    # get the value of @state
+    def value(self, state):
+        stateValue = 0.0
+        # go through all the tilings
+        for tilingIndex in range(0, len(self.tilings)):
+            # find the active tile in current tiling
+            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            stateValue += self.params[tilingIndex, tileIndex]
+        return stateValue
+
+    # update parameters
+    # @delta: step size * (target - old estimation)
+    # @state: state of current sample
+    def update(self, delta, state):
+
+        # each state is covered by same number of tilings
+        # so the delta should be divided equally into each tiling (tile)
+        delta /= self.numOfTilings
+
+        # go through all the tilings
+        for tilingIndex in range(0, len(self.tilings)):
+            # find the active tile in current tiling
+            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            self.params[tilingIndex, tileIndex] += delta
 
 # gradient Mento Carlo algorithm
 # @valueFunction: an instance of class ValueFunction
@@ -262,6 +308,62 @@ def figure9_2():
     figure9_2Left()
     figure9_2Right()
 
+# Figure 9.10, it will take quite a while
+def figure9_10():
+
+    # My machine can only afford one run, thus the curve isn't so smooth
+    runs = 1
+
+    # number of episodes
+    episodes = 5000
+
+    numOfTilings = 50
+
+    # each tile will cover 200 states
+    tileWidth = 200
+
+    # how to put so many tilings
+    tilingOffset = 4
+
+    labels = ['tile coding (50 tilings)', 'state aggregation (one tiling)']
+
+    # track errors for each episode
+    errors = np.zeros((len(labels), episodes))
+    for run in range(0, runs):
+        # initialize value functions for multiple tilings and single tiling
+        valueFunctions = [TilingsValueFunction(numOfTilings, tileWidth, tilingOffset),
+                         ValueFunction(N_STATES / tileWidth)]
+        for i in range(0, len(valueFunctions)):
+            for episode in range(0, episodes):
+                print 'run:', run, 'episode:', episode
+
+                # I use a changing alpha according to the episode instead of a small fixed alpha
+                # With a small fixed alpha, I don't think 5000 episodes is enough for so many
+                # parameters in multiple tilings.
+                # The asymptotic performance for single tiling stays unchanged under a changing alpha,
+                # however the asymptotic performance for multiple tilings improves significantly
+                alpha = 1.0 / (episode + 1)
+
+                # gradient Mento Carlo algorithm
+                gradientMentoCarlo(valueFunctions[i], alpha)
+
+                # get state values under current value function
+                stateValues = [valueFunctions[i].value(state) for state in states]
+
+                # get the root-mean-squared error
+                errors[i][episode] += np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues, 2)))
+
+    # average over independent runs
+    errors /= runs
+
+    plt.figure(4)
+    for i in range(0, len(labels)):
+        plt.plot(errors[i], label=labels[i])
+    plt.xlabel('Episodes')
+    plt.ylabel('RMSVE')
+    plt.legend()
+
 figure9_1()
 figure9_2()
+figure9_10()
 plt.show()
