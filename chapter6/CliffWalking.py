@@ -231,6 +231,8 @@ def figure6_7():
     plt.figure(2)
     for method, label in zip(methods, labels):
         plt.plot(stepSizes, performace[method, :], label=label)
+    plt.xlabel('alpha')
+    plt.ylabel('reward per episode')
     plt.legend()
 
 # Drawing figure 6.7 may take a while

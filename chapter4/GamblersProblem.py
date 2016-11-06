@@ -51,9 +51,11 @@ for state in states[1:GOAL]:
 
 # figure 4.3
 plt.figure(1)
-plt.title('Stave Value')
+plt.xlabel('Capital')
+plt.ylabel('Value estimates')
 plt.plot(stateValue)
 plt.figure(2)
-plt.title('Optimal Policy')
 plt.scatter(states, policy)
+plt.xlabel('Capital')
+plt.ylabel('Final policy (stake)')
 plt.show()

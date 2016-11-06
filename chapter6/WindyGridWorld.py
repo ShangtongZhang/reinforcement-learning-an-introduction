@@ -94,6 +94,8 @@ while ep < episodeLimit:
 
 plt.figure()
 plt.plot(episodes)
+plt.xlabel('Time steps')
+plt.ylabel('Episodes')
 plt.show()
 
 # display the optimal policy
