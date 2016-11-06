@@ -60,7 +60,7 @@ class Bandit:
         # exploit
         if self.UCBParam is not None:
             UCBEst = self.qEst + \
-                     self.UCBParam * np.sqrt(np.log(self.time) / (np.asarray(self.actionCount) + 1))
+                     self.UCBParam * np.sqrt(np.log(self.time + 1) / (np.asarray(self.actionCount) + 1))
             return argmax(UCBEst)
         if self.gradient:
             expEst = np.exp(self.qEst)
@@ -110,16 +110,18 @@ def epsilonGreedy(nBandits, time):
                 if action == bandits[epsInd][i].bestAction:
                     bestActionCounts[epsInd][t] += 1
     plt.figure(1)
-    plt.title('% optimal action')
     for eps, counts in zip(epsilons, bestActionCounts):
         counts /= nBandits
         plt.plot(counts, label='epsilon = '+str(eps))
+    plt.xlabel('Steps')
+    plt.ylabel('% optimal action')
     plt.legend()
     plt.figure(2)
-    plt.title('average reward')
     for eps, rewards in zip(epsilons, averageRewards):
         rewards /= nBandits
         plt.plot(rewards, label='epsilon = '+str(eps))
+    plt.xlabel('Steps')
+    plt.ylabel('average reward')
     plt.legend()
     plt.show()
 
@@ -142,6 +144,8 @@ def optimisticInitialValues(nBandits, time):
     bestActionCounts[1] /= nBandits
     plt.plot(bestActionCounts[0], label='epsilon = 0, q = 5')
     plt.plot(bestActionCounts[1], label='epsilon = 0.1, q = 0')
+    plt.xlabel('Steps')
+    plt.ylabel('% optimal action')
     plt.legend()
     plt.show()
 
@@ -163,6 +167,8 @@ def ucb(nBandits, time):
     averageRewards[1] /= nBandits
     plt.plot(averageRewards[0], label='UCB c = 2')
     plt.plot(averageRewards[1], label='epsilon greedy epsilon = 0.1')
+    plt.xlabel('Steps')
+    plt.ylabel('Average reward')
     plt.legend()
     plt.show()
 
@@ -189,8 +195,11 @@ def gradientBandit(nBandits, time):
               'alpha = 0.1, without baseline',
               'alpha = 0.4, with baseline',
               'alpha = 0.4, without baseline']
+    plt.figure(3)
     for i in range(0, len(bandits)):
         plt.plot(bestActionCounts[i], label=labels[i])
+    plt.xlabel('Steps')
+    plt.ylabel('% Optimal action')
     plt.legend()
     plt.show()
 
