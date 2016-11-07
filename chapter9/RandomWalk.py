@@ -141,6 +141,40 @@ class TilingsValueFunction:
             tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
             self.params[tilingIndex, tileIndex] += delta
 
+# a wrapper class for polynomial / Fourier -based value function
+POLYNOMIAL_BASES = 0
+FOURIER_BASES = 1
+class BasesValueFunction:
+    # @order: # of bases, each function also has one more constant parameter (called bias in machine learning)
+    # @type: polynomial bases or Fourier bases
+    def __init__(self, order, type):
+        self.order = order
+        self.weights = np.zeros(order + 1)
+
+        # set up bases function
+        self.bases = []
+        if type == POLYNOMIAL_BASES:
+            for i in range(0, order + 1):
+                self.bases.append(lambda s, i=i: pow(s, i))
+        elif type == FOURIER_BASES:
+            for i in range(0, order + 1):
+                self.bases.append(lambda s, i=i: np.cos(i * np.pi * s))
+
+    # get the value of @state
+    def value(self, state):
+        # map the state space into [0, 1]
+        state /= float(N_STATES)
+        # get the feature vector
+        feature = np.asarray([func(state) for func in self.bases])
+        return np.dot(self.weights, feature)
+
+    def update(self, delta, state):
+        # map the state space into [0, 1]
+        state /= float(N_STATES)
+        # get derivative value
+        derivativeValue = np.asarray([func(state) for func in self.bases])
+        self.weights += delta * derivativeValue
+
 # gradient Mento Carlo algorithm
 # @valueFunction: an instance of class ValueFunction
 # @alpha: step size
@@ -308,6 +342,48 @@ def figure9_2():
     figure9_2Left()
     figure9_2Right()
 
+# Figure 9.5, Fourier basis and polynomials
+def figure9_5():
+    # my machine can only afford 1 run
+    runs = 1
+
+    episodes = 5000
+
+    # # of bases
+    orders = [5, 10, 20]
+
+    alphas = [1e-4, 5e-5]
+    labels = [['polynomial basis'] * 3, ['fourier basis'] * 3]
+
+    # track errors for each episode
+    errors = np.zeros((len(alphas), len(orders), episodes))
+    for run in range(0, runs):
+        for i in range(0, len(orders)):
+            valueFunctions = [BasesValueFunction(orders[i], POLYNOMIAL_BASES), BasesValueFunction(orders[i], FOURIER_BASES)]
+            for j in range(0, len(valueFunctions)):
+                for episode in range(0, episodes):
+                    print 'run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode
+
+                    # gradient Mento Carlo algorithm
+                    gradientMentoCarlo(valueFunctions[j], alphas[j])
+
+                    # get state values under current value function
+                    stateValues = [valueFunctions[j].value(state) for state in states]
+
+                    # get the root-mean-squared error
+                    errors[j, i, episode] += np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues, 2)))
+
+    # average over independent runs
+    errors /= runs
+
+    plt.figure(5)
+    for i in range(0, len(alphas)):
+        for j in range(0, len(orders)):
+            plt.plot(errors[i, j, :], label=labels[i][j]+' order = ' + str(orders[j]))
+    plt.xlabel('Episodes')
+    plt.ylabel('RMSVE')
+    plt.legend()
+
 # Figure 9.10, it will take quite a while
 def figure9_10():
 
@@ -365,5 +441,6 @@ def figure9_10():
 
 figure9_1()
 figure9_2()
+figure9_5()
 figure9_10()
 plt.show()

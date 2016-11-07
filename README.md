@@ -49,10 +49,11 @@ Python code for Sutton & Barto's book *Reinforcement Learning: An Introduction (
 ### Chapter 9
 1. [Figure 9.1: Gradient Monte Carlo algorithm on the 1000-state random walk task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_1) 
 2. [Figure 9.2: Semi-gradient n-steps TD algorithm on the 1000-state random walk task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_2)
-3. [Figure 9.8: Example of feature width’s effect on initial generalization and asymptotic accuracy](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_8)
-4. [Figure 9.10: Single tiling and multiple tilings on the 1000-state random walk task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_10)
+3. [Figure 9.5: Fourier basis vs polynomials on the 1000-state random walk task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_5)
+4. [Figure 9.8: Example of feature width’s effect on initial generalization and asymptotic accuracy](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_8)
+5. [Figure 9.10: Single tiling and multiple tilings on the 1000-state random walk task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#9_10)
 
 # Environment
-* python 2.7
-* numpy
-* matplotlib
+* Python 2.7
+* Numpy
+* Matplotlib
