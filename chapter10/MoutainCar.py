@@ -48,24 +48,34 @@ class ValueFunction:
     def __init__(self, stepSize, numOfTilings=8, maxSize=2048):
         self.maxSize = maxSize
         self.numOfTilings = numOfTilings
+
+        # divide step size equally to each tiling
         self.stepSize = stepSize / numOfTilings
+
         self.hashTable = IHT(maxSize)
+
+        # weight for each tile
         self.weights = np.zeros(maxSize)
+
+        # position and velocity needs scaling to satisfy the tile software
         self.positionScale = self.numOfTilings / (POSITION_MAX - POSITION_MIN)
         self.velocityScale = self.numOfTilings / (VELOCITY_MAX - VELOCITY_MIN)
 
+    # get indices of active tiles for given state and action
     def getActiveTiles(self, position, velocity, action):
         activeTiles = tiles(self.hashTable, self.numOfTilings,
                             [self.positionScale * position, self.velocityScale * velocity],
                             [action])
         return activeTiles
 
+    # estimate the value of given state and action
     def value(self, position, velocity, action):
         if position == POSITION_MAX:
             return 0.0
         activeTiles = self.getActiveTiles(position, velocity, action)
         return np.sum(self.weights[activeTiles])
 
+    # learn with given state, action and target
     def learn(self, position, velocity, action, target):
         activeTiles = self.getActiveTiles(position, velocity, action)
         estimation = np.sum(self.weights[activeTiles])
@@ -73,12 +83,14 @@ class ValueFunction:
         for activeTile in activeTiles:
             self.weights[activeTile] += delta
 
+    # get # of steps to reach the goal under current state value function
     def costToGo(self, position, velocity):
         costs = []
         for action in ACTIONS:
             costs.append(self.value(position, velocity, action))
         return -np.max(costs)
 
+# get action at @position and @velocity based on epsilon greedy policy and @valueFunction
 def getAction(position, velocity, valueFunction):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(ACTIONS)
@@ -87,29 +99,39 @@ def getAction(position, velocity, valueFunction):
         values.append(valueFunction.value(position, velocity, action))
     return argmax(values) - 1
 
+# semi-gradient n-step Sarsa
+# @valueFunction: state value function to learn
+# @n: # of steps
 def semiGradientNStepSarsa(valueFunction, n=1):
+    # start at a random position around the bottom of the valley
     currentPosition = np.random.uniform(-0.6, -0.4)
+    # initial velocity is 0
     currentVelocity = 0.0
+    # get initial action
     currentAction = getAction(currentPosition, currentVelocity, valueFunction)
 
+    # track previous position, velocity, action and reward
     positions = [currentPosition]
     velocities = [currentVelocity]
     actions = [currentAction]
     rewards = [0.0]
 
+    # track the time
     time = 0
-    T = float('inf')
 
+    # the length of this episode
+    T = float('inf')
     while True:
+        # go to next time step
         time += 1
-        # print 'step:', time
-        # if time == 42800:
-        #     return
 
         if time < T:
+            # take current action and go to the new state
             newPostion, newVelocity, reward = takeAction(currentPosition, currentVelocity, currentAction)
+            # choose new action
             newAction = getAction(newPostion, newVelocity, valueFunction)
 
+            # track new state and action
             positions.append(newPostion)
             velocities.append(newVelocity)
             actions.append(newAction)
@@ -118,18 +140,19 @@ def semiGradientNStepSarsa(valueFunction, n=1):
             if newPostion == POSITION_MAX:
                 T = time
 
+        # get the time of the state to update
         updateTime = time - n
         if updateTime >= 0:
             returns = 0.0
             # calculate corresponding rewards
             for t in range(updateTime + 1, min(T, updateTime + n) + 1):
                 returns += rewards[t]
-            # add state value to the return
+            # add estimated state action value to the return
             if updateTime + n <= T:
                 returns += valueFunction.value(positions[updateTime + n],
                                                velocities[updateTime + n],
                                                actions[updateTime + n])
-            # update the value function
+            # update the state value function
             if positions[updateTime] != POSITION_MAX:
                 valueFunction.learn(positions[updateTime], velocities[updateTime], actions[updateTime], returns)
         if updateTime == T - 1:
@@ -141,6 +164,7 @@ def semiGradientNStepSarsa(valueFunction, n=1):
     return time
 
 figureIndex = 0
+# print learned cost to go
 def prettyPrint(valueFunction, title):
     global figureIndex
     gridSize = 40
@@ -166,7 +190,7 @@ def prettyPrint(valueFunction, title):
     ax.set_ylabel('Velocity')
     ax.set_zlabel('Cost to go')
 
-
+# Figure 10.1, cost to go in a single run
 def figure10_1():
     episodes = 9000
     targetEpisodes = [0, 99, episodes - 1]
@@ -179,6 +203,7 @@ def figure10_1():
         if episode in targetEpisodes:
             prettyPrint(valueFunction, 'Episode: ' + str(episode + 1))
 
+# Figure 10.2, semi-gradient Sarsa with different alphas
 def figure10_2():
     runs = 10
     episodes = 500
@@ -198,6 +223,7 @@ def figure10_2():
 
     global figureIndex
     plt.figure(figureIndex)
+    figureIndex += 1
     for i in range(0, len(alphas)):
         plt.plot(steps[i], label='alpha = '+str(alphas[i])+'/'+str(numOfTilings))
     plt.xlabel('Episode')
@@ -205,8 +231,37 @@ def figure10_2():
     plt.yscale('log')
     plt.legend()
 
+# Figure 10.3, one-step semi-gradient Sarsa vs multi-step semi-gradient Sarsa
+def figure10_3():
+    runs = 10
+    episodes = 500
+    numOfTilings = 8
+    alphas = [0.5, 0.3]
+    nSteps = [1, 8]
+
+    steps = np.zeros((len(alphas), episodes))
+    for run in range(0, runs):
+        valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
+        for index in range(0, len(valueFunctions)):
+            for episode in range(0, episodes):
+                print 'run:', run, 'steps:', nSteps[index], 'episode:', episode
+                step = semiGradientNStepSarsa(valueFunctions[index], nSteps[index])
+                steps[index, episode] += step
+
+    steps /= runs
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    for i in range(0, len(alphas)):
+        plt.plot(steps[i], label='n = '+str(nSteps[i]))
+    plt.xlabel('Episode')
+    plt.ylabel('Steps per episode')
+    plt.yscale('log')
+    plt.legend()
+
 # figure10_1()
 # figure10_2()
+figure10_3()
 plt.show()
 
 
