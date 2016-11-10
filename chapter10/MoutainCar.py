@@ -9,18 +9,24 @@ from utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+# all possible actions
 ACTION_REVERSE = -1
 ACTION_ZERO = 0
 ACTION_FORWARD = 1
+# order is important
 ACTIONS = [ACTION_REVERSE, ACTION_ZERO, ACTION_FORWARD]
 
+# bound for position and velocity
 POSITION_MIN = -1.2
 POSITION_MAX = 0.5
 VELOCITY_MIN = -0.07
 VELOCITY_MAX = 0.07
 
+# use optimistic initial value, so it's ok to set epsilon to 0
 EPSILON = 0
 
+# take an @action at @position and @velocity
+# @return: new position, new velocity, reward (always -1)
 def takeAction(position, velocity, action):
     newVelocity = velocity + 0.001 * action - 0.0025 * np.cos(3 * position)
     newVelocity = min(max(VELOCITY_MIN, newVelocity), VELOCITY_MAX)
@@ -31,7 +37,14 @@ def takeAction(position, velocity, action):
         newVelocity = 0.0
     return newPosition, newVelocity, reward
 
+# wrapper class for state action value function
 class ValueFunction:
+    # In this example I use the tiling software instead of implementing standard tiling by myself
+    # One important thing is that tiling is only a map from (state, action) to a series of indices
+    # It doesn't matter whether the indices have meaning, only if this map satisfy some property
+    # View the following webpage for more information
+    # http://incompleteideas.net/sutton/tiles/tiles3.html
+    # @maxSize: the maximum # of indices
     def __init__(self, stepSize, numOfTilings=8, maxSize=2048):
         self.maxSize = maxSize
         self.numOfTilings = numOfTilings
@@ -166,7 +179,34 @@ def figure10_1():
         if episode in targetEpisodes:
             prettyPrint(valueFunction, 'Episode: ' + str(episode + 1))
 
-figure10_1()
+def figure10_2():
+    runs = 10
+    episodes = 500
+    numOfTilings = 8
+    alphas = [0.1, 0.2, 0.5]
+
+    steps = np.zeros((len(alphas), episodes))
+    for run in range(0, runs):
+        valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
+        for index in range(0, len(valueFunctions)):
+            for episode in range(0, episodes):
+                print 'run:', run, 'alpha:', alphas[index], 'episode:', episode
+                step = semiGradientNStepSarsa(valueFunctions[index])
+                steps[index, episode] += step
+
+    steps /= runs
+
+    global figureIndex
+    plt.figure(figureIndex)
+    for i in range(0, len(alphas)):
+        plt.plot(steps[i], label='alpha = '+str(alphas[i])+'/'+str(numOfTilings))
+    plt.xlabel('Episode')
+    plt.ylabel('Steps per episode')
+    plt.yscale('log')
+    plt.legend()
+
+# figure10_1()
+# figure10_2()
 plt.show()
 
 
