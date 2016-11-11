@@ -259,9 +259,46 @@ def figure10_3():
     plt.yscale('log')
     plt.legend()
 
-# figure10_1()
-# figure10_2()
+# Figure 10.4, effect of alpha and n on multi-step semi-gradient Sarsa
+def figure10_4():
+    alphas = np.arange(0.25, 1.75, 0.25)
+    nSteps = np.power(2, np.arange(0, 5))
+    episodes = 50
+    runs = 5
+
+    truncateStep = 300
+    steps = np.zeros((len(nSteps), len(alphas)))
+    for run in range(0, runs):
+        for nStepIndex, nStep in zip(range(0, len(nSteps)), nSteps):
+            for alphaIndex, alpha in zip(range(0, len(alphas)), alphas):
+                if (nStep == 8 and alpha > 1) or \
+                        (nStep == 16 and alpha > 0.75):
+                    # In these cases it won't converge, so ignore them
+                    steps[nStepIndex, alphaIndex] += truncateStep * episodes
+                    continue
+                valueFunction = ValueFunction(alpha)
+                for episode in range(0, episodes):
+                    print 'run:', run, 'steps:', nStep, 'alpha:', alpha, 'episode:', episode
+                    step = semiGradientNStepSarsa(valueFunction, nStep)
+                    steps[nStepIndex, alphaIndex] += step
+    # average over independent runs and episodes
+    steps /= runs * episodes
+    # truncate high values for better display
+    steps[steps > truncateStep] = truncateStep
+
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    for i in range(0, len(nSteps)):
+        plt.plot(alphas, steps[i, :], label='n = '+str(nSteps[i]))
+    plt.xlabel('alpha * number of tilings(8)')
+    plt.ylabel('Steps per episode')
+    plt.legend()
+
+figure10_1()
+figure10_2()
 figure10_3()
+figure10_4()
 plt.show()
 
 
