@@ -63,6 +63,8 @@ class ValueFunction:
 
     # get indices of active tiles for given state and action
     def getActiveTiles(self, position, velocity, action):
+        # I think positionScale * (position - position_min) would be a good normalization.
+        # However positionScale * position_min is a constant, so it's ok to ignore it.
         activeTiles = tiles(self.hashTable, self.numOfTilings,
                             [self.positionScale * position, self.velocityScale * velocity],
                             [action])
