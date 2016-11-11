@@ -56,7 +56,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 ### Chapter 10
 1. [Figure 10.1: The cost-to-go function for Mountain Car task in one run](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_1)
 2. [Figure 10.2: Learning curves for semi-gradient Sarsa on Mountain Car task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_2)
-3. [Figure 10.3: One-step vs multi-step performance of semi-gradient Sarsa on the Mountain Cartask](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_3)
+3. [Figure 10.3: One-step vs multi-step performance of semi-gradient Sarsa on the Mountain Car task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_3)
 4. [Figure 10.4: Effect of the alpha and n on early performance of n-step semi-gradient Sarsa](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_4)
 
 # Environment
