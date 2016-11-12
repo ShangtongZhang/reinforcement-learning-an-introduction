@@ -60,6 +60,9 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 4. [Figure 10.4: Effect of the alpha and n on early performance of n-step semi-gradient Sarsa](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_4)
 5. [Figure 10.5: Differential semi-gradient Sarsa on the access-control queuing task](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#10_5)
 
+### Chapter 11
+1. [Figure 11.2: Baird's Counterexample](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#11_2)
+
 # Environment
 * Python 2.7
 * Numpy
