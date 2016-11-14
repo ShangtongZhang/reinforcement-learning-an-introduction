@@ -22,11 +22,11 @@ policyPlayer[20] = ACTION_STAND
 policyPlayer[21] = ACTION_STAND
 
 # function form of target policy of player
-def targetPolicyPlayer(playerSum):
+def targetPolicyPlayer(usableAcePlayer, playerSum, dealerCard):
     return policyPlayer[playerSum]
 
 # function form of behavior policy of player
-def behaviorPolicyPlayer(playerSum):
+def behaviorPolicyPlayer(usableAcePlayer, playerSum, dealerCard):
     if np.random.binomial(1, 0.5) == 1:
         return ACTION_STAND
     return ACTION_HIT
@@ -47,7 +47,8 @@ def getCard():
 # play a game
 # @policyPlayerFn: specify policy for player
 # @initialState: [whether player has a usable Ace, sum of player's cards, one card of dealer]
-def play(policyPlayerFn, initialState=None):
+# @initialAction: the initial action
+def play(policyPlayerFn, initialState=None, initialAction=None):
     # player status
 
     # sum of player
@@ -122,11 +123,15 @@ def play(policyPlayerFn, initialState=None):
 
     # player't turn
     while True:
-        # get action based on current sum
-        action = policyPlayerFn(playerSum)
+        if initialAction is not None:
+            action = initialAction
+            initialAction = None
+        else:
+            # get action based on current sum
+            action = policyPlayerFn(usableAcePlayer, playerSum, dealerCard1)
 
         # track player's trajectory for importance sampling
-        playerTrajectory.append([action, playerSum])
+        playerTrajectory.append([action, (usableAcePlayer, playerSum, dealerCard1)])
 
         if action == ACTION_STAND:
             break
@@ -189,6 +194,38 @@ def monteCarloOnPolicy(nEpisodes):
             statesNoUsableAce[state[1], state[2]] += reward
     return statesUsableAce / statesUsableAceCount, statesNoUsableAce / statesNoUsableAceCount
 
+# Monte Carlo with Exploring Starts
+def monteCarloES(nEpisodes):
+    # (playerSum, dealerCard, usableAce, action)
+    stateActionValues = np.zeros((10, 10, 2, 2))
+    # set default to 1 to avoid being divided by 0
+    stateActionPairCount = np.ones((10, 10, 2, 2))
+    # behavior policy is greedy
+    def behaviorPolicy(usableAce, playerSum, dealerCard):
+        usableAce = int(usableAce)
+        playerSum -= 12
+        dealerCard -= 1
+        return argmax(stateActionValues[playerSum, dealerCard, usableAce, :])
+
+    # play for several episodes
+    for episode in range(nEpisodes):
+        print 'episode:', episode
+        # for each episode, use a randomly initialized state and action
+        initialState = [bool(np.random.choice([0, 1])),
+                       np.random.choice(range(12, 22)),
+                       np.random.choice(range(1, 11))]
+        initialAction = np.random.choice(actions)
+        _, reward, trajectory = play(behaviorPolicy, initialState, initialAction)
+        for action, (usableAce, playerSum, dealerCard) in trajectory:
+            usableAce = int(usableAce)
+            playerSum -= 12
+            dealerCard -= 1
+            # update values of state-action pairs
+            stateActionValues[playerSum, dealerCard, usableAce, action] += reward
+            stateActionPairCount[playerSum, dealerCard, usableAce, action] += 1
+
+    return stateActionValues / stateActionPairCount
+
 # Monte Carlo Sample with Off-Policy
 def monteCarloOffPolicy(nEpisodes):
     initialState = [True, 13, 2]
@@ -200,8 +237,8 @@ def monteCarloOffPolicy(nEpisodes):
         # get the importance ratio
         importanceRatioAbove = 1.0
         importanceRatioBelow = 1.0
-        for action, playerSum in playerTrajectory:
-            if action == targetPolicyPlayer(playerSum):
+        for action, (usableAce, playerSum, dealerCard) in playerTrajectory:
+            if action == targetPolicyPlayer(usableAce, playerSum, dealerCard):
                 importanceRatioBelow *= 0.5
             else:
                 importanceRatioAbove = 0.0
@@ -222,7 +259,7 @@ def monteCarloOffPolicy(nEpisodes):
 
 # print the state value
 figureIndex = 0
-def prettyPrint(data, tile):
+def prettyPrint(data, tile, zlabel='reward'):
     global figureIndex
     fig = plt.figure(figureIndex)
     figureIndex += 1
@@ -239,7 +276,7 @@ def prettyPrint(data, tile):
     ax.scatter(axisX, axisY, axisZ)
     ax.set_xlabel('player sum')
     ax.set_ylabel('dealer showing')
-    ax.set_zlabel('reward')
+    ax.set_zlabel(zlabel)
 
 # Figure 5.1
 def onPolicy():
@@ -249,6 +286,26 @@ def onPolicy():
     prettyPrint(statesNoUsableAce1, 'No Usable Ace, 10000 Episodes')
     prettyPrint(statesUsableAce2, 'Usable Ace, 500000 Episodes')
     prettyPrint(statesNoUsableAce2, 'No Usable Ace, 500000 Episodes')
+    plt.show()
+
+# Figure 5.3
+def figure5_3():
+    stateActionValues = monteCarloES(500000)
+    stateValueUsableAce = np.zeros((10, 10))
+    stateValueNoUsableAce = np.zeros((10, 10))
+    # get the optimal policy
+    actionUsableAce = np.zeros((10, 10), dtype='int')
+    actionNoUsableAce = np.zeros((10, 10), dtype='int')
+    for i in range(10):
+        for j in range(10):
+            stateValueNoUsableAce[i, j] = np.max(stateActionValues[i, j, 0, :])
+            stateValueUsableAce[i, j] = np.max(stateActionValues[i, j, 1, :])
+            actionNoUsableAce[i, j] = argmax(stateActionValues[i, j, 0, :])
+            actionUsableAce[i, j] = argmax(stateActionValues[i, j, 1, :])
+    prettyPrint(stateValueUsableAce, 'Optimal state value with usable Ace')
+    prettyPrint(stateValueNoUsableAce, 'Optimal state value with no usable Ace')
+    prettyPrint(actionUsableAce, 'Optimal policy with usable Ace', 'Action (0 Hit, 1 Stick)')
+    prettyPrint(actionNoUsableAce, 'Optimal policy with no usable Ace', 'Action (0 Hit, 1 Stick)')
     plt.show()
 
 # Figure 5.4
@@ -274,5 +331,6 @@ def offPolicy():
     plt.show()
 
 # onPolicy()
-offPolicy()
+figure5_3()
+# offPolicy()
 

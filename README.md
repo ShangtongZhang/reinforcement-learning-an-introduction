@@ -27,8 +27,9 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 
 ### Chapter 5
 1. [Figure 5.1: Approximate state-value functions for the blackjack policy](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_1)
-2. [Figure 5.4: Weighted importance sampling](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_4)
-3. [Figure 5.5: Ordinary importance sampling with surprisingly unstable estimates](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_5)
+2. [Figure 5.3: The optimal policy and state-value function for blackjack found by Monte Carlo ES](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_3)
+3. [Figure 5.4: Weighted importance sampling](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_4)
+4. [Figure 5.5: Ordinary importance sampling with surprisingly unstable estimates](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#5_5)
 
 ### Chapter 6
 1. [Figure 6.2: Random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#6_2)
