@@ -74,3 +74,19 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 * Python 2.7
 * Numpy
 * Matplotlib
+
+# Contribution
+This project contains almost all the programmable figures in the book. However, when I completed this project, the book is still in draft and some chapters are still incomplete. Furthermore, due to the limited computational capacity of my machine, I can only use limited runs and episodes for some experiments, so the sample output is much less smooth than that in the book.
+
+If you want to contribute some exercises of the book or some missing examples, fix some bugs in existing code, provide sample outputs with higher quality, add some new interesting experiments related to RL, feel free to open an issue or make a pull request. I will appreciate it very much. Also, feel free to comment on the sample outputs, some curves are really interesting.
+
+Following are known missing figures/examples:
+
+* Example 3.4: Pole-Balancing
+* Example 3.6: Draw Poker
+* Example 5.2: Soap Bubble
+* Example 8.5: Rod Maneuvering
+* Chapter 13: One example that hasn't shown up in the book about policy gradient
+* Chapter 14 & 15 are about psychology and neuroscience
+* Chapter 16: Backgammon, The Acrobot, Go
+
