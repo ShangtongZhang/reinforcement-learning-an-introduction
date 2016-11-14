@@ -27,32 +27,25 @@ realStateValues = np.arange(-20, 22, 2) / 20.0
 realStateValues[0] = realStateValues[N_STATES + 1] = 0.0
 
 class ValueFunction:
-    def __init__(self, rate, stepSize, numOfTilings=8, maxSize=2048):
-        self.maxSize = maxSize
+    def __init__(self, rate, stepSize, numOfTilings=8):
         self.rate = rate
-        self.numOfTilings = numOfTilings
-        self.stepSize = stepSize / numOfTilings
-
-        self.hashTable = IHT(maxSize)
-        self.weights = np.zeros(maxSize)
-
-        self.scale = self.numOfTilings / float(N_STATES - 1)
-
-    def getActiveTiles(self, state):
-        return tiles(self.hashTable, self.numOfTilings, [self.scale * state])
+        self.stepSize = stepSize
+        self.weights = np.zeros(N_STATES + 2)
 
     def value(self, state):
-        if state in END_STATES:
-            return 0.0
-        activeTiles = self.getActiveTiles(state)
-        return np.sum(self.weights[activeTiles])
+        return self.weights[state]
+
+    def learn(self, state, reward):
+        return
 
 class OffLineLambdaReturn(ValueFunction):
     def __init__(self, rate, stepSize):
         ValueFunction.__init__(self, rate, stepSize)
+        self.rateTruncate = 1e-3
+
+    def newEpisode(self):
         self.trajectory = [START_STATE]
         self.reward = 0.0
-        self.rateTruncate = 1e-3
 
     def learn(self, state, reward):
         self.trajectory.append(state)
@@ -87,12 +80,30 @@ class OffLineLambdaReturn(ValueFunction):
             state = self.trajectory[time]
             delta = self.lambdaReturnFromTime(time) - self.value(state)
             delta *= self.stepSize
-            activeTiles = self.getActiveTiles(state)
-            for activeTile in activeTiles:
-                self.weights[activeTile] += delta
-        self.trajectory = []
+            self.weights[state] += delta
+
+class TemporalDifferenceLambda(ValueFunction):
+    def __init__(self, rate, stepSize):
+        ValueFunction.__init__(self, rate, stepSize)
+        self.newEpisode()
+
+    def newEpisode(self):
+        self.eligibility = np.zeros(N_STATES + 2)
+        self.lastState = START_STATE
+
+    def value(self, state):
+        return self.weights[state]
+
+    def learn(self, state, reward):
+        self.eligibility *= self.rate
+        self.eligibility[self.lastState] += 1
+        delta = reward + self.value(state) - self.value(self.lastState)
+        delta *= self.stepSize
+        self.weights += delta * self.eligibility
+        self.lastState = state
 
 def randomWalk(valueFunction):
+    valueFunction.newEpisode()
     currentState = START_STATE
     while currentState not in END_STATES:
         newState = currentState + np.random.choice([-1, 1])
@@ -106,38 +117,57 @@ def randomWalk(valueFunction):
         currentState = newState
 
 figureIndex = 0
-def figure12(valueFunctionGenerator, runs):
+def figure12(valueFunctionGenerator, runs, lambdas, alphas):
     global figureIndex
-    truncateValue = 0.55
-    lambdas = [0.0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
-    alphas = np.arange(0, 1.1, 0.1)
 
     episodes = 10
-    errors = np.zeros((len(lambdas), len(alphas)))
+    errors = [np.zeros(len(alphas_)) for alphas_ in alphas]
     for run in range(runs):
         for lambdaIndex, rate in zip(range(len(lambdas)), lambdas):
-            for alphaIndex, alpha in zip(range(len(alphas)), alphas):
+            for alphaIndex, alpha in zip(range(len(alphas[lambdaIndex])), alphas[lambdaIndex]):
                 valueFunction = valueFunctionGenerator(rate, alpha)
                 for episode in range(episodes):
                     print 'run:', run, 'lambda:', rate, 'alpha:', alpha, 'episode:', episode
                     randomWalk(valueFunction)
                     stateValues = [valueFunction.value(state) for state in states]
-                    errors[lambdaIndex, alphaIndex] += np.sqrt(np.mean(np.power(stateValues - realStateValues[1: -1], 2)))
+                    errors[lambdaIndex][alphaIndex] += np.sqrt(np.mean(np.power(stateValues - realStateValues[1: -1], 2)))
 
-    errors /= episodes * runs
-    errors[errors > truncateValue] = truncateValue
+    for error in errors:
+        error /= episodes * runs
     plt.figure(figureIndex)
     figureIndex += 1
     for i in range(len(lambdas)):
-        plt.plot(alphas, errors[i, :], label='lambda = ' + str(lambdas[i]))
+        plt.plot(alphas[i], errors[i], label='lambda = ' + str(lambdas[i]))
     plt.xlabel('alpha')
     plt.ylabel('RMS error')
     plt.legend()
 
 def figure12_3():
-    figure12(OffLineLambdaReturn, 10)
+    lambdas = [0.0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
+    alphas = [np.arange(0, 1.1, 0.1),
+              np.arange(0, 1.1, 0.1),
+              np.arange(0, 1.1, 0.1),
+              np.arange(0, 1.1, 0.1),
+              np.arange(0, 1.1, 0.1),
+              np.arange(0, 0.55, 0.05),
+              np.arange(0, 0.22, 0.02),
+              np.arange(0, 0.11, 0.01)]
+    figure12(OffLineLambdaReturn, 50, lambdas, alphas)
+
+def figure12_6():
+    lambdas = [0.0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
+    alphas = [np.arange(0, 1.1, 0.1),
+              np.arange(0, 1.1, 0.1),
+              np.arange(0, 0.99, 0.09),
+              np.arange(0, 0.55, 0.05),
+              np.arange(0, 0.33, 0.03),
+              np.arange(0, 0.22, 0.02),
+              np.arange(0, 0.11, 0.01),
+              np.arange(0, 0.044, 0.004)]
+    figure12(TemporalDifferenceLambda, 50, lambdas, alphas)
 
 figure12_3()
+# figure12_6()
 plt.show()
 
 

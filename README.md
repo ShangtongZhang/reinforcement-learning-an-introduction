@@ -63,6 +63,11 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 ### Chapter 11
 1. [Figure 11.2: Baird's Counterexample](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#11_2)
 
+### Chapter 12
+1. [Figure 12.3: Off-line λ-return algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_3)
+2. [Figure 12.6: TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_6)
+3. [Figure 12.7: True online TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_7)
+
 # Environment
 * Python 2.7
 * Numpy
