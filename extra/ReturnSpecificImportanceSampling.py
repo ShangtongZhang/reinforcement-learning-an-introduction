@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # I made following modifications to the original example to demonstrate the advantage
 # of partial return importance sampling and per-reward importance sampling
 # 1. discount now is 0.5 instead of 1
-# 2. the action BACK will always has reward +1, no matter what state it leads to
+# 2. the action BACK will always have reward +1, no matter what state it leads to
 # In this setting, the true state value is around 1.81
 
 # all possible actions
@@ -81,7 +81,7 @@ class ImportanceSampling:
         del self.sumOfReturns[0]
         return np.asarray(self.sumOfReturns) / np.arange(1, self.episodes + 1)
 
-    # reinitialize some variables for a new episode
+    # reinitialize some variables for a new independent run
     def clear(self):
         self.episodes = 0
         self.sumOfReturns = [0]
