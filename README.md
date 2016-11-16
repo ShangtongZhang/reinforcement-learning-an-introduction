@@ -70,6 +70,9 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 2. [Figure 12.6: TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_6)
 3. [Figure 12.7: True online TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_7)
 
+### Extra
+1. [Return Specific Importance Sampling](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_1)
+
 # Environment
 * Python 2.7
 * Numpy
