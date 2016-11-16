@@ -133,7 +133,7 @@ class WeightedImportanceSampling(ImportanceSampling):
         return np.asarray(estimations)
 
     def clear(self):
-        ImportanceSampling.__init__(self)
+        ImportanceSampling.clear(self)
         self.sumOfRhos = [0]
 
 # per-reward importance sampling
@@ -223,7 +223,7 @@ class DiscountingAwareWeightedImportanceSampling(ImportanceSampling):
         return np.asarray(estimations)
 
     def clear(self):
-        ImportanceSampling.__init__(self)
+        ImportanceSampling.clear(self)
         self.sumOfRhos = [0]
 
 figureIndex = 0
