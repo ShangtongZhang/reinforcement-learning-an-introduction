@@ -34,7 +34,7 @@ class State:
 
     # determine whether a player has won the game, or it's a tie
     def isEnd(self):
-        if not (self.end is None):
+        if self.end is not None:
             return self.end
         results = []
         for i in range(0, BOARD_ROWS):
@@ -50,15 +50,19 @@ class State:
         for result in results:
             if result == 3:
                 self.winner = 1
-                return True
+                self.end = True
+                return self.end
             if result == -3:
                 self.winner = -1
-                return True
+                self.end = True
+                return self.end
         sum = np.sum(np.abs(self.data))
         if sum == BOARD_ROWS * BOARD_COLS:
             self.winner = 0
-            return True
-        return False
+            self.end = True
+            return self.end
+        self.end = False
+        return self.end
 
     # @symbol 1 or -1
     # put chessman symbol in position (i, j)
