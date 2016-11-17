@@ -1,5 +1,7 @@
 #######################################################################
-# Copyright (C) 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)    #
+# Copyright (C)                                                       #
+# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 Jan Hakenberg(jan.hakenberg@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -37,16 +39,21 @@ class State:
         if self.end is not None:
             return self.end
         results = []
+        # check row
         for i in range(0, BOARD_ROWS):
             results.append(np.sum(self.data[i, :]))
+        # check columns
         for i in range(0, BOARD_COLS):
             results.append(np.sum(self.data[:, i]))
+
+        # check diagonals
         results.append(0)
         for i in range(0, BOARD_ROWS):
             results[-1] += self.data[i, i]
         results.append(0)
         for i in range(0, BOARD_ROWS):
             results[-1] += self.data[i, BOARD_ROWS - 1 - i]
+
         for result in results:
             if result == 3:
                 self.winner = 1
@@ -56,11 +63,15 @@ class State:
                 self.winner = -1
                 self.end = True
                 return self.end
+
+        # whether it's a tie
         sum = np.sum(np.abs(self.data))
         if sum == BOARD_ROWS * BOARD_COLS:
             self.winner = 0
             self.end = True
             return self.end
+
+        # game is still going on
         self.end = False
         return self.end
 
@@ -142,29 +153,37 @@ class Judger:
         else:
             self.p1.feedReward(0)
             self.p2.feedReward(0)
+
+    def feedCurrentState(self):
+        self.p1.feedState(self.currentState)
+        self.p2.feedState(self.currentState)
+
+    def reset(self):
+        self.p1.reset()
+        self.p2.reset()
+        self.currentState = State()
+        self.currentPlayer = None
         
     # @show: if True, print each board during the game
     def play(self, show=False):
+        self.reset()
+        self.feedCurrentState()
         while True:
             # set current player
             if self.currentPlayer == self.p1:
                 self.currentPlayer = self.p2
             else:
                 self.currentPlayer = self.p1
-
-            self.currentPlayer.feedState(self.currentState)
             if show:
                 self.currentState.show()
             [i, j, symbol] = self.currentPlayer.takeAction()
             self.currentState = self.currentState.nextState(i, j, symbol)
             hashValue = self.currentState.getHash()
             self.currentState, isEnd = self.allStates[hashValue]
-            self.currentPlayer.feedState(self.currentState)
+            self.feedCurrentState()
             if isEnd:
                 if self.feedback:
                     self.giveReward()
-                if show:
-                    self.currentState.show()
                 return self.currentState.winner
 
 # AI player
@@ -201,13 +220,12 @@ class Player:
     def feedReward(self, reward):
         if len(self.states) == 0:
             return
-        latestState = self.states[-1].getHash()
-        self.estimations[latestState] += self.stepSize * (reward - self.estimations[latestState])
-        self.states = [ state.getHash() for state in self.states]
-        for i in range(len(self.states) - 2, -1, -1):
-            currentState = self.states[i]
-            nextState = self.states[i + 1]
-            self.estimations[currentState] += self.stepSize * (self.estimations[nextState] - self.estimations[currentState])
+        self.states = [state.getHash() for state in self.states]
+        target = reward
+        for latestState in reversed(self.states):
+            value = self.estimations[latestState] + self.stepSize * (target - self.estimations[latestState])
+            self.estimations[latestState] = value
+            target = value
         self.states = []
 
     # determine next action
@@ -300,7 +318,7 @@ def compete(turns=500):
     player1 = Player(exploreRate=0)
     player2 = Player(exploreRate=0)
     judger = Judger(player1, player2, False)
-    # player1.loadPolicy()
+    player1.loadPolicy()
     player2.loadPolicy()
     player1Win = 0.0
     player2Win = 0.0
@@ -331,7 +349,7 @@ def play():
         else:
             print "Tie!"
 
-# train()
-# compete()
+train()
+compete()
 play()
 
