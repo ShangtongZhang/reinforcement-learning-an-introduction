@@ -20,7 +20,6 @@ class State:
         self.data = np.zeros((BOARD_ROWS, BOARD_COLS))
         self.winner = None
         self.hashVal = None
-        self.end = None
 
     # calculate the hash value for one state, it's unique
     def getHash(self):
@@ -34,8 +33,6 @@ class State:
 
     # determine whether a player has won the game, or it's a tie
     def isEnd(self):
-        if not (self.end is None):
-            return self.end
         results = []
         for i in range(0, BOARD_ROWS):
             results.append(np.sum(self.data[i, :]))
