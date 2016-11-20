@@ -184,7 +184,7 @@ while True:
     stateValue[:] = newStateValue
 
 prettyPrint(policy, ['# of cars in first location', '# of cars in second location', '# of cars to move during night'])
-prettyPrint(stateValue, ['# of cars in first location', '# of cars in second location', 'expectd returns'])
+prettyPrint(stateValue, ['# of cars in first location', '# of cars in second location', 'expected returns'])
 plt.show()
 
 
