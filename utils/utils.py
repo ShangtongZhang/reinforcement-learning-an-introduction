@@ -14,6 +14,12 @@ def argmax(elements, unique=True):
         return np.random.choice(candidates)
     return candidates
 
+def pad(array, length, defaultValue=0.0):
+    if len(array) > length:
+        return array[0: length]
+    else:
+        return array + [defaultValue] * (length - len(array))
+
 class PriorityQueue:
 
     def __init__(self):
