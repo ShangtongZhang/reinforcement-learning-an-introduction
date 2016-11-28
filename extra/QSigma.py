@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import functools
 
 # This example is the windy grid world.
-# I wanna compare the performance of Q-Learning and n-step tree backup
-# I use an extreme case for n-step tree backup.
+# It will compare the performance of Q-Learning, n-step tree backup and n-step Q(sigma)
+# I use an extreme case for n-step tree backup and n-step Q(sigma).
 # The target policy is greedy policy, the behavior policy is epsilon-greedy policy
 # Under this setting, n-step tree backup is simplified significantly
 # It looks like "n-step Q-Learning" to some extent
@@ -58,6 +58,8 @@ def takeAction(state, action):
 
 # behavior policy is epsilon-greedy
 EPSILON = 0.2
+# the probability of choosing best action under epsilon-greedy policy
+BEST_ACTION_PROB = 1 - EPSILON + EPSILON / len(ACTIONS)
 def behaviorPolicy(state, stateActionValues):
     x, y = state
     if state == goalState or np.random.binomial(1, EPSILON) == 1:
@@ -127,6 +129,69 @@ def nStepTreeBackup(stateActionValues, n, alpha):
         currentAction = newAction
     return time
 
+# play for an episode for n-step Q(sigma)
+# This is a general function for n-step Q(sigma) under arbitrary policies
+# This is implemented according to the algorithm box of n-step Q(sigma) in the book,
+# so there aren't detailed comments.
+# @sigmaFn: a function to generate sigma
+def nStepQSigma(stateActionValues, n, alpha, sigmaFn):
+    time = 0
+    x, y = currentState = startState
+    currentAction = behaviorPolicy(currentState, stateActionValues)
+    T = float('inf')
+
+    states = [currentState]
+    actions = [currentAction]
+    values = [stateActionValues[x, y, currentAction]]
+    sigmas = [0]
+    deltas = []
+    PIs = [0]
+    RHOs = [0]
+
+    while True:
+        if time < T:
+            newState, reward = takeAction(currentState, currentAction)
+            states.append(newState)
+            if newState == goalState:
+                T = time + 1
+                deltas.append(reward - values[time])
+                # append dummy sigma and pi
+                sigmas.append(0.0)
+                PIs.append(0.0)
+            else:
+                x, y = newState
+                newAction = behaviorPolicy(newState, stateActionValues)
+                actions.append(newAction)
+                sigma = sigmaFn()
+                sigmas.append(sigma)
+                values.append(stateActionValues[x, y, newAction])
+                deltas.append(reward + sigma * values[-1] +
+                              (1 - sigma) * np.max(stateActionValues[x, y, :]) - values[-2])
+                if newAction == np.argmax(stateActionValues[x, y, :]):
+                    PIs.append(1.0)
+                    RHOs.append(1.0 / BEST_ACTION_PROB)
+                else:
+                    PIs.append(0.0)
+                    RHOs.append(0.0)
+        updateTime = time - n + 1
+        if updateTime >= 0:
+            target = values[updateTime]
+            coef = 1
+            rho = 1
+            for t in range(updateTime, min(updateTime + n, T)):
+                target += coef * deltas[t]
+                coef *= (1 - sigmas[t + 1]) * PIs[t + 1] + sigmas[t + 1]
+                rho *= 1 - sigmas[t] + sigmas[t] * RHOs[t]
+            x, y = states[updateTime]
+            action = actions[updateTime]
+            stateActionValues[x, y, action] += alpha * rho * (target - stateActionValues[x, y, action])
+        if updateTime == T - 1:
+            break
+        time += 1
+        currentState = newState
+        currentAction = newAction
+    return time
+
 # print out the optimal policy
 def printPolicy(stateActionValues):
     optimalPolicy = []
@@ -160,12 +225,14 @@ def play(method, nEpisodes, alpha):
     return np.asarray(episodes)
 
 def figure():
-    methods = [qLearning, functools.partial(nStepTreeBackup, n=3)]
-    labels = ['Q-Learning', 'N-Step Tree Backup']
+    # simply generate a sigma for each step from a uniform distribution
+    sigmaFn = lambda : np.random.rand()
+    methods = [qLearning, functools.partial(nStepTreeBackup, n=3), functools.partial(nStepQSigma, n=3, sigmaFn=sigmaFn)]
+    labels = ['Q-Learning', '3-Step Tree Backup', '3-Step Q(sigma)']
 
     # Use a small step size,
     # Although in deterministic environment, alpha = 1 is the optimal selection
-    alphas = [0.1, 0.1]
+    alphas = [0.1, 0.1, 0.1]
 
     # run each algorithm for certain episodes
     nEpisodes = 120
