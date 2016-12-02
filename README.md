@@ -73,6 +73,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 ### Extra
 1. [Return Specific Importance Sampling](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_1)
 2. [N-Step Tree Backup & N-Step Q(σ)](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_2)
+3. [Sum of TD errors](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_3)
 
 # Environment
 * Python 2.7
