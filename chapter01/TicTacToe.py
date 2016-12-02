@@ -138,10 +138,6 @@ class Judger:
         self.currentState = State()
         self.allStates = allStates
 
-    def reset(self):
-        self.currentState = State()
-        self.currentPlayer = None
-
     # give reward to two players
     def giveReward(self):
         if self.currentState.winner == self.p1Symbol:
@@ -163,7 +159,7 @@ class Judger:
         self.p2.reset()
         self.currentState = State()
         self.currentPlayer = None
-        
+
     # @show: if True, print each board during the game
     def play(self, show=False):
         self.reset()
@@ -199,7 +195,7 @@ class Player:
 
     def reset(self):
         self.states = []
-        
+
     def setSymbol(self, symbol):
         self.symbol = symbol
         for hash in self.allStates.keys():
@@ -229,7 +225,7 @@ class Player:
         self.states = []
 
     # determine next action
-    def takeAction(self): 
+    def takeAction(self):
         state = self.states[-1]
         nextStates = []
         nextPositions = []
@@ -307,8 +303,6 @@ def train(epochs=20000):
         if winner == -1:
             player2Win += 1
         judger.reset()
-        player1.reset()
-        player2.reset()
     print player1Win / epochs
     print player2Win / epochs
     player1.savePolicy()
@@ -330,8 +324,6 @@ def compete(turns=500):
         if winner == -1:
             player2Win += 1
         judger.reset()
-        player1.reset()
-        player2.reset()
     print player1Win / turns
     print player2Win / turns
 
