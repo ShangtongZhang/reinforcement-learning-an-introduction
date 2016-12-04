@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 # I made following modifications to the original example to demonstrate the advantage
 # of return specific importance sampling
 # 1. discount now is 0.5 instead of 1
-# 2. the action BACK will have reward +2 if leading to the state itself
-# In this setting, the true state value is about 3.45
+# 2. the transition from state s to state s will have reward +2
+# 3. the action BACK will lead to state s or terminal state with equal probability
+# In this setting, the true state value is 2
 
 # all possible actions
 ACTION_BACK = 0
@@ -24,8 +25,8 @@ ACTIONS = [ACTION_BACK, ACTION_END]
 TERMINAL_STATE = 0
 START_STATE = 1
 
-# action BACK will lead to the state itself w.p. 0.9
-BACK_STAY_PROBABILITY = 0.9
+# action BACK will lead to the state itself w.p. 0.5
+BACK_STAY_PROBABILITY = 0.5
 
 # discount now is 0.5
 DISCOUNT = 0.5
