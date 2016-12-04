@@ -20,9 +20,13 @@ headProb = 0.4
 # optimal policy
 policy = np.zeros(GOAL + 1)
 
-# state value
+# reward Value
+rewardValue = np.zeros(GOAL + 1)
+rewardValue[GOAL] = 1.0
+
+# state Value
 stateValue = np.zeros(GOAL + 1)
-stateValue[GOAL] = 1.0
+stateValue2 = np.zeros(GOAL + 1)
 
 # value iteration
 while True:
@@ -32,20 +36,25 @@ while True:
         actions = np.arange(min(state, GOAL - state) + 1)
         actionReturns = []
         for action in actions:
-            actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
+            actionReturns.append(headProb * (rewardValue[state + action] + stateValue[state + action])
+                                 + (1 - headProb) * (rewardValue[state - action] + stateValue[state - action]))
         newValue = np.max(actionReturns)
         delta += np.abs(stateValue[state] - newValue)
         # update state value
-        stateValue[state] = newValue
+        stateValue2[state] = newValue
+
+    stateValue = stateValue2.copy()
     if delta < 1e-9:
         break
+
 
 # calculate the optimal policy
 for state in states[1:GOAL]:
     actions = np.arange(min(state, GOAL - state) + 1)
     actionReturns = []
     for action in actions:
-        actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
+        actionReturns.append(headProb * (rewardValue[state + action] + stateValue[state + action])
+                             + (1 - headProb) * (rewardValue[state - action] + stateValue[state - action]))
     # due to tie and precision, can't reproduce the optimal policy in book
     policy[state] = actions[argmax(actionReturns)]
 
