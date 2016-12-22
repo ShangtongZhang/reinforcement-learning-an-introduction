@@ -7,6 +7,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from utils import *
+import seaborn as sns
 
 class Bandit:
     # @kArm: # of arms
@@ -93,6 +94,16 @@ class Bandit:
         return reward
 
 figureIndex = 0
+
+# for figure 2.1
+def figure2_1():
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    sns.violinplot(data=np.random.randn(200,10) + np.random.randn(10))
+    plt.xlabel("Action")
+    plt.ylabel("Reward distribution")
+    plt.show()
 
 # for figure 2.2
 def epsilonGreedy(nBandits, time):
@@ -247,5 +258,6 @@ def figure2_6(nBandits, time):
 # optimisticInitialValues(200, 1000)
 # ucb(1000, 1000)
 # gradientBandit(200, 1000)
+figure2_1()
 figure2_6(200, 1000)
 plt.show()
