@@ -18,8 +18,8 @@ class Bandit:
     # @UCB: if not None, use UCB algorithm to select action
     # @gradient: if True, use gradient based bandit algorithm
     # @gradientBaseline: if True, use average reward as baseline for gradient based bandit algorithm
-    def __init__(self, kArm=10, epsilon=0, initial=0, stepSize=0.1, sampleAverages=False, UCBParam=None,
-                 gradient=False, gradientBaseline=False, trueReward=0):
+    def __init__(self, kArm=10, epsilon=0., initial=0., stepSize=0.1, sampleAverages=False, UCBParam=None,
+                 gradient=False, gradientBaseline=False, trueReward=0.):
         self.k = kArm
         self.stepSize = stepSize
         self.sampleAverages = sampleAverages
@@ -105,28 +105,34 @@ def figure2_1():
     plt.ylabel("Reward distribution")
     plt.show()
 
+
+def banditSimulation(nBandits, time, bandits):
+    bestActionCounts = [np.zeros(time, dtype='float') for _ in xrange(0, len(bandits))]
+    averageRewards = [np.zeros(time, dtype='float') for _ in xrange(0, len(bandits))]
+    for banditInd, bandit in enumerate(bandits):
+        for i in xrange(0, nBandits):
+            for t in xrange(0, time):
+                action = bandit[i].getAction()
+                reward = bandit[i].takeAction(action)
+                averageRewards[banditInd][t] += reward
+                if action == bandit[i].bestAction:
+                    bestActionCounts[banditInd][t] += 1
+        bestActionCounts[banditInd] /= nBandits
+        averageRewards[banditInd] /= nBandits
+    return bestActionCounts, averageRewards
+
+
 # for figure 2.2
 def epsilonGreedy(nBandits, time):
     epsilons = [0, 0.1, 0.01]
-    bandits = [[], [], []]
-    bestActionCounts = [np.zeros(time, dtype='float') for _ in range(0, len(epsilons))]
-    averageRewards = [np.zeros(time, dtype='float') for _ in range(0, len(epsilons))]
-    for i, eps in zip(range(0, len(epsilons)), epsilons):
-        for j in range(0, nBandits):
-            bandits[i].append(Bandit(epsilon=eps, sampleAverages=True))
-    for epsInd in range(0, len(epsilons)):
-        for i in range(0, nBandits):
-            for t in range(0, time):
-                action = bandits[epsInd][i].getAction()
-                reward = bandits[epsInd][i].takeAction(action)
-                averageRewards[epsInd][t] += reward
-                if action == bandits[epsInd][i].bestAction:
-                    bestActionCounts[epsInd][t] += 1
+    bandits = []
+    for epsInd, eps in enumerate(epsilons):
+        bandits.append([Bandit(epsilon=eps, sampleAverages=True) for _ in xrange(0, nBandits)])
+    bestActionCounts, averageRewards = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
     figureIndex += 1
     for eps, counts in zip(epsilons, bestActionCounts):
-        counts /= nBandits
         plt.plot(counts, label='epsilon = '+str(eps))
     plt.xlabel('Steps')
     plt.ylabel('% optimal action')
@@ -134,27 +140,18 @@ def epsilonGreedy(nBandits, time):
     plt.figure(figureIndex)
     figureIndex += 1
     for eps, rewards in zip(epsilons, averageRewards):
-        rewards /= nBandits
         plt.plot(rewards, label='epsilon = '+str(eps))
     plt.xlabel('Steps')
     plt.ylabel('average reward')
     plt.legend()
 
+
 # for figure 2.3
 def optimisticInitialValues(nBandits, time):
     bandits = [[], []]
-    bestActionCounts = [np.zeros(time, dtype='float') for _ in range(0, len(bandits))]
-    bandits[0] = [Bandit(epsilon=0, initial=5, stepSize=0.1) for _ in range(0, nBandits)]
-    bandits[1] = [Bandit(epsilon=0.1, initial=0, stepSize=0.1) for _ in range(0, nBandits)]
-    for banditInd in range(0, len(bandits)):
-        for i in range(0, nBandits):
-            for t in range(0, time):
-                action = bandits[banditInd][i].getAction()
-                bandits[banditInd][i].takeAction(action)
-                if action == bandits[banditInd][i].bestAction:
-                    bestActionCounts[banditInd][t] += 1
-    bestActionCounts[0] /= nBandits
-    bestActionCounts[1] /= nBandits
+    bandits[0] = [Bandit(epsilon=0, initial=5, stepSize=0.1) for _ in xrange(0, nBandits)]
+    bandits[1] = [Bandit(epsilon=0.1, initial=0, stepSize=0.1) for _ in xrange(0, nBandits)]
+    bestActionCounts, _ = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
     figureIndex += 1
@@ -164,20 +161,13 @@ def optimisticInitialValues(nBandits, time):
     plt.ylabel('% optimal action')
     plt.legend()
 
+
 # for figure 2.4
 def ucb(nBandits, time):
     bandits = [[], []]
-    averageRewards = [np.zeros(time, dtype='float') for _ in range(0, len(bandits))]
-    bandits[0] = [Bandit(epsilon=0, stepSize=0.1, UCBParam=2) for _ in range(0, nBandits)]
-    bandits[1] = [Bandit(epsilon=0.1, stepSize=0.1) for _ in range(0, nBandits)]
-    for banditInd in range(0, len(bandits)):
-        for i in range(0, nBandits):
-            for t in range(0, time):
-                action = bandits[banditInd][i].getAction()
-                reward = bandits[banditInd][i].takeAction(action)
-                averageRewards[banditInd][t] += reward
-    averageRewards[0] /= nBandits
-    averageRewards[1] /= nBandits
+    bandits[0] = [Bandit(epsilon=0, stepSize=0.1, UCBParam=2) for _ in xrange(0, nBandits)]
+    bandits[1] = [Bandit(epsilon=0.1, stepSize=0.1) for _ in xrange(0, nBandits)]
+    _, averageRewards = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
     figureIndex += 1
@@ -187,6 +177,7 @@ def ucb(nBandits, time):
     plt.ylabel('Average reward')
     plt.legend()
 
+
 # for figure 2.5
 def gradientBandit(nBandits, time):
     bandits =[[], [], [], []]
@@ -194,16 +185,7 @@ def gradientBandit(nBandits, time):
     bandits[1] = [Bandit(gradient=True, stepSize=0.1, gradientBaseline=False, trueReward=4) for _ in range(0, nBandits)]
     bandits[2] = [Bandit(gradient=True, stepSize=0.4, gradientBaseline=True, trueReward=4) for _ in range(0, nBandits)]
     bandits[3] = [Bandit(gradient=True, stepSize=0.4, gradientBaseline=False, trueReward=4) for _ in range(0, nBandits)]
-    bestActionCounts = [np.zeros(time, dtype='float') for _ in range(0, len(bandits))]
-    for banditInd in range(0, len(bandits)):
-        for i in range(0, nBandits):
-            for t in range(0, time):
-                action = bandits[banditInd][i].getAction()
-                bandits[banditInd][i].takeAction(action)
-                if action == bandits[banditInd][i].bestAction:
-                    bestActionCounts[banditInd][t] += 1
-    for counts in bestActionCounts:
-        counts /= nBandits
+    bestActionCounts, _ = banditSimulation(nBandits, time, bandits)
     labels = ['alpha = 0.1, with baseline',
               'alpha = 0.1, without baseline',
               'alpha = 0.4, with baseline',
@@ -229,26 +211,19 @@ def figure2_6(nBandits, time):
                   np.arange(-5, 2),
                   np.arange(-4, 3),
                   np.arange(-2, 3)]
-    averageRewards = []
-    for i in range(len(labels)):
-        averageRewards.append([])
-        for param_ in parameters[i]:
-            param = pow(2, param_)
-            reward = 0.0
-            for banditIndex in range(nBandits):
-                bandit = generators[i](param)
-                print labels[i], 'parameter:', param, str(banditIndex) + 'th bandit'
-                for step in range(time):
-                    action = bandit.getAction()
-                    reward += bandit.takeAction(action)
-            reward /= nBandits * time
-            averageRewards[-1].append(reward)
+
+    bandits = [[generator(pow(2, param)) for _ in xrange(0, nBandits)] for generator, parameter in zip(generators, parameters) for param in parameter]
+    _, averageRewards = banditSimulation(nBandits, time, bandits)
+    rewards = np.sum(averageRewards, axis=1)/time
 
     global figureIndex
     plt.figure(figureIndex)
     figureIndex += 1
-    for i in range(len(labels)):
-        plt.plot(parameters[i], averageRewards[i], label=labels[i])
+    i = 0
+    for label, parameter in zip(labels, parameters):
+        l = len(parameter)
+        plt.plot(parameter, rewards[i:i+l], label=label)
+        i += l
     plt.xlabel('Parameter(2^x)')
     plt.ylabel('Average reward')
     plt.legend()
