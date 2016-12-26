@@ -1,5 +1,8 @@
 #######################################################################
-# Copyright (C) 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)    #
+# Copyright (C)                                                       #
+# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 Tian Jun(tianjun.cpp@gmail.com)                                #
+# 2016 Artem Oboturov(oboturov@gmail.com)                             #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -103,8 +106,6 @@ def figure2_1():
     sns.violinplot(data=np.random.randn(200,10) + np.random.randn(10))
     plt.xlabel("Action")
     plt.ylabel("Reward distribution")
-    plt.show()
-
 
 def banditSimulation(nBandits, time, bandits):
     bestActionCounts = [np.zeros(time, dtype='float') for _ in xrange(0, len(bandits))]
@@ -229,10 +230,13 @@ def figure2_6(nBandits, time):
     plt.legend()
 
 
-# epsilonGreedy(200, 1000)
-# optimisticInitialValues(200, 1000)
-# ucb(1000, 1000)
-# gradientBandit(200, 1000)
 figure2_1()
-figure2_6(200, 1000)
+epsilonGreedy(200, 1000)
+optimisticInitialValues(200, 1000)
+ucb(1000, 1000)
+gradientBandit(200, 1000)
+
+# This will take somehow a long time
+# figure2_6(200, 1000)
+
 plt.show()

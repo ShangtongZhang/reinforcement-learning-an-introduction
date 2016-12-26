@@ -91,7 +91,7 @@ Following are known missing figures/examples:
 * Example 3.6: Draw Poker
 * Example 5.2: Soap Bubble
 * Example 8.5: Rod Maneuvering
-* Chapter 13: One example that hasn't shown up in the book about policy gradient
+* Chapter 13: Some examples about policy gradient
 * Chapter 14 & 15 are about psychology and neuroscience
 * Chapter 16: Backgammon, The Acrobot, Go
 
