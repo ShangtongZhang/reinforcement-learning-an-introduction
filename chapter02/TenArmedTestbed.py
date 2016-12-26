@@ -90,7 +90,7 @@ class Bandit:
             self.qEst = self.qEst + self.stepSize * (reward - baseline) * (oneHot - self.actionProb)
         else:
             # update estimation with constant step size
-            self.qEst[action] += 0.1 * (reward - self.qEst[action])
+            self.qEst[action] += self.stepSize * (reward - self.qEst[action])
         return reward
 
 figureIndex = 0
