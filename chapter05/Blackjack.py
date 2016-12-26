@@ -248,14 +248,15 @@ def monteCarloOffPolicy(nEpisodes):
         sumOfRewards.append(sumOfRewards[-1] + reward * importanceRatio)
     del sumOfImportanceRatio[0]
     del sumOfRewards[0]
-    ordinarySampling = np.asarray(sumOfRewards) / np.arange(1, nEpisodes + 1)
-    weightedSampling = []
-    for sumOfReward_, sumOfRatio_ in zip(sumOfRewards, sumOfImportanceRatio):
-        if sumOfRatio_ == 0:
-            weightedSampling.append(0)
-        else:
-            weightedSampling.append(sumOfReward_ / sumOfRatio_)
-    return ordinarySampling, np.asarray(weightedSampling)
+
+    sumOfRewards= np.asarray(sumOfRewards)
+    sumOfImportanceRatio= np.asarray(sumOfImportanceRatio)
+    ordinarySampling = sumOfRewards / np.arange(1, nEpisodes + 1)
+
+    with np.errstate(divide='ignore',invalid='ignore'):
+        weightedSampling = np.where(sumOfImportanceRatio != 0, sumOfRewards / sumOfImportanceRatio, 0)
+
+    return ordinarySampling, weightedSampling
 
 # print the state value
 figureIndex = 0
