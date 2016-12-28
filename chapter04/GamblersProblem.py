@@ -5,9 +5,8 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
-
 # goal
 GOAL = 100
 

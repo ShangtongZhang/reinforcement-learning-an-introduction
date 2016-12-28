@@ -7,7 +7,7 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -211,7 +211,7 @@ def monteCarloES(nEpisodes):
 
     # play for several episodes
     for episode in range(nEpisodes):
-        print 'episode:', episode
+        print('episode:', episode)
         # for each episode, use a randomly initialized state and action
         initialState = [bool(np.random.choice([0, 1])),
                        np.random.choice(range(12, 22)),

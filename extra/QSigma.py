@@ -5,7 +5,7 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 import functools
 
@@ -211,8 +211,8 @@ def printPolicy(stateActionValues):
             elif bestAction == ACTION_RIGHT:
                 optimalPolicy[-1].append('R')
     for row in optimalPolicy:
-        print row
-    print [str(w) for w in WIND]
+        print(row)
+    print([str(w) for w in WIND])
 
 def play(method, nEpisodes, alpha):
     episodes = []
@@ -244,7 +244,7 @@ def figure():
     episodes = np.zeros((len(methods), empiricalLength))
     minLength = empiricalLength
     for run in range(runs):
-        print 'run:', run
+        print('run:', run)
         for index, method in zip(range(len(methods)), methods):
             episodes_ = play(method, nEpisodes, alphas[index])
             minLength = min(minLength, len(episodes_))

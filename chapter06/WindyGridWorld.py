@@ -5,7 +5,7 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 
 # world height
@@ -116,6 +116,6 @@ for i in range(0, WORLD_HEIGHT):
         elif bestAction == ACTION_RIGHT:
             optimalPolicy[-1].append('R')
 for row in optimalPolicy:
-    print row
-print [str(w) for w in WIND]
+    print(row)
+print([str(w) for w in WIND])
 

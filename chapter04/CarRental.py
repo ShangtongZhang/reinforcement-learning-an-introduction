@@ -9,7 +9,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from utils import *
+from utils.utils import *
 from math import *
 
 # maximum # of cars in each location
@@ -154,7 +154,7 @@ policyImprovementInd = 0
 while True:
     if improvePolicy == True:
         # start policy improvement
-        print 'Policy improvement', policyImprovementInd
+        print('Policy improvement', policyImprovementInd)
         policyImprovementInd += 1
         newPolicy = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
         for i, j in states:
@@ -170,7 +170,7 @@ while True:
 
         # if policy is stable
         policyChanges = np.sum(newPolicy != policy)
-        print 'Policy for', policyChanges, 'states changed'
+        print('Policy for', policyChanges, 'states changed')
         if policyChanges == 0:
             policy = newPolicy
             break

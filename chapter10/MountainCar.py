@@ -5,7 +5,8 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.TileCoding import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 

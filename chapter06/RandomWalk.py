@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # 0 is the left terminal state
@@ -135,7 +134,7 @@ def batchUpdating(method, episodes, alpha=0.001):
         trajectories = []
         rewards = []
         for ep in range(1, episodes):
-            print 'Run:', run, 'Episode:', ep
+            print('Run:', run, 'Episode:', ep)
             if method == 'TD':
                 trajectory_, rewards_ = temporalDifference(currentStates, batch=True)
             else:

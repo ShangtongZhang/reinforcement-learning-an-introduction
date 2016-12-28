@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # wrapper class for an interval
@@ -98,7 +97,7 @@ def figure9_8():
     featureWidths = [0.2, 0.4, 1.0]
     axisX = np.arange(domain.left, domain.right, 0.02)
     for numOfSample, index in zip(numOfSamples, range(0, len(numOfSamples))):
-        print numOfSample, 'samples'
+        print(numOfSample, 'samples')
         samples = sample(numOfSample)
         valueFunctions = [ValueFunction(featureWidth) for featureWidth in featureWidths]
         plt.figure(index)

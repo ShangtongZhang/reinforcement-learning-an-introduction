@@ -5,7 +5,7 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 
 # world height
@@ -83,7 +83,7 @@ def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
         else:
             # calculate the expected value of new state
             valueTarget = 0.0
-            bestActions = argmax(stateActionValues[newState[0], newState[1], :], unique=False)
+            bestActions = np.argmax(stateActionValues[newState[0], newState[1], :], unique=False)
             for action in actions:
                 if action in bestActions:
                     valueTarget += ((1.0 - EPSILON) / len(bestActions) + EPSILON / len(actions)) * stateActionValues[newState[0], newState[1], action]
@@ -136,7 +136,7 @@ def printOptimalPolicy(stateActionValues):
             elif bestAction == ACTION_RIGHT:
                 optimalPolicy[-1].append('R')
     for row in optimalPolicy:
-        print row
+        print(row)
 
 # figure 6.5
 # Use 20 independent runs instead of a single run to draw the figure
@@ -175,9 +175,9 @@ def figure6_5():
         smoothedRewardsQLearning[i] = np.mean(rewardsQLearning[i - averageRange: i + 1])
 
     # display optimal policy
-    print 'Sarsa Optimal Policy:'
+    print('Sarsa Optimal Policy:')
     printOptimalPolicy(stateActionValuesSarsa)
-    print 'Q-Learning Optimal Policy:'
+    print('Q-Learning Optimal Policy:')
     printOptimalPolicy(stateActionValuesQLearning)
 
     # draw reward curves
@@ -211,7 +211,7 @@ def figure6_7():
             stateActionValuesExpectedSarsa = np.copy(stateActionValues)
             stateActionValuesQLearning = np.copy(stateActionValues)
             for ep in range(0, nEpisodes):
-                print 'run:', run, 'step size:', stepSize, 'episode:', ep
+                print('run:', run, 'step size:', stepSize, 'episode:', ep)
                 sarsaReward = sarsa(stateActionValuesSarsa, expected=False, stepSize=stepSize)
                 expectedSarsaReward = sarsa(stateActionValuesExpectedSarsa, expected=True, stepSize=stepSize)
                 qLearningReward = qLearning(stateActionValuesQLearning, stepSize=stepSize)

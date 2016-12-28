@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # This example is adapted from example 5.5, Infinite Variance

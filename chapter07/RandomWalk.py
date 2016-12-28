@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # all states
@@ -114,7 +113,7 @@ def figure7_2():
     for run in range(0, runs):
         for stepInd, step in zip(range(len(steps)), steps):
             for alphaInd, alpha in zip(range(len(alphas)), alphas):
-                print 'run:', run, 'step:', step, 'alpha:', alpha
+                print('run:', run, 'step:', step, 'alpha:', alpha)
                 currentStateValues = np.copy(stateValues)
                 for ep in range(0, episodes):
                     temporalDifference(currentStateValues, step, alpha)

@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 import functools
 

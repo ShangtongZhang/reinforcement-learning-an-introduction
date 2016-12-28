@@ -5,7 +5,6 @@
 #######################################################################
 
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # # of states except for terminal states
@@ -45,7 +44,7 @@ while True:
                 # asynchronous update for faster convergence
                 trueStateValues[state] += 1.0 / (2 * STEP_RANGE) * trueStateValues[newState]
     error = np.sum(np.abs(oldTrueStateValues - trueStateValues))
-    print error
+    print(error)
     if error < 1e-2:
         break
 # correct the state value for terminal states to 0
@@ -260,7 +259,7 @@ def figure9_1():
     valueFunction = ValueFunction(10)
     distribution = np.zeros(N_STATES + 2)
     for episode in range(0, nEpisodes):
-        print 'episode:', episode
+        print('episode:', episode)
         gradientMentoCarlo(valueFunction, alpha, distribution)
 
     distribution /= np.sum(distribution)
@@ -285,7 +284,7 @@ def figure9_2Left():
     alpha = 2e-4
     valueFunction = ValueFunction(10)
     for episode in range(0, nEpisodes):
-        print 'episode:', episode
+        print('episode:', episode)
         semiGradientTemporalDifference(valueFunction, 1, alpha)
 
     stateValues = [valueFunction.value(i) for i in states]
@@ -318,7 +317,7 @@ def figure9_2Right():
     for run in range(0, runs):
         for stepInd, step in zip(range(len(steps)), steps):
             for alphaInd, alpha in zip(range(len(alphas)), alphas):
-                print 'run:', run, 'step:', step, 'alpha:', alpha
+                print('run:', run, 'step:', step, 'alpha:', alpha)
                 # we have 20 aggregations in this example
                 valueFunction = ValueFunction(20)
                 for ep in range(0, episodes):
@@ -362,7 +361,7 @@ def figure9_5():
             valueFunctions = [BasesValueFunction(orders[i], POLYNOMIAL_BASES), BasesValueFunction(orders[i], FOURIER_BASES)]
             for j in range(0, len(valueFunctions)):
                 for episode in range(0, episodes):
-                    print 'run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode
+                    print('run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode)
 
                     # gradient Mento Carlo algorithm
                     gradientMentoCarlo(valueFunctions[j], alphas[j])
@@ -411,7 +410,7 @@ def figure9_10():
                          ValueFunction(N_STATES / tileWidth)]
         for i in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
-                print 'run:', run, 'episode:', episode
+                print('run:', run, 'episode:', episode)
 
                 # I use a changing alpha according to the episode instead of a small fixed alpha
                 # With a small fixed alpha, I don't think 5000 episodes is enough for so many

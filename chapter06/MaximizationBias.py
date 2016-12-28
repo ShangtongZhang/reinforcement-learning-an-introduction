@@ -5,7 +5,7 @@
 #######################################################################
 
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 
 # state A
@@ -101,7 +101,7 @@ def figure6_8():
     leftCountsDoubleQ = np.zeros(episodes)
     runs = 1000
     for run in range(0, runs):
-        print 'run:', run
+        print('run:', run)
         stateActionValuesQ = [np.copy(item) for item in stateActionValues]
         stateActionValuesDoubleQ1 = [np.copy(item) for item in stateActionValues]
         stateActionValuesDoubleQ2 = [np.copy(item) for item in stateActionValues]
