@@ -201,7 +201,7 @@ def figure10_1():
     alpha = 0.3
     valueFunction = ValueFunction(alpha, numOfTilings)
     for episode in range(0, episodes):
-        print 'episode:', episode
+        print('episode:', episode)
         semiGradientNStepSarsa(valueFunction)
         if episode in targetEpisodes:
             prettyPrint(valueFunction, 'Episode: ' + str(episode + 1))
@@ -218,7 +218,7 @@ def figure10_2():
         valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
         for index in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
-                print 'run:', run, 'alpha:', alphas[index], 'episode:', episode
+                print('run:', run, 'alpha:', alphas[index], 'episode:', episode)
                 step = semiGradientNStepSarsa(valueFunctions[index])
                 steps[index, episode] += step
 
@@ -247,7 +247,7 @@ def figure10_3():
         valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
         for index in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
-                print 'run:', run, 'steps:', nSteps[index], 'episode:', episode
+                print('run:', run, 'steps:', nSteps[index], 'episode:', episode)
                 step = semiGradientNStepSarsa(valueFunctions[index], nSteps[index])
                 steps[index, episode] += step
 
@@ -281,7 +281,7 @@ def figure10_4():
                     continue
                 valueFunction = ValueFunction(alpha)
                 for episode in range(0, episodes):
-                    print 'run:', run, 'steps:', nStep, 'alpha:', alpha, 'episode:', episode
+                    print('run:', run, 'steps:', nStep, 'alpha:', alpha, 'episode:', episode)
                     step = semiGradientNStepSarsa(valueFunction, nStep)
                     steps[nStepIndex, alphaIndex] += step
     # average over independent runs and episodes

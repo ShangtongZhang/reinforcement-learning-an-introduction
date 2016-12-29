@@ -123,7 +123,7 @@ def differentialSemiGradientSarsa(valueFunction, maxSteps):
     # track the hit for each number of free servers
     freq = np.zeros(NUM_OF_SERVERS + 1)
     while step < maxSteps:
-        print 'step:', step, 'average reward:', valueFunction.averageReward
+        print('step:', step, 'average reward:', valueFunction.averageReward)
         step += 1
         freq[currentFreeServers] += 1
         newFreeServers, newPriority, reward = takeAction(currentFreeServers, currentPriority, currentAction)

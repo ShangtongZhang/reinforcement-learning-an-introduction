@@ -70,7 +70,7 @@ def hashcoords(coordinates, m, readonly=False):
     if m is None: return coordinates
 
 from math import floor, log
-from itertools import izip_longest
+from six.moves import zip_longest
 
 def tiles (ihtORsize, numtilings, floats, ints=[], readonly=False):
     """returns num-tilings tile indices corresponding to the floats and ints"""
@@ -95,7 +95,7 @@ def tileswrap (ihtORsize, numtilings, floats, wrapwidths, ints=[], readonly=Fals
         tilingX2 = tiling*2
         coords = [tiling]
         b = tiling
-        for q, width in izip_longest(qfloats, wrapwidths):
+        for q, width in zip_longest(qfloats, wrapwidths):
             c = (q + b%numtilings) // numtilings
             coords.append(c%width if width else c)
             b += tilingX2
