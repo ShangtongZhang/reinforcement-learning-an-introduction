@@ -7,6 +7,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 import pickle
 
@@ -246,7 +247,7 @@ class Player:
 
         values = []
         for hash, pos in zip(nextStates, nextPositions):
-            values.append((int(self.estimations[hash]), pos))
+            values.append((self.estimations[hash], pos))
         np.random.shuffle(values)
         values.sort(key=lambda x: x[0], reverse=True)
         action = values[0][1]
@@ -286,8 +287,8 @@ class HumanPlayer:
     def takeAction(self):
         data = int(input("Input your position:"))
         data -= 1
-        i = int(data / int(BOARD_COLS))
-        j = int(data) % BOARD_COLS
+        i = data // int(BOARD_COLS)
+        j = data % BOARD_COLS
         if self.currentState.data[i, j] != 0:
             return self.takeAction()
         return (i, j, self.symbol)

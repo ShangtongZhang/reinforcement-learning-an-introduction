@@ -4,6 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 from utils.utils import *
 import matplotlib.pyplot as plt
@@ -83,7 +84,7 @@ def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
         else:
             # calculate the expected value of new state
             valueTarget = 0.0
-            bestActions = np.argmax(stateActionValues[newState[0], newState[1], :], unique=False)
+            bestActions = argmax(stateActionValues[newState[0], newState[1], :], unique=False)
             for action in actions:
                 if action in bestActions:
                     valueTarget += ((1.0 - EPSILON) / len(bestActions) + EPSILON / len(actions)) * stateActionValues[newState[0], newState[1], action]

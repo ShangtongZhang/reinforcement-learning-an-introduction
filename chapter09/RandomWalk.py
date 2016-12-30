@@ -4,6 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -75,7 +76,7 @@ class ValueFunction:
     # @numOfGroups: # of aggregations
     def __init__(self, numOfGroups):
         self.numOfGroups = numOfGroups
-        self.groupSize = N_STATES / numOfGroups
+        self.groupSize = N_STATES // numOfGroups
 
         # thetas
         self.params = np.zeros(numOfGroups)
@@ -84,14 +85,14 @@ class ValueFunction:
     def value(self, state):
         if state in END_STATES:
             return 0
-        groupIndex = (state - 1) / self.groupSize
+        groupIndex = (state - 1) // self.groupSize
         return self.params[groupIndex]
 
     # update parameters
     # @delta: step size * (target - old estimation)
     # @state: state of current sample
     def update(self, delta, state):
-        groupIndex = (state - 1) / self.groupSize
+        groupIndex = (state - 1) // self.groupSize
         self.params[groupIndex] += delta
 
 # a wrapper class for tile coding value function
@@ -106,7 +107,7 @@ class TilingsValueFunction:
 
         # To make sure that each sate is covered by same number of tiles,
         # we need one more tile for each tiling
-        self.tilingSize = N_STATES / tileWidth + 1
+        self.tilingSize = N_STATES // tileWidth + 1
 
         # weight for each tile
         self.params = np.zeros((self.numOfTilings, self.tilingSize))
@@ -121,7 +122,7 @@ class TilingsValueFunction:
         # go through all the tilings
         for tilingIndex in range(0, len(self.tilings)):
             # find the active tile in current tiling
-            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            tileIndex = (state - self.tilings[tilingIndex]) // self.tileWidth
             stateValue += self.params[tilingIndex, tileIndex]
         return stateValue
 
@@ -137,7 +138,7 @@ class TilingsValueFunction:
         # go through all the tilings
         for tilingIndex in range(0, len(self.tilings)):
             # find the active tile in current tiling
-            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            tileIndex = (state - self.tilings[tilingIndex]) // self.tileWidth
             self.params[tilingIndex, tileIndex] += delta
 
 # a wrapper class for polynomial / Fourier -based value function
@@ -407,7 +408,7 @@ def figure9_10():
     for run in range(0, runs):
         # initialize value functions for multiple tilings and single tiling
         valueFunctions = [TilingsValueFunction(numOfTilings, tileWidth, tilingOffset),
-                         ValueFunction(N_STATES / tileWidth)]
+                         ValueFunction(N_STATES // tileWidth)]
         for i in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
                 print('run:', run, 'episode:', episode)

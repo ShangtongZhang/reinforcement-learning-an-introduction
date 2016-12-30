@@ -4,6 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 from utils.utils import *
 import matplotlib.pyplot as plt
@@ -149,9 +150,9 @@ class TrivialModel:
     # randomly sample from previous experience
     def sample(self):
         stateIndex = self.rand.choice(range(0, len(self.model.keys())))
-        state = self.model.keys()[stateIndex]
+        state = list(self.model)[stateIndex]
         actionIndex = self.rand.choice(range(0, len(self.model[state].keys())))
-        action = self.model[state].keys()[actionIndex]
+        action = list(self.model[state])[actionIndex]
         newState, reward = self.model[state][action]
         return list(state), action, list(newState), reward
 
@@ -189,9 +190,9 @@ class TimeModel:
     # randomly sample from previous experience
     def sample(self):
         stateIndex = self.rand.choice(range(0, len(self.model.keys())))
-        state = self.model.keys()[stateIndex]
+        state = list(self.model)[stateIndex]
         actionIndex = self.rand.choice(range(0, len(self.model[state].keys())))
-        action = self.model[state].keys()[actionIndex]
+        action = list(self.model[state])[actionIndex]
         newState, reward, time = self.model[state][action]
 
         # adjust reward with elapsed time since last vist
@@ -643,8 +644,8 @@ def figure8_7():
     plt.yscale('log')
     plt.legend()
 
-# figure8_3()
-# figure8_5()
-# figure8_6()
+figure8_3()
+figure8_5()
+figure8_6()
 figure8_7()
 plt.show()

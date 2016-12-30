@@ -4,6 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import functools
@@ -20,7 +21,7 @@ stateValues = np.zeros(N_STATES + 2)
 states = np.arange(1, N_STATES + 1)
 
 # start from the middle
-START_STATE = N_STATES / 2 + 1
+START_STATE = N_STATES // 2 + 1
 END_STATES = [0, N_STATES + 1]
 
 # add an extra action STAY besides LEFT and RIGHT
@@ -41,7 +42,7 @@ while True:
     if delta < 1e-3:
         break
 trueStateValues[0] = trueStateValues[-1] = 0
-print np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues[1: -1], 2)))
+print(np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues[1: -1], 2))))
 
 # go to next state
 def nextStep(state):
@@ -115,7 +116,7 @@ def figure():
             np.random.seed(run)
             currentStateValues = np.copy(stateValues)
             for episode in range(episodes):
-                print 'run:', run, 'episode:', episode
+                print('run:', run, 'episode:', episode)
                 method(currentStateValues)
                 errors[index, episode] += np.sqrt(np.mean(np.power(currentStateValues[1: -1] - trueStateValues[1: -1], 2)))
     errors /= runs

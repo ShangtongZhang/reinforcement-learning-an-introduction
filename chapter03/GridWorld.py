@@ -4,6 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 from utils.utils import *
 import numpy as np
 

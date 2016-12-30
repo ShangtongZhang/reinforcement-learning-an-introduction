@@ -76,9 +76,11 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 3. [Sum of TD errors](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_3)
 
 # Environment
-* Python 2.7
+* Python2 || Python3
 * Numpy
 * Matplotlib
+* Six
+* Seaborn
 
 # Contribution
 This project contains almost all the programmable figures in the book. However, when I completed this project, the book is still in draft and some chapters are still incomplete. Furthermore, due to the limited computational capacity of my machine, I can only use limited runs and episodes for some experiments, so the sample output is much less smooth than that in the book.
