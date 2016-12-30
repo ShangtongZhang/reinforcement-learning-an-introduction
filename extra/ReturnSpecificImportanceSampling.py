@@ -4,8 +4,9 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
+from utils.utils import *
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # This example is adapted from example 5.5, Infinite Variance
@@ -342,7 +343,7 @@ def mentoCarloSampling(method):
     for run in range(runs):
         method.clear()
         for episode in range(episodes):
-            print method.name, 'episode:', episode
+            print(method.name, 'episode:', episode)
             trajectory = play()
             method.learn(trajectory)
         plt.plot(np.arange(episodes), method.estimations())

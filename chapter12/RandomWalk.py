@@ -4,8 +4,8 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # all states
@@ -187,7 +187,7 @@ def figure12(valueFunctionGenerator, runs, lambdas, alphas):
             for alphaIndex, alpha in zip(range(len(alphas[lambdaIndex])), alphas[lambdaIndex]):
                 valueFunction = valueFunctionGenerator(rate, alpha)
                 for episode in range(episodes):
-                    print 'run:', run, 'lambda:', rate, 'alpha:', alpha, 'episode:', episode
+                    print('run:', run, 'lambda:', rate, 'alpha:', alpha, 'episode:', episode)
                     randomWalk(valueFunction)
                     stateValues = [valueFunction.value(state) for state in states]
                     errors[lambdaIndex][alphaIndex] += np.sqrt(np.mean(np.power(stateValues - realStateValues[1: -1], 2)))

@@ -4,8 +4,10 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
-from utils import *
+from utils.TileCoding import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -122,7 +124,7 @@ def differentialSemiGradientSarsa(valueFunction, maxSteps):
     # track the hit for each number of free servers
     freq = np.zeros(NUM_OF_SERVERS + 1)
     while step < maxSteps:
-        print 'step:', step, 'average reward:', valueFunction.averageReward
+        print('step:', step, 'average reward:', valueFunction.averageReward)
         step += 1
         freq[currentFreeServers] += 1
         newFreeServers, newPriority, reward = takeAction(currentFreeServers, currentPriority, currentAction)
@@ -132,8 +134,8 @@ def differentialSemiGradientSarsa(valueFunction, maxSteps):
         currentFreeServers = newFreeServers
         currentPriority = newPriority
         currentAction = newAction
-    print 'Frequency of number of free servers:'
-    print freq / maxSteps
+    print('Frequency of number of free servers:')
+    print(freq / maxSteps)
 
 # Figure 10.5, Differential semi-gradient Sarsa on the access-control queuing task
 def figure10_5():
@@ -165,8 +167,8 @@ def figure10_5():
                 axisZ[priority, freeServers] = REJECT
             else:
                 axisZ[priority, freeServers] = argmax(values)
-    print 'Policy (0 Reject, 1 Accept)'
-    print axisZ
+    print('Policy (0 Reject, 1 Accept)')
+    print(axisZ)
     ax.scatter(axisX, axisY, axisZ)
     ax.set_xlabel('Number of free servers')
     ax.set_ylabel('Priority')

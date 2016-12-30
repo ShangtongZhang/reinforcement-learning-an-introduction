@@ -4,8 +4,9 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
 
 # A wrapper class for a maze, containing all the information about the maze.
@@ -149,9 +150,9 @@ class TrivialModel:
     # randomly sample from previous experience
     def sample(self):
         stateIndex = self.rand.choice(range(0, len(self.model.keys())))
-        state = self.model.keys()[stateIndex]
+        state = list(self.model)[stateIndex]
         actionIndex = self.rand.choice(range(0, len(self.model[state].keys())))
-        action = self.model[state].keys()[actionIndex]
+        action = list(self.model[state])[actionIndex]
         newState, reward = self.model[state][action]
         return list(state), action, list(newState), reward
 
@@ -189,9 +190,9 @@ class TimeModel:
     # randomly sample from previous experience
     def sample(self):
         stateIndex = self.rand.choice(range(0, len(self.model.keys())))
-        state = self.model.keys()[stateIndex]
+        state = list(self.model)[stateIndex]
         actionIndex = self.rand.choice(range(0, len(self.model[state].keys())))
-        action = self.model[state].keys()[actionIndex]
+        action = list(self.model[state])[actionIndex]
         newState, reward, time = self.model[state][action]
 
         # adjust reward with elapsed time since last vist
@@ -372,7 +373,7 @@ def figure8_3():
             # generate an instance of Dyna-Q model
             model = TrivialModel(rand)
             for ep in range(0, episodes):
-                print 'run:', run, 'planning step:', planningStep, 'episode:', ep
+                print('run:', run, 'planning step:', planningStep, 'episode:', ep)
                 steps[index, ep] += dynaQ(currentStateActionValues, model, dynaMaze, dynaParams)
 
     # averaging over runs
@@ -407,7 +408,7 @@ def changingMaze(maze, dynaParams):
         stateActionValues = [np.copy(maze.stateActionValues), np.copy(maze.stateActionValues)]
 
         for i in range(0, len(dynaParams.methods)):
-            print 'run:', run, dynaParams.methods[i]
+            print('run:', run, dynaParams.methods[i])
 
             # set old obstacles for the maze
             maze.obstacles = maze.oldObstacles
@@ -546,14 +547,14 @@ def printActions(stateActionValues, maze):
             if bestAction == maze.ACTION_RIGHT:
                 bestActions[-1].append('R')
     for row in bestActions:
-        print row
-    print ''
+        print(row)
+    print('')
 
 # Check whether state-action values are already optimal
 def checkPath(stateActionValues, maze):
     # get the length of optimal path
     # 14 is the length of optimal path of the original maze
-    # 1.2 means it's a relaxed optimal path
+    # 1.2 means it's a relaxed optifmal path
     maxSteps = 14 * maze.resolution * 1.2
     currentState = maze.START_STATE
     steps = 0
@@ -604,7 +605,7 @@ def figure8_7():
     for run in range(0, runs):
         for i in range(0, len(methodNames)):
             for mazeIndex, maze in zip(range(0, len(mazes)), mazes):
-                print 'run:', run, methodNames[i], 'maze size:', maze.WORLD_HEIGHT * maze.WORLD_WIDTH
+                print('run:', run, methodNames[i], 'maze size:', maze.WORLD_HEIGHT * maze.WORLD_WIDTH)
 
                 # initialize the state action values
                 currentStateActionValues = np.copy(maze.stateActionValues)
@@ -643,8 +644,8 @@ def figure8_7():
     plt.yscale('log')
     plt.legend()
 
-# figure8_3()
-# figure8_5()
-# figure8_6()
+figure8_3()
+figure8_5()
+figure8_6()
 figure8_7()
 plt.show()

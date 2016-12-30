@@ -4,7 +4,7 @@
 # declaration at the top                                              #
 #######################################################################
 
-from utils import *
+from __future__ import print_function
 import numpy as np
 
 WORLD_SIZE = 4
@@ -61,7 +61,7 @@ while True:
             # bellman equation
             newWorld[i, j] += ACTION_PROB * (REWARD + world[newPosition[0], newPosition[1]])
     if np.sum(np.abs(world - newWorld)) < 1e-4:
-        print 'Random Policy'
-        print newWorld
+        print('Random Policy')
+        print(newWorld)
         break
     world = newWorld

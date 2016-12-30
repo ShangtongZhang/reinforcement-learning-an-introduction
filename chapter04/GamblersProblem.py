@@ -4,10 +4,10 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
-from utils import *
+from utils.utils import *
 import matplotlib.pyplot as plt
-
 # goal
 GOAL = 100
 

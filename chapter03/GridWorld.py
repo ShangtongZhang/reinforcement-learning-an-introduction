@@ -4,7 +4,8 @@
 # declaration at the top                                              #
 #######################################################################
 
-from utils import *
+from __future__ import print_function
+from utils.utils import *
 import numpy as np
 
 WORLD_SIZE = 5
@@ -83,8 +84,8 @@ while True:
                 # bellman equation
                 newWorld[i, j] += actionProb[i][j][action] * (actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
     if np.sum(np.abs(world - newWorld)) < 1e-4:
-        print 'Random Policy'
-        print newWorld
+        print('Random Policy')
+        print(newWorld)
         break
     world = newWorld
 
@@ -102,8 +103,8 @@ while True:
                 values.append(actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
             newWorld[i][j] = np.max(values)
     if np.sum(np.abs(world - newWorld)) < 1e-4:
-        print 'Optimal Policy'
-        print newWorld
+        print('Optimal Policy')
+        print(newWorld)
         break
     world = newWorld
 

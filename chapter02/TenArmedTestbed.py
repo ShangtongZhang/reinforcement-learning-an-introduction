@@ -7,9 +7,10 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import *
+from utils.utils import *
 import seaborn as sns
 
 class Bandit:
@@ -108,11 +109,11 @@ def figure2_1():
     plt.ylabel("Reward distribution")
 
 def banditSimulation(nBandits, time, bandits):
-    bestActionCounts = [np.zeros(time, dtype='float') for _ in xrange(0, len(bandits))]
-    averageRewards = [np.zeros(time, dtype='float') for _ in xrange(0, len(bandits))]
+    bestActionCounts = [np.zeros(time, dtype='float') for _ in range(0, len(bandits))]
+    averageRewards = [np.zeros(time, dtype='float') for _ in range(0, len(bandits))]
     for banditInd, bandit in enumerate(bandits):
-        for i in xrange(0, nBandits):
-            for t in xrange(0, time):
+        for i in range(0, nBandits):
+            for t in range(0, time):
                 action = bandit[i].getAction()
                 reward = bandit[i].takeAction(action)
                 averageRewards[banditInd][t] += reward
@@ -128,7 +129,7 @@ def epsilonGreedy(nBandits, time):
     epsilons = [0, 0.1, 0.01]
     bandits = []
     for epsInd, eps in enumerate(epsilons):
-        bandits.append([Bandit(epsilon=eps, sampleAverages=True) for _ in xrange(0, nBandits)])
+        bandits.append([Bandit(epsilon=eps, sampleAverages=True) for _ in range(0, nBandits)])
     bestActionCounts, averageRewards = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
@@ -150,8 +151,8 @@ def epsilonGreedy(nBandits, time):
 # for figure 2.3
 def optimisticInitialValues(nBandits, time):
     bandits = [[], []]
-    bandits[0] = [Bandit(epsilon=0, initial=5, stepSize=0.1) for _ in xrange(0, nBandits)]
-    bandits[1] = [Bandit(epsilon=0.1, initial=0, stepSize=0.1) for _ in xrange(0, nBandits)]
+    bandits[0] = [Bandit(epsilon=0, initial=5, stepSize=0.1) for _ in range(0, nBandits)]
+    bandits[1] = [Bandit(epsilon=0.1, initial=0, stepSize=0.1) for _ in range(0, nBandits)]
     bestActionCounts, _ = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
@@ -166,8 +167,8 @@ def optimisticInitialValues(nBandits, time):
 # for figure 2.4
 def ucb(nBandits, time):
     bandits = [[], []]
-    bandits[0] = [Bandit(epsilon=0, stepSize=0.1, UCBParam=2) for _ in xrange(0, nBandits)]
-    bandits[1] = [Bandit(epsilon=0.1, stepSize=0.1) for _ in xrange(0, nBandits)]
+    bandits[0] = [Bandit(epsilon=0, stepSize=0.1, UCBParam=2) for _ in range(0, nBandits)]
+    bandits[1] = [Bandit(epsilon=0.1, stepSize=0.1) for _ in range(0, nBandits)]
     _, averageRewards = banditSimulation(nBandits, time, bandits)
     global figureIndex
     plt.figure(figureIndex)
@@ -213,7 +214,7 @@ def figure2_6(nBandits, time):
                   np.arange(-4, 3),
                   np.arange(-2, 3)]
 
-    bandits = [[generator(pow(2, param)) for _ in xrange(0, nBandits)] for generator, parameter in zip(generators, parameters) for param in parameter]
+    bandits = [[generator(pow(2, param)) for _ in range(0, nBandits)] for generator, parameter in zip(generators, parameters) for param in parameter]
     _, averageRewards = banditSimulation(nBandits, time, bandits)
     rewards = np.sum(averageRewards, axis=1)/time
 

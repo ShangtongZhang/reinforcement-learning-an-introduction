@@ -7,6 +7,7 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
 import pickle
 
@@ -87,7 +88,7 @@ class State:
     # print the board
     def show(self):
         for i in range(0, BOARD_ROWS):
-            print '-------------'
+            print('-------------')
             out = '| '
             for j in range(0, BOARD_COLS):
                 if self.data[i, j] == 1:
@@ -97,8 +98,8 @@ class State:
                 if self.data[i, j] == -1:
                     token = 'x'
                 out += token + ' | '
-            print out
-        print '-------------'
+            print(out)
+        print('-------------')
 
 def getAllStatesImpl(currentState, currentSymbol, allStates):
     for i in range(0, BOARD_ROWS):
@@ -254,12 +255,12 @@ class Player:
         return action
 
     def savePolicy(self):
-        fw = open('optimal_policy_' + str(self.symbol), 'w')
+        fw = open('optimal_policy_' + str(self.symbol), 'wb')
         pickle.dump(self.estimations, fw)
         fw.close()
 
     def loadPolicy(self):
-        fr = open('optimal_policy_' + str(self.symbol))
+        fr = open('optimal_policy_' + str(self.symbol),'rb')
         self.estimations = pickle.load(fr)
         fr.close()
 
@@ -284,10 +285,10 @@ class HumanPlayer:
     def feedReward(self, reward):
         return
     def takeAction(self):
-        data = input("Input your position:")
+        data = int(input("Input your position:"))
         data -= 1
-        i = int(data) / BOARD_COLS
-        j = int(data) % BOARD_COLS
+        i = data // int(BOARD_COLS)
+        j = data % BOARD_COLS
         if self.currentState.data[i, j] != 0:
             return self.takeAction()
         return (i, j, self.symbol)
@@ -299,15 +300,15 @@ def train(epochs=20000):
     player1Win = 0.0
     player2Win = 0.0
     for i in range(0, epochs):
-        print "Epoch", i
+        print("Epoch", i)
         winner = judger.play()
         if winner == 1:
             player1Win += 1
         if winner == -1:
             player2Win += 1
         judger.reset()
-    print player1Win / epochs
-    print player2Win / epochs
+    print(player1Win / epochs)
+    print(player2Win / epochs)
     player1.savePolicy()
     player2.savePolicy()
 
@@ -320,15 +321,15 @@ def compete(turns=500):
     player1Win = 0.0
     player2Win = 0.0
     for i in range(0, turns):
-        print "Epoch", i
+        print("Epoch", i)
         winner = judger.play()
         if winner == 1:
             player1Win += 1
         if winner == -1:
             player2Win += 1
         judger.reset()
-    print player1Win / turns
-    print player2Win / turns
+    print(player1Win / turns)
+    print(player2Win / turns)
 
 def play():
     while True:
@@ -338,11 +339,11 @@ def play():
         player1.loadPolicy()
         winner = judger.play(True)
         if winner == player2.symbol:
-            print "Win!"
+            print("Win!")
         elif winner == player1.symbol:
-            print "Lose!"
+            print("Lose!")
         else:
-            print "Tie!"
+            print("Tie!")
 
 train()
 compete()

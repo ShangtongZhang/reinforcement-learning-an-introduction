@@ -4,8 +4,8 @@
 # declaration at the top                                              #
 #######################################################################
 
+from __future__ import print_function
 import numpy as np
-from utils import *
 import matplotlib.pyplot as plt
 
 # # of states except for terminal states
@@ -45,7 +45,7 @@ while True:
                 # asynchronous update for faster convergence
                 trueStateValues[state] += 1.0 / (2 * STEP_RANGE) * trueStateValues[newState]
     error = np.sum(np.abs(oldTrueStateValues - trueStateValues))
-    print error
+    print(error)
     if error < 1e-2:
         break
 # correct the state value for terminal states to 0
@@ -76,7 +76,7 @@ class ValueFunction:
     # @numOfGroups: # of aggregations
     def __init__(self, numOfGroups):
         self.numOfGroups = numOfGroups
-        self.groupSize = N_STATES / numOfGroups
+        self.groupSize = N_STATES // numOfGroups
 
         # thetas
         self.params = np.zeros(numOfGroups)
@@ -85,14 +85,14 @@ class ValueFunction:
     def value(self, state):
         if state in END_STATES:
             return 0
-        groupIndex = (state - 1) / self.groupSize
+        groupIndex = (state - 1) // self.groupSize
         return self.params[groupIndex]
 
     # update parameters
     # @delta: step size * (target - old estimation)
     # @state: state of current sample
     def update(self, delta, state):
-        groupIndex = (state - 1) / self.groupSize
+        groupIndex = (state - 1) // self.groupSize
         self.params[groupIndex] += delta
 
 # a wrapper class for tile coding value function
@@ -107,7 +107,7 @@ class TilingsValueFunction:
 
         # To make sure that each sate is covered by same number of tiles,
         # we need one more tile for each tiling
-        self.tilingSize = N_STATES / tileWidth + 1
+        self.tilingSize = N_STATES // tileWidth + 1
 
         # weight for each tile
         self.params = np.zeros((self.numOfTilings, self.tilingSize))
@@ -122,7 +122,7 @@ class TilingsValueFunction:
         # go through all the tilings
         for tilingIndex in range(0, len(self.tilings)):
             # find the active tile in current tiling
-            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            tileIndex = (state - self.tilings[tilingIndex]) // self.tileWidth
             stateValue += self.params[tilingIndex, tileIndex]
         return stateValue
 
@@ -138,7 +138,7 @@ class TilingsValueFunction:
         # go through all the tilings
         for tilingIndex in range(0, len(self.tilings)):
             # find the active tile in current tiling
-            tileIndex = (state - self.tilings[tilingIndex]) / self.tileWidth
+            tileIndex = (state - self.tilings[tilingIndex]) // self.tileWidth
             self.params[tilingIndex, tileIndex] += delta
 
 # a wrapper class for polynomial / Fourier -based value function
@@ -260,7 +260,7 @@ def figure9_1():
     valueFunction = ValueFunction(10)
     distribution = np.zeros(N_STATES + 2)
     for episode in range(0, nEpisodes):
-        print 'episode:', episode
+        print('episode:', episode)
         gradientMentoCarlo(valueFunction, alpha, distribution)
 
     distribution /= np.sum(distribution)
@@ -285,7 +285,7 @@ def figure9_2Left():
     alpha = 2e-4
     valueFunction = ValueFunction(10)
     for episode in range(0, nEpisodes):
-        print 'episode:', episode
+        print('episode:', episode)
         semiGradientTemporalDifference(valueFunction, 1, alpha)
 
     stateValues = [valueFunction.value(i) for i in states]
@@ -318,7 +318,7 @@ def figure9_2Right():
     for run in range(0, runs):
         for stepInd, step in zip(range(len(steps)), steps):
             for alphaInd, alpha in zip(range(len(alphas)), alphas):
-                print 'run:', run, 'step:', step, 'alpha:', alpha
+                print('run:', run, 'step:', step, 'alpha:', alpha)
                 # we have 20 aggregations in this example
                 valueFunction = ValueFunction(20)
                 for ep in range(0, episodes):
@@ -362,7 +362,7 @@ def figure9_5():
             valueFunctions = [BasesValueFunction(orders[i], POLYNOMIAL_BASES), BasesValueFunction(orders[i], FOURIER_BASES)]
             for j in range(0, len(valueFunctions)):
                 for episode in range(0, episodes):
-                    print 'run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode
+                    print('run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode)
 
                     # gradient Mento Carlo algorithm
                     gradientMentoCarlo(valueFunctions[j], alphas[j])
@@ -408,10 +408,10 @@ def figure9_10():
     for run in range(0, runs):
         # initialize value functions for multiple tilings and single tiling
         valueFunctions = [TilingsValueFunction(numOfTilings, tileWidth, tilingOffset),
-                         ValueFunction(N_STATES / tileWidth)]
+                         ValueFunction(N_STATES // tileWidth)]
         for i in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
-                print 'run:', run, 'episode:', episode
+                print('run:', run, 'episode:', episode)
 
                 # I use a changing alpha according to the episode instead of a small fixed alpha
                 # With a small fixed alpha, I don't think 5000 episodes is enough for so many
