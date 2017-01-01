@@ -11,7 +11,7 @@ import itertools
 import heapq
 def argmax(elements, unique=True):
     maxValue = np.max(elements)
-    candidates = np.where(elements == maxValue)[0]
+    candidates = np.where(np.asarray(elements) == maxValue)[0]
     if unique:
         return np.random.choice(candidates)
     return list(candidates)
