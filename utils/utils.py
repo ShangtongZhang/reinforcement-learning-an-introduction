@@ -9,7 +9,7 @@ import itertools
 import heapq
 def argmax(elements, unique=True):
     maxValue = np.max(elements)
-    candidates = [i for i in range(0, len(elements)) if elements[i] == maxValue]
+    candidates = np.where(elements == maxValue)[0]
     if unique:
         return np.random.choice(candidates)
     return candidates
