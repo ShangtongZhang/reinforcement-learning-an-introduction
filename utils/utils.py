@@ -1,5 +1,7 @@
 #######################################################################
-# Copyright (C) 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)    #
+# Copyright (C)                                                       #
+# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -9,7 +11,7 @@ import itertools
 import heapq
 def argmax(elements, unique=True):
     maxValue = np.max(elements)
-    candidates = [i for i in range(0, len(elements)) if elements[i] == maxValue]
+    candidates = np.where(elements == maxValue)[0]
     if unique:
         return np.random.choice(candidates)
     return candidates
