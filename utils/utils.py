@@ -12,7 +12,7 @@ def argmax(elements, unique=True):
     candidates = np.where(elements == maxValue)[0]
     if unique:
         return np.random.choice(candidates)
-    return candidates
+    return list(candidates)
 
 def pad(array, length, defaultValue=0.0):
     if len(array) > length:
