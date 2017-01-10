@@ -1,5 +1,7 @@
 # Reinforcement Learning: An Introduction
 
+[![Build Status](https://travis-ci.org/aoboturov/reinforcement-learning-an-introduction.svg?branch=master)](https://travis-ci.org/aoboturov/reinforcement-learning-an-introduction)
+
 Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction (2nd Edition)*](http://incompleteideas.net/sutton/book/the-book-2nd.html)
 
 # Contents
