@@ -239,7 +239,7 @@ def figure():
     nEpisodes = 120
 
     # perform several independent runs
-    runs = 20
+    runs = 50
 
     empiricalLength = 20000
     episodes = np.zeros((len(methods), empiricalLength))
