@@ -232,12 +232,12 @@ def figure2_6(nBandits, time):
 
 
 figure2_1()
-epsilonGreedy(200, 1000)
-optimisticInitialValues(200, 1000)
-ucb(1000, 1000)
-gradientBandit(200, 1000)
+epsilonGreedy(2000, 1000)
+optimisticInitialValues(2000, 1000)
+ucb(2000, 1000)
+gradientBandit(2000, 1000)
 
 # This will take somehow a long time
-# figure2_6(200, 1000)
+figure2_6(2000, 1000)
 
 plt.show()
