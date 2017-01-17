@@ -124,7 +124,7 @@ def play(policyPlayerFn, initialState=None, initialAction=None):
 
     # game starts!
 
-    # player't turn
+    # player's turn
     while True:
         if initialAction is not None:
             action = initialAction
