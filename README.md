@@ -12,11 +12,12 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 1. Tic-Tac-Toe
 
 ### Chapter 2
-1. [Figure 2.2: Average performance of epsilon-greedy action-value methods on the 10-armed testbed](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_2)
-2. [Figure 2.3: Optimistic initial action-value estimates](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_3)
-3. [Figure 2.4: Average performance of UCB action selection on the 10-armed testbed](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_4)
-4. [Figure 2.5: Average performance of the gradient bandit algorithm](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_5)
-5. [Figure 2.6: A parameter study of the various bandit algorithms](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_6)
+1. [Figure 2.1: An exemplary bandit problem from the 10-armed testbed](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_1)
+2. [Figure 2.2: Average performance of epsilon-greedy action-value methods on the 10-armed testbed](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_2)
+3. [Figure 2.3: Optimistic initial action-value estimates](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_3)
+4. [Figure 2.4: Average performance of UCB action selection on the 10-armed testbed](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_4)
+5. [Figure 2.5: Average performance of the gradient bandit algorithm](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_5)
+6. [Figure 2.6: A parameter study of the various bandit algorithms](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#2_6)
 
 ### Chapter 3
 1. [Figure 3.5: Grid example with random policy](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#3_5)
@@ -83,6 +84,13 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 * Matplotlib
 * Six
 * Seaborn
+
+# Usage
+```commandline
+git clone https://github.com/ShangtongZhang/reinforcement-learning-an-introduction.git
+cd reinforcement-learning-an-introduction
+python chapterXX/XXX.py
+```
 
 # Contribution
 This project contains almost all the programmable figures in the book. However, when I completed this project, the book is still in draft and some chapters are still incomplete. Furthermore, due to the limited computational capacity of my machine, I can only use limited runs and episodes for some experiments, so the sample output is much less smooth than that in the book.
