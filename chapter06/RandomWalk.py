@@ -26,7 +26,7 @@ trueValue[6] = 1
 ACTION_LEFT = 0
 ACTION_RIGHT = 1
 
-# @states: current states value, will be updated if @batch is True
+# @states: current states value, will be updated if @batch is False
 # @alpha: step size
 # @batch: whether to update @states
 def temporalDifference(states, alpha=0.1, batch=False):
@@ -50,7 +50,7 @@ def temporalDifference(states, alpha=0.1, batch=False):
         rewards.append(reward)
     return trajectory, rewards
 
-# @states: current states value, will be updated if @batch is True
+# @states: current states value, will be updated if @batch is False
 # @alpha: step size
 # @batch: whether to update @states
 def monteCarlo(states, alpha=0.1, batch=False):
