@@ -10,7 +10,7 @@
 from __future__ import print_function
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.utils import *
+from utils import *
 import seaborn as sns
 
 class Bandit:
@@ -71,7 +71,7 @@ class Bandit:
             expEst = np.exp(self.qEst)
             self.actionProb = expEst / np.sum(expEst)
             return np.random.choice(self.indices, p=self.actionProb)
-        return argmax(self.qEst)
+        return np.argmax(self.qEst)
 
     # take an action, update estimation for this action
     def takeAction(self, action):
@@ -230,14 +230,14 @@ def figure2_6(nBandits, time):
     plt.ylabel('Average reward')
     plt.legend()
 
+if __name__ == "__main__":
+    figure2_1()
+    epsilonGreedy(2000, 1000)
+    optimisticInitialValues(2000, 1000)
+    ucb(2000, 1000)
+    gradientBandit(2000, 1000)
 
-figure2_1()
-epsilonGreedy(2000, 1000)
-optimisticInitialValues(2000, 1000)
-ucb(2000, 1000)
-gradientBandit(2000, 1000)
+    # This will take somehow a long time
+    figure2_6(2000, 1000)
 
-# This will take somehow a long time
-figure2_6(2000, 1000)
-
-plt.show()
+    plt.show()
