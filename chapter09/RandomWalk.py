@@ -175,11 +175,11 @@ class BasesValueFunction:
         derivativeValue = np.asarray([func(state) for func in self.bases])
         self.weights += delta * derivativeValue
 
-# gradient Mento Carlo algorithm
+# gradient Monte Carlo algorithm
 # @valueFunction: an instance of class ValueFunction
 # @alpha: step size
 # @distribution: array to store the distribution statistics
-def gradientMentoCarlo(valueFunction, alpha, distribution=None):
+def gradientMonteCarlo(valueFunction, alpha, distribution=None):
     currentState = START_STATE
     trajectory = [currentState]
 
@@ -261,7 +261,7 @@ def figure9_1():
     distribution = np.zeros(N_STATES + 2)
     for episode in range(0, nEpisodes):
         print('episode:', episode)
-        gradientMentoCarlo(valueFunction, alpha, distribution)
+        gradientMonteCarlo(valueFunction, alpha, distribution)
 
     distribution /= np.sum(distribution)
     stateValues = [valueFunction.value(i) for i in states]
@@ -364,8 +364,8 @@ def figure9_5():
                 for episode in range(0, episodes):
                     print('run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode)
 
-                    # gradient Mento Carlo algorithm
-                    gradientMentoCarlo(valueFunctions[j], alphas[j])
+                    # gradient Monte Carlo algorithm
+                    gradientMonteCarlo(valueFunctions[j], alphas[j])
 
                     # get state values under current value function
                     stateValues = [valueFunctions[j].value(state) for state in states]
@@ -420,8 +420,8 @@ def figure9_10():
                 # however the asymptotic performance for multiple tilings improves significantly
                 alpha = 1.0 / (episode + 1)
 
-                # gradient Mento Carlo algorithm
-                gradientMentoCarlo(valueFunctions[i], alpha)
+                # gradient Monte Carlo algorithm
+                gradientMonteCarlo(valueFunctions[i], alpha)
 
                 # get state values under current value function
                 stateValues = [valueFunctions[i].value(state) for state in states]
