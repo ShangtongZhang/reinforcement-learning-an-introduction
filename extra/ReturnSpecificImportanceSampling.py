@@ -333,7 +333,7 @@ class DiscountingAwareWeightedImportanceSampling(ImportanceSampling):
         self.sumOfRhos = [0]
 
 figureIndex = 0
-def mentoCarloSampling(method):
+def monteCarloSampling(method):
     global figureIndex
     plt.figure(figureIndex)
     figureIndex += 1
@@ -361,7 +361,7 @@ def figure():
                PerRewardWeightedImportanceSampling,
                ConsistentPerRewardWeightedImportanceSampling]
     for method in methods:
-        mentoCarloSampling(method())
+        monteCarloSampling(method())
 
 figure()
 plt.show()
