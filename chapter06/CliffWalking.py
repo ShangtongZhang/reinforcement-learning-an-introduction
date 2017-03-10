@@ -90,7 +90,7 @@ def sarsa(stateActionValues, expected=False, stepSize=ALPHA):
                     valueTarget += ((1.0 - EPSILON) / len(bestActions) + EPSILON / len(actions)) * stateActionValues[newState[0], newState[1], action]
                 else:
                     valueTarget += EPSILON / len(actions) * stateActionValues[newState[0], newState[1], action]
-            valueTarget *= GAMMA
+        valueTarget *= GAMMA
         # Sarsa update
         stateActionValues[currentState[0], currentState[1], currentAction] += stepSize * (reward +
             valueTarget - stateActionValues[currentState[0], currentState[1], currentAction])
