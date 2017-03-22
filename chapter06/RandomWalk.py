@@ -159,7 +159,7 @@ def batchUpdating(method, episodes, alpha=0.001):
             # calculate rms error
             errors.append(np.sqrt(np.sum(np.power(currentStates - trueValue, 2)) / 5.0))
         totalErrors += np.asarray(errors)
-    totalErrors /= episodes - 1
+    totalErrors /= runs
     return totalErrors
 
 def figure6_2():
