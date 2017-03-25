@@ -4,6 +4,8 @@
 
 Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction (2nd Edition)*](http://incompleteideas.net/sutton/book/the-book-2nd.html)
 
+> If you have any confusion about the code or want to report a bug, please open an issue rather than email me directly
+
 # Contents
 
 > Click to view the sample output
