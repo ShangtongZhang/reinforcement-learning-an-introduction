@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
+# from utils.utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -208,7 +208,7 @@ def monteCarloES(nEpisodes):
         usableAce = int(usableAce)
         playerSum -= 12
         dealerCard -= 1
-        return argmax(stateActionValues[playerSum, dealerCard, usableAce, :])
+        return np.argmax(stateActionValues[playerSum, dealerCard, usableAce, :])
 
     # play for several episodes
     for episode in range(nEpisodes):
@@ -304,8 +304,8 @@ def figure5_3():
         for j in range(10):
             stateValueNoUsableAce[i, j] = np.max(stateActionValues[i, j, 0, :])
             stateValueUsableAce[i, j] = np.max(stateActionValues[i, j, 1, :])
-            actionNoUsableAce[i, j] = argmax(stateActionValues[i, j, 0, :])
-            actionUsableAce[i, j] = argmax(stateActionValues[i, j, 1, :])
+            actionNoUsableAce[i, j] = np.argmax(stateActionValues[i, j, 0, :])
+            actionUsableAce[i, j] = np.argmax(stateActionValues[i, j, 1, :])
     prettyPrint(stateValueUsableAce, 'Optimal state value with usable Ace')
     prettyPrint(stateValueNoUsableAce, 'Optimal state value with no usable Ace')
     prettyPrint(actionUsableAce, 'Optimal policy with usable Ace', 'Action (0 Hit, 1 Stick)')
@@ -334,7 +334,9 @@ def offPolicy():
     plt.legend()
     plt.show()
 
-# onPolicy()
-figure5_3()
-# offPolicy()
+
+if __name__ == "__main__":
+    onPolicy()
+    # figure5_3()
+    # offPolicy()
 
