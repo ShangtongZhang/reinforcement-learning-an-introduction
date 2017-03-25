@@ -201,14 +201,16 @@ def monteCarloOnPolicy(nEpisodes):
 def monteCarloES(nEpisodes):
     # (playerSum, dealerCard, usableAce, action)
     stateActionValues = np.zeros((10, 10, 2, 2))
-    # set default to 1 to avoid being divided by 0
-    stateActionPairCount = np.ones((10, 10, 2, 2))
+    stateActionPairCount = np.zeros((10, 10, 2, 2))
+
     # behavior policy is greedy
     def behaviorPolicy(usableAce, playerSum, dealerCard):
         usableAce = int(usableAce)
         playerSum -= 12
         dealerCard -= 1
-        return argmax(stateActionValues[playerSum, dealerCard, usableAce, :])
+        return argmax(np.where(stateActionPairCount[playerSum, dealerCard, usableAce, :],
+                               stateActionValues[playerSum, dealerCard, usableAce, :] / stateActionPairCount[playerSum, dealerCard, usableAce, :],
+                               0))
 
     # play for several episodes
     for episode in range(nEpisodes):
