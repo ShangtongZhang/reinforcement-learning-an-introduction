@@ -2,6 +2,7 @@
 # Copyright (C)                                                       #
 # 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
+# 2017 Nicky van Foreest(vanforeest@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -201,6 +202,7 @@ def monteCarloOnPolicy(nEpisodes):
 def monteCarloES(nEpisodes):
     # (playerSum, dealerCard, usableAce, action)
     stateActionValues = np.zeros((10, 10, 2, 2))
+    # initialze counts to 1 to avoid  division by 0
     stateActionPairCount = np.ones((10, 10, 2, 2))
 
     # behavior policy is greedy
