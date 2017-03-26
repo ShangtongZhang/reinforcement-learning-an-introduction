@@ -2,19 +2,20 @@
 # Copyright (C)                                                       #
 # 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
+# 2017 Nicky van Foreest(vanforeest@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
+from utils.utils import argmax
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # actions: hit or stand
 ACTION_HIT = 0
-ACTION_STAND = 1
+ACTION_STAND = 1  #  "strike" in the book
 actions = [ACTION_HIT, ACTION_STAND]
 
 # policy for player
@@ -201,20 +202,22 @@ def monteCarloOnPolicy(nEpisodes):
 def monteCarloES(nEpisodes):
     # (playerSum, dealerCard, usableAce, action)
     stateActionValues = np.zeros((10, 10, 2, 2))
-    stateActionPairCount = np.zeros((10, 10, 2, 2))
+    # initialze counts to 1 to avoid  division by 0
+    stateActionPairCount = np.ones((10, 10, 2, 2))
 
     # behavior policy is greedy
     def behaviorPolicy(usableAce, playerSum, dealerCard):
         usableAce = int(usableAce)
         playerSum -= 12
         dealerCard -= 1
-        return argmax(np.where(stateActionPairCount[playerSum, dealerCard, usableAce, :],
-                               stateActionValues[playerSum, dealerCard, usableAce, :] / stateActionPairCount[playerSum, dealerCard, usableAce, :],
-                               0))
+        # get argmax of the average returns(s, a)
+        return argmax(stateActionValues[playerSum, dealerCard, usableAce, :]
+                      / stateActionPairCount[playerSum, dealerCard, usableAce, :])
 
     # play for several episodes
     for episode in range(nEpisodes):
-        print('episode:', episode)
+        if episode % 1000 == 0:
+            print('episode:', episode)
         # for each episode, use a randomly initialized state and action
         initialState = [bool(np.random.choice([0, 1])),
                        np.random.choice(range(12, 22)),
@@ -336,7 +339,9 @@ def offPolicy():
     plt.legend()
     plt.show()
 
-# onPolicy()
-figure5_3()
-# offPolicy()
+
+if __name__ == "__main__":
+    # onPolicy()
+    figure5_3()
+    # offPolicy()
 
