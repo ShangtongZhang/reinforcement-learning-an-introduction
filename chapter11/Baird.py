@@ -45,6 +45,15 @@ def takeAction(state, action):
 def targetPolicy(state):
     return SOLID
 
+# state distribution for the behavior policy
+stateDistribution = np.ones(len(STATES)) / 7
+stateDistributionMat = np.matrix(np.diag(stateDistribution))
+# projection matrix for minimize MSVE
+projectionMatrix = np.matrix(FEATURES) * \
+                   np.linalg.pinv(np.matrix(FEATURES.T) * stateDistributionMat * np.matrix(FEATURES)) * \
+                   np.matrix(FEATURES.T) * \
+                   stateDistributionMat
+
 # behavior policy
 BEHAVIOR_SOLID_PROBABILITY = 1.0 / 7
 def behaviorPolicy(state):
@@ -54,28 +63,28 @@ def behaviorPolicy(state):
 
 # Semi-gradient off-policy temporal difference
 # @state: current state
-# @weights: weight for each component of the feature vector
+# @theta: weight for each component of the feature vector
 # @alpha: step size
 # @return: next state
-def semiGradientOffPolicyTD(state, weights, alpha):
+def semiGradientOffPolicyTD(state, theta, alpha):
     action = behaviorPolicy(state)
     nextState = takeAction(state, action)
-    # get the importance ration
+    # get the importance ratio
     if action == DASHED:
         rho = 0.0
     else:
         rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
-    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], weights) - \
-            np.dot(FEATURES[state, :], weights)
+    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
+            np.dot(FEATURES[state, :], theta)
     delta *= rho * alpha
     # derivatives happen to be the same matrix due to the linearity
-    weights += FEATURES[state, :] * delta
+    theta += FEATURES[state, :] * delta
     return nextState
 
 # Semi-gradient DP
-# @weights: weight for each component of the feature vector
+# @theta: weight for each component of the feature vector
 # @alpha: step size
-def semiGradientDP(weights, alpha):
+def semiGradientDP(theta, alpha):
     delta = 0.0
     # go through all the states
     for currentState in STATES:
@@ -83,20 +92,60 @@ def semiGradientDP(weights, alpha):
         # compute bellman error for each state
         for nextState in STATES:
             if nextState == LOWER_STATE:
-                expectedReturn += REWARD + DISCOUNT * np.dot(weights, FEATURES[nextState, :])
-        bellmanError = expectedReturn - np.dot(weights, FEATURES[currentState, :])
+                expectedReturn += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :])
+        bellmanError = expectedReturn - np.dot(theta, FEATURES[currentState, :])
         # accumulate gradients
         delta += bellmanError * FEATURES[currentState, :]
     # derivatives happen to be the same matrix due to the linearity
-    weights += alpha / len(STATES) * delta
+    theta += alpha / len(STATES) * delta
+
+# temporal difference with gradient correction
+# @state: current state
+# @theta: weight of each component of the feature vector
+# @weight: auxiliary trace for gradient correction
+# @alpha: step size of @theta
+# @beta: step size of @weight
+def TDC(state, theta, weight, alpha, beta):
+    action = behaviorPolicy(state)
+    nextState = takeAction(state, action)
+    # get the importance ratio
+    if action == DASHED:
+        rho = 0.0
+    else:
+        rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
+    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
+            np.dot(FEATURES[state, :], theta)
+    theta += alpha * rho * (delta * FEATURES[state, :] - DISCOUNT * FEATURES[nextState, :] * np.dot(FEATURES[state, :], weight))
+    weight += beta * rho * (delta - np.dot(FEATURES[state, :], weight)) * FEATURES[state, :]
+    return nextState
+
+# expected temporal difference with gradient correction
+# @theta: weight of each component of the feature vector
+# @weight: auxiliary trace for gradient correction
+# @alpha: step size of @theta
+# @beta: step size of @weight
+def expectedTDC(theta, weight, alpha, beta):
+    # normalize step size
+    alpha /= len(STATES)
+    beta /= len(STATES)
+    for currentState in STATES:
+        # When computing expected update target, if next state is not lower state, importance ratio will be 0,
+        # so we can safely ignore this case and assume next state is always lower state
+        delta = REWARD + DISCOUNT * np.dot(FEATURES[LOWER_STATE, :], theta) - np.dot(FEATURES[currentState, :], theta)
+        expectedUpdateTheta = BEHAVIOR_SOLID_PROBABILITY * 1 / BEHAVIOR_SOLID_PROBABILITY * (
+            delta * FEATURES[currentState, :] - DISCOUNT * FEATURES[LOWER_STATE, :] * np.dot(weight, FEATURES[currentState, :]))
+        theta += alpha * expectedUpdateTheta
+        expectedUpdateWeight = BEHAVIOR_SOLID_PROBABILITY * 1 / BEHAVIOR_SOLID_PROBABILITY * (
+            delta - np.dot(weight, FEATURES[currentState, :])) * FEATURES[currentState, :]
+        weight += beta * expectedUpdateWeight
 
 figureIndex = 0
 
-# Figure 11.2(a), Baird's counterexample
+# Figure 11.2(left), semi-gradient off-policy TD
 def figure11_2_a():
-    # Initial the weights
-    weights = np.ones(FEATURE_SIZE)
-    weights[6] = 10
+    # Initialize the theta
+    theta = np.ones(FEATURE_SIZE)
+    theta[6] = 10
 
     alpha = 0.01
 
@@ -104,8 +153,8 @@ def figure11_2_a():
     thetas = np.zeros((FEATURE_SIZE, steps))
     state = np.random.choice(STATES)
     for step in range(steps):
-        state = semiGradientOffPolicyTD(state, weights, alpha)
-        thetas[:, step] = weights
+        state = semiGradientOffPolicyTD(state, theta, alpha)
+        thetas[:, step] = theta
 
     global figureIndex
     plt.figure(figureIndex)
@@ -114,20 +163,22 @@ def figure11_2_a():
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.xlabel('Steps')
     plt.ylabel('Theta value')
+    plt.title('semi-gradient off-policy TD')
     plt.legend()
 
+# Figure 11.2(right), semi-gradient DP
 def figure11_2_b():
-    # Initial the weights
-    weights = np.ones(FEATURE_SIZE)
-    weights[6] = 10
+    # Initialize the theta
+    theta = np.ones(FEATURE_SIZE)
+    theta[6] = 10
 
     alpha = 0.01
 
     sweeps = 1000
     thetas = np.zeros((FEATURE_SIZE, sweeps))
     for sweep in range(sweeps):
-        semiGradientDP(weights, alpha)
-        thetas[:, sweep] = weights
+        semiGradientDP(theta, alpha)
+        thetas[:, sweep] = theta
 
     global figureIndex
     plt.figure(figureIndex)
@@ -136,9 +187,91 @@ def figure11_2_b():
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.xlabel('Sweeps')
     plt.ylabel('Theta value')
+    plt.title('semi-gradient DP')
+    plt.legend()
+
+# compute RMSVE for a value function parameterized by @theta
+# true value function is always 0 in this example
+def computeRMSVE(theta):
+    return np.sqrt(np.dot(np.power(np.dot(FEATURES, theta), 2), stateDistribution))
+
+# compute RMSPBE for a value function parameterized by @theta
+# true value function is always 0 in this example
+def computeRMSPBE(theta):
+    bellmanError = np.zeros(len(STATES))
+    for state in STATES:
+        for nextState in STATES:
+            if nextState == LOWER_STATE:
+                bellmanError[state] += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :]) - np.dot(theta, FEATURES[state, :])
+    bellmanError = np.dot(np.asarray(projectionMatrix), bellmanError)
+    return np.sqrt(np.dot(np.power(bellmanError, 2), stateDistribution))
+
+# Figure 11.6(left), temporal difference with gradient correction
+def figure11_6_a():
+    # Initialize the theta
+    theta = np.ones(FEATURE_SIZE)
+    theta[6] = 10
+    weight = np.zeros(FEATURE_SIZE)
+
+    alpha = 0.005
+    beta = 0.05
+
+    steps = 1000
+    thetas = np.zeros((FEATURE_SIZE, steps))
+    RMSVE = np.zeros(steps)
+    RMSPBE = np.zeros(steps)
+    state = np.random.choice(STATES)
+    for step in range(steps):
+        state = TDC(state, theta, weight, alpha, beta)
+        thetas[:, step] = theta
+        RMSVE[step] = computeRMSVE(theta)
+        RMSPBE[step] = computeRMSPBE(theta)
+
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    for i in range(FEATURE_SIZE):
+        plt.plot(thetas[i, :], label='theta' + str(i + 1))
+    plt.plot(RMSVE, label='RMSVE')
+    plt.plot(RMSPBE, label='RMSPBE')
+    plt.xlabel('Steps')
+    plt.title('TDC')
+    plt.legend()
+
+# Figure 11.6(right), expected temporal difference with gradient correction
+def figure11_6_b():
+    # Initialize the theta
+    theta = np.ones(FEATURE_SIZE)
+    theta[6] = 10
+    weight = np.zeros(FEATURE_SIZE)
+
+    alpha = 0.005
+    beta = 0.05
+
+    sweeps = 1000
+    thetas = np.zeros((FEATURE_SIZE, sweeps))
+    RMSVE = np.zeros(sweeps)
+    RMSPBE = np.zeros(sweeps)
+    for sweep in range(sweeps):
+        thetas[:, sweep] = theta
+        RMSVE[sweep] = computeRMSVE(theta)
+        RMSPBE[sweep] = computeRMSPBE(theta)
+        expectedTDC(theta, weight, alpha, beta)
+
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    for i in range(FEATURE_SIZE):
+        plt.plot(thetas[i, :], label='theta' + str(i + 1))
+    plt.plot(RMSVE, label='RMSVE')
+    plt.plot(RMSPBE, label='RMSPBE')
+    plt.xlabel('Sweeps')
+    plt.title('Expected TDC')
     plt.legend()
 
 if __name__ == '__main__':
     figure11_2_a()
     figure11_2_b()
+    figure11_6_a()
+    figure11_6_b()
     plt.show()
