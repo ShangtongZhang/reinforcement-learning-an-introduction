@@ -16,7 +16,7 @@ BOARD_ROWS = 3
 BOARD_COLS = 3
 BOARD_SIZE = BOARD_ROWS * BOARD_COLS
 
-class State:
+class State(object):
     def __init__(self):
         # the board is represented by a n * n array,
         # 1 represents chessman of the player who moves first,
@@ -125,7 +125,7 @@ def getAllStates():
 # all possible board configurations
 allStates = getAllStates()
 
-class Judger:
+class Judger(object):
     # @player1: player who will move first, its chessman will be 1
     # @player2: another player with chessman -1
     # @feedback: if True, both players will receive rewards when game is end
@@ -186,7 +186,7 @@ class Judger:
                 return self.currentState.winner
 
 # AI player
-class Player:
+class Player(object):
     # @stepSize: step size to update estimations
     # @exploreRate: possibility to explore
     def __init__(self, stepSize = 0.1, exploreRate=0.1):
@@ -270,7 +270,7 @@ class Player:
 # | 1 | 2 | 3 |
 # | 4 | 5 | 6 |
 # | 7 | 8 | 9 |
-class HumanPlayer:
+class HumanPlayer(object):
     def __init__(self, stepSize = 0.1, exploreRate=0.1):
         self.symbol = None
         self.currentState = None

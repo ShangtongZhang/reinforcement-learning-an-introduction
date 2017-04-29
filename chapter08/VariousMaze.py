@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 # A wrapper class for a maze, containing all the information about the maze.
 # Basically it's initialized to DynaMaze by default, however it can be easily adapted
 # to other maze
-class Maze:
+class Maze(object):
 
     def __init__(self):
         # maze width
@@ -100,7 +100,7 @@ class Maze:
         return [x, y], reward
 
 # a wrapper class for parameters of dyna algorithms
-class DynaParams:
+class DynaParams(object):
 
     def __init__(self):
         # discount
@@ -136,7 +136,7 @@ def chooseAction(state, stateActionValues, maze, dynaParams):
         return argmax(stateActionValues[state[0], state[1], :])
 
 # Trivial model for planning in Dyna-Q
-class TrivialModel:
+class TrivialModel(object):
 
     # @rand: an instance of np.random.RandomState for sampling
     def __init__(self, rand=np.random):
@@ -159,7 +159,7 @@ class TrivialModel:
         return list(state), action, list(newState), reward
 
 # Time-based model for planning in Dyna-Q+
-class TimeModel:
+class TimeModel(object):
 
     # @maze: the maze instance. Indeed it's not very reasonable to give access to maze to the model.
     # @timeWeight: also called kappa, the weight for elapsed time in sampling reward, it need to be small

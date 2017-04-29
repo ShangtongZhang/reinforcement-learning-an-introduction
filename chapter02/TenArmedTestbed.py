@@ -14,7 +14,7 @@ import numpy as np
 from utils.utils import *
 import seaborn as sns
 
-class Bandit:
+class Bandit(object):
     # @kArm: # of arms
     # @epsilon: probability for exploration in epsilon-greedy algorithm
     # @initial: initial estimation for each action

@@ -74,7 +74,7 @@ def getAction():
     return -1
 
 # a wrapper class for aggregation value function
-class ValueFunction:
+class ValueFunction(object):
     # @numOfGroups: # of aggregations
     def __init__(self, numOfGroups):
         self.numOfGroups = numOfGroups
@@ -98,7 +98,7 @@ class ValueFunction:
         self.params[groupIndex] += delta
 
 # a wrapper class for tile coding value function
-class TilingsValueFunction:
+class TilingsValueFunction(object):
     # @numOfTilings: # of tilings
     # @tileWidth: each tiling has several tiles, this parameter specifies the width of each tile
     # @tilingOffset: specifies how tilings are put together
@@ -146,7 +146,7 @@ class TilingsValueFunction:
 # a wrapper class for polynomial / Fourier -based value function
 POLYNOMIAL_BASES = 0
 FOURIER_BASES = 1
-class BasesValueFunction:
+class BasesValueFunction(object):
     # @order: # of bases, each function also has one more constant parameter (called bias in machine learning)
     # @type: polynomial bases or Fourier bases
     def __init__(self, order, type):
