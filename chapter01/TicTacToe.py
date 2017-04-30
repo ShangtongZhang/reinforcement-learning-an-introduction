@@ -150,8 +150,8 @@ class Judger:
             self.p1.feedReward(0)
             self.p2.feedReward(1)
         else:
-            self.p1.feedReward(0)
-            self.p2.feedReward(0)
+            self.p1.feedReward(0.1)
+            self.p2.feedReward(0.5)
 
     def feedCurrentState(self):
         self.p1.feedState(self.currentState)
