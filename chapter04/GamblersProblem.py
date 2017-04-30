@@ -48,7 +48,7 @@ for state in states[1:GOAL]:
     actionReturns = []
     for action in actions:
         actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
-    # due to tie and precision, can't reproduce the optimal policy in book
+    # due to tie, can't reproduce the optimal policy in book
     policy[state] = actions[argmax(actionReturns)]
 
 # figure 4.3
