@@ -30,7 +30,7 @@ coordinates are to be returned without being converted to indices).
 
 basehash = hash
 
-class IHT:
+class IHT(object):
     "Structure to handle collisions"
     def __init__(self, sizeval):
         self.size = sizeval

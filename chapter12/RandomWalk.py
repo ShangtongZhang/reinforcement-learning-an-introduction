@@ -31,7 +31,7 @@ realStateValues[0] = realStateValues[N_STATES + 1] = 0.0
 # base class for lambda-based algorithms in this chapter
 # In this example, we use the simplest linear feature function, state aggregation.
 # And we use exact 19 groups, so the weights for each group is exact the value for that state
-class ValueFunction:
+class ValueFunction(object):
     # @rate: lambda, as it's a keyword in python, so I call it rate
     # @stepSize: alpha, step size for update
     def __init__(self, rate, stepSize):

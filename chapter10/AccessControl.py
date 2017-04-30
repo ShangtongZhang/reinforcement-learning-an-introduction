@@ -39,7 +39,7 @@ BETA = 0.01
 EPSILON = 0.1
 
 # a wrapper class for differential semi-gradient Sarsa state-action function
-class ValueFunction:
+class ValueFunction(object):
     # In this example I use the tiling software instead of implementing standard tiling by myself
     # One important thing is that tiling is only a map from (state, action) to a series of indices
     # It doesn't matter whether the indices have meaning, only if this map satisfy some property

@@ -64,7 +64,7 @@ def play():
     return trajectory
 
 # base class for importance sampling
-class ImportanceSampling:
+class ImportanceSampling(object):
     def __init__(self):
         self.name = ''
         # track the episode

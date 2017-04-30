@@ -22,7 +22,7 @@ def pad(array, length, defaultValue=0.0):
     else:
         return array + [defaultValue] * (length - len(array))
 
-class PriorityQueue:
+class PriorityQueue(object):
 
     def __init__(self):
         self.pq = []

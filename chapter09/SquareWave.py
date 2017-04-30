@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # wrapper class for an interval
 # readability is more important than efficiency, so I won't use many tricks
-class Interval:
+class Interval(object):
     # [@left, @right)
     def __init__(self, left, right):
         self.left = left
@@ -45,7 +45,7 @@ def sample(n):
     return samples
 
 # wrapper class for value function
-class ValueFunction:
+class ValueFunction(object):
     # @domain: domain of this function, an instance of Interval
     # @alpha: basic step size for one update
     def __init__(self, featureWidth, domain=domain, alpha=0.2, numOfFeatures=50):
