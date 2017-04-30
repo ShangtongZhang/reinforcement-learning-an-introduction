@@ -125,19 +125,66 @@ def TDC(state, theta, weight, alpha, beta):
 # @alpha: step size of @theta
 # @beta: step size of @weight
 def expectedTDC(theta, weight, alpha, beta):
-    # normalize step size
-    alpha /= len(STATES)
-    beta /= len(STATES)
     for currentState in STATES:
         # When computing expected update target, if next state is not lower state, importance ratio will be 0,
         # so we can safely ignore this case and assume next state is always lower state
         delta = REWARD + DISCOUNT * np.dot(FEATURES[LOWER_STATE, :], theta) - np.dot(FEATURES[currentState, :], theta)
-        expectedUpdateTheta = BEHAVIOR_SOLID_PROBABILITY * 1 / BEHAVIOR_SOLID_PROBABILITY * (
+        rho = 1 / BEHAVIOR_SOLID_PROBABILITY
+        # Under behavior policy, state distribution is uniform, so the probability for each state is 1.0 / len(STATES)
+        expectedUpdateTheta = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
             delta * FEATURES[currentState, :] - DISCOUNT * FEATURES[LOWER_STATE, :] * np.dot(weight, FEATURES[currentState, :]))
         theta += alpha * expectedUpdateTheta
-        expectedUpdateWeight = BEHAVIOR_SOLID_PROBABILITY * 1 / BEHAVIOR_SOLID_PROBABILITY * (
+        expectedUpdateWeight = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
             delta - np.dot(weight, FEATURES[currentState, :])) * FEATURES[currentState, :]
         weight += beta * expectedUpdateWeight
+
+    # if *accumulate* expected update and actually apply update here, then it's synchronous
+    # theta += alpha * expectedUpdateTheta
+    # weight += beta * expectedUpdateWeight
+
+INTEREST = 1.0
+
+def emphaticTD(state, theta, emphasis, alpha):
+    action = behaviorPolicy(state)
+    nextState = takeAction(state, action)
+    previousRho = (1.0 / BEHAVIOR_SOLID_PROBABILITY) if state == LOWER_STATE else 0.0
+    emphasis = DISCOUNT * previousRho * emphasis + INTEREST
+    # get the importance ratio
+    rho = 0.0 if action == DASHED else (1.0 / BEHAVIOR_SOLID_PROBABILITY)
+    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
+            np.dot(FEATURES[state, :], theta)
+    theta += alpha * emphasis * rho * delta * FEATURES[state, :]
+    return nextState, emphasis
+
+def expectedEmphaticTD(theta, emphasis, alpha):
+    for state in STATES:
+        if state == LOWER_STATE:
+            rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
+        else:
+            rho = 0
+        emphasis = DISCOUNT * rho * emphasis + INTEREST
+        # emphasis = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * DISCOUNT * 1 / BEHAVIOR_SOLID_PROBABILITY * emphasis + INTEREST
+        nextState = LOWER_STATE
+        delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - np.dot(FEATURES[state, :], theta)
+        expectedUpdate = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * emphasis * 1 / BEHAVIOR_SOLID_PROBABILITY * delta * FEATURES[state, :]
+        theta += alpha * expectedUpdate
+    return emphasis
+
+# compute RMSVE for a value function parameterized by @theta
+# true value function is always 0 in this example
+def computeRMSVE(theta):
+    return np.sqrt(np.dot(np.power(np.dot(FEATURES, theta), 2), stateDistribution))
+
+# compute RMSPBE for a value function parameterized by @theta
+# true value function is always 0 in this example
+def computeRMSPBE(theta):
+    bellmanError = np.zeros(len(STATES))
+    for state in STATES:
+        for nextState in STATES:
+            if nextState == LOWER_STATE:
+                bellmanError[state] += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :]) - np.dot(theta, FEATURES[state, :])
+    bellmanError = np.dot(np.asarray(projectionMatrix), bellmanError)
+    return np.sqrt(np.dot(np.power(bellmanError, 2), stateDistribution))
 
 figureIndex = 0
 
@@ -190,22 +237,6 @@ def figure11_2_b():
     plt.title('semi-gradient DP')
     plt.legend()
 
-# compute RMSVE for a value function parameterized by @theta
-# true value function is always 0 in this example
-def computeRMSVE(theta):
-    return np.sqrt(np.dot(np.power(np.dot(FEATURES, theta), 2), stateDistribution))
-
-# compute RMSPBE for a value function parameterized by @theta
-# true value function is always 0 in this example
-def computeRMSPBE(theta):
-    bellmanError = np.zeros(len(STATES))
-    for state in STATES:
-        for nextState in STATES:
-            if nextState == LOWER_STATE:
-                bellmanError[state] += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :]) - np.dot(theta, FEATURES[state, :])
-    bellmanError = np.dot(np.asarray(projectionMatrix), bellmanError)
-    return np.sqrt(np.dot(np.power(bellmanError, 2), stateDistribution))
-
 # Figure 11.6(left), temporal difference with gradient correction
 def figure11_6_a():
     # Initialize the theta
@@ -253,10 +284,10 @@ def figure11_6_b():
     RMSVE = np.zeros(sweeps)
     RMSPBE = np.zeros(sweeps)
     for sweep in range(sweeps):
+        expectedTDC(theta, weight, alpha, beta)
         thetas[:, sweep] = theta
         RMSVE[sweep] = computeRMSVE(theta)
         RMSPBE[sweep] = computeRMSPBE(theta)
-        expectedTDC(theta, weight, alpha, beta)
 
     global figureIndex
     plt.figure(figureIndex)
@@ -269,9 +300,38 @@ def figure11_6_b():
     plt.title('Expected TDC')
     plt.legend()
 
+def figure11_7():
+    # Initialize the theta
+    theta = np.ones(FEATURE_SIZE)
+    theta[6] = 10
+
+    alpha = 0.03
+
+    sweeps = 1000
+    thetas = np.zeros((FEATURE_SIZE, sweeps))
+    RMSVE = np.zeros(sweeps)
+    emphasis = 0.0
+    state = np.random.choice(STATES)
+    for sweep in range(sweeps):
+        state, emphasis = emphaticTD(state, theta, emphasis, alpha)
+        # emphasis = expectedEmphaticTD(theta, emphasis, alpha)
+        thetas[:, sweep] = theta
+        RMSVE[sweep] = computeRMSVE(theta)
+
+    global figureIndex
+    plt.figure(figureIndex)
+    figureIndex += 1
+    for i in range(FEATURE_SIZE):
+        plt.plot(thetas[i, :], label='theta' + str(i + 1))
+    plt.plot(RMSVE, label='RMSVE')
+    plt.xlabel('Sweeps')
+    plt.title('emphatic TD')
+    plt.legend()
+
 if __name__ == '__main__':
-    figure11_2_a()
-    figure11_2_b()
-    figure11_6_a()
-    figure11_6_b()
+    # figure11_2_a()
+    # figure11_2_b()
+    # figure11_6_a()
+    # figure11_6_b()
+    figure11_7()
     plt.show()
