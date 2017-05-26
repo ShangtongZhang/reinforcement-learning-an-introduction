@@ -1,6 +1,6 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 - 2017 Shangtong Zhang(zhangshangtong.cpp@gmail.com)           #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
@@ -142,33 +142,35 @@ def expectedTDC(theta, weight, alpha, beta):
     # theta += alpha * expectedUpdateTheta
     # weight += beta * expectedUpdateWeight
 
-INTEREST = 1.0
+# interest is 1 for every state
+INTEREST = 1
 
-def emphaticTD(state, theta, emphasis, alpha):
-    action = behaviorPolicy(state)
-    nextState = takeAction(state, action)
-    previousRho = (1.0 / BEHAVIOR_SOLID_PROBABILITY) if state == LOWER_STATE else 0.0
-    emphasis = DISCOUNT * previousRho * emphasis + INTEREST
-    # get the importance ratio
-    rho = 0.0 if action == DASHED else (1.0 / BEHAVIOR_SOLID_PROBABILITY)
-    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
-            np.dot(FEATURES[state, :], theta)
-    theta += alpha * emphasis * rho * delta * FEATURES[state, :]
-    return nextState, emphasis
-
+# expected update of ETD
+# @theta: weight of each component of the feature vector
+# @emphasis: current emphasis
+# @alpha: step size of @theta
+# @return: expected next emphasis
 def expectedEmphaticTD(theta, emphasis, alpha):
+    # we perform synchronous update for both theta and emphasis
+    expectedUpdate = 0
+    expectedNextEmphasis = 0.0
+    # go through all the states
     for state in STATES:
+        # compute rho(t-1)
         if state == LOWER_STATE:
             rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
         else:
             rho = 0
-        emphasis = DISCOUNT * rho * emphasis + INTEREST
-        # emphasis = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * DISCOUNT * 1 / BEHAVIOR_SOLID_PROBABILITY * emphasis + INTEREST
+        # update emphasis
+        nextEmphasis = DISCOUNT * rho * emphasis + INTEREST
+        expectedNextEmphasis += nextEmphasis
+        # When computing expected update target, if next state is not lower state, importance ratio will be 0,
+        # so we can safely ignore this case and assume next state is always lower state
         nextState = LOWER_STATE
         delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - np.dot(FEATURES[state, :], theta)
-        expectedUpdate = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * emphasis * 1 / BEHAVIOR_SOLID_PROBABILITY * delta * FEATURES[state, :]
-        theta += alpha * expectedUpdate
-    return emphasis
+        expectedUpdate += 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * nextEmphasis * 1 / BEHAVIOR_SOLID_PROBABILITY * delta * FEATURES[state, :]
+    theta += alpha * expectedUpdate
+    return expectedNextEmphasis / len(STATES)
 
 # compute RMSVE for a value function parameterized by @theta
 # true value function is always 0 in this example
@@ -300,6 +302,7 @@ def figure11_6_b():
     plt.title('Expected TDC')
     plt.legend()
 
+# Figure 11.7, expected ETD
 def figure11_7():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
@@ -311,10 +314,8 @@ def figure11_7():
     thetas = np.zeros((FEATURE_SIZE, sweeps))
     RMSVE = np.zeros(sweeps)
     emphasis = 0.0
-    state = np.random.choice(STATES)
     for sweep in range(sweeps):
-        state, emphasis = emphaticTD(state, theta, emphasis, alpha)
-        # emphasis = expectedEmphaticTD(theta, emphasis, alpha)
+        emphasis = expectedEmphaticTD(theta, emphasis, alpha)
         thetas[:, sweep] = theta
         RMSVE[sweep] = computeRMSVE(theta)
 
@@ -329,9 +330,9 @@ def figure11_7():
     plt.legend()
 
 if __name__ == '__main__':
-    # figure11_2_a()
-    # figure11_2_b()
-    # figure11_6_a()
-    # figure11_6_b()
+    figure11_2_a()
+    figure11_2_b()
+    figure11_6_a()
+    figure11_6_b()
     figure11_7()
     plt.show()
