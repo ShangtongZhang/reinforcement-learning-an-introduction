@@ -1,5 +1,7 @@
 #######################################################################
-# Copyright (C) 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)    #
+# Copyright (C)                                                       #
+# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -46,7 +48,7 @@ for state in states[1:GOAL]:
     actionReturns = []
     for action in actions:
         actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
-    # due to tie and precision, can't reproduce the optimal policy in book
+    # due to tie, can't reproduce the optimal policy in book
     policy[state] = actions[argmax(actionReturns)]
 
 # figure 4.3

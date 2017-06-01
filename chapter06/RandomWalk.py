@@ -1,5 +1,7 @@
 #######################################################################
-# Copyright (C) 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)    #
+# Copyright (C)                                                       #
+# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -159,7 +161,7 @@ def batchUpdating(method, episodes, alpha=0.001):
             # calculate rms error
             errors.append(np.sqrt(np.sum(np.power(currentStates - trueValue, 2)) / 5.0))
         totalErrors += np.asarray(errors)
-    totalErrors /= episodes - 1
+    totalErrors /= runs
     return totalErrors
 
 def figure6_2():

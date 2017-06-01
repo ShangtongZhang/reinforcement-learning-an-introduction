@@ -3,6 +3,7 @@
 # 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
 # 2016 Jan Hakenberg(jan.hakenberg@gmail.com)                         #
 # 2016 Tian Jun(tianjun.cpp@gmail.com)                                #
+# 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
@@ -149,8 +150,8 @@ class Judger:
             self.p1.feedReward(0)
             self.p2.feedReward(1)
         else:
-            self.p1.feedReward(0)
-            self.p2.feedReward(0)
+            self.p1.feedReward(0.1)
+            self.p2.feedReward(0.5)
 
     def feedCurrentState(self):
         self.p1.feedState(self.currentState)
