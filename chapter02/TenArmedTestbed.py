@@ -11,7 +11,6 @@
 from __future__ import print_function
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.utils import *
 import seaborn as sns
 
 class Bandit:
@@ -67,12 +66,12 @@ class Bandit:
         if self.UCBParam is not None:
             UCBEst = self.qEst + \
                      self.UCBParam * np.sqrt(np.log(self.time + 1) / (np.asarray(self.actionCount) + 1))
-            return argmax(UCBEst)
+            return np.argmax(UCBEst)
         if self.gradient:
             expEst = np.exp(self.qEst)
             self.actionProb = expEst / np.sum(expEst)
             return np.random.choice(self.indices, p=self.actionProb)
-        return argmax(self.qEst)
+        return np.argmax(self.qEst)
 
     # take an action, update estimation for this action
     def takeAction(self, action):

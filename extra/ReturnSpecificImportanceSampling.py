@@ -7,9 +7,14 @@
 #######################################################################
 
 from __future__ import print_function
-from utils.utils import *
 import numpy as np
 import matplotlib.pyplot as plt
+
+def pad(array, length, defaultValue=0.0):
+    if len(array) > length:
+        return array[0: length]
+    else:
+        return array + [defaultValue] * (length - len(array))
 
 # This example is adapted from example 5.5, Infinite Variance
 # I made following modifications to the original example to demonstrate the advantage

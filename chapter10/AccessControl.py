@@ -8,8 +8,7 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.TileCoding import *
-from utils.utils import *
+from TileCoding import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -103,7 +102,7 @@ def getAction(freeServers, priority, valueFunction):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(ACTIONS)
     values = [valueFunction.value(freeServers, priority, action) for action in ACTIONS]
-    return argmax(values)
+    return np.argmax(values)
 
 # take an action
 def takeAction(freeServers, priority, action):
@@ -168,7 +167,7 @@ def figure10_5():
             if freeServers == 0:
                 axisZ[priority, freeServers] = REJECT
             else:
-                axisZ[priority, freeServers] = argmax(values)
+                axisZ[priority, freeServers] = np.argmax(values)
     print('Policy (0 Reject, 1 Accept)')
     print(axisZ)
     ax.scatter(axisX, axisY, axisZ)

@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
 import matplotlib.pyplot as plt
 import functools
 
@@ -68,7 +67,7 @@ def behaviorPolicy(state, stateActionValues):
     if state == goalState or np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(ACTIONS)
     else:
-        return argmax(stateActionValues[x, y, :])
+        return np.argmax(stateActionValues[x, y, :])
 
 # play for an episode for Q-learning
 def qLearning(stateActionValues, alpha):
@@ -113,7 +112,7 @@ def nStepTreeBackup(stateActionValues, n, alpha):
             coef = 1
             for t in range(updateTime + 1, min(T, updateTime + n)):
                 (x, y), action, reward = trajectories[t]
-                bestAction = argmax(stateActionValues[x, y, :])
+                bestAction = np.argmax(stateActionValues[x, y, :])
                 if action == bestAction:
                     target += coef * reward
                 else:
@@ -204,7 +203,7 @@ def printPolicy(stateActionValues):
             if [i, j] == goalState:
                 optimalPolicy[-1].append('G')
                 continue
-            bestAction = argmax(stateActionValues[i, j, :])
+            bestAction = np.argmax(stateActionValues[i, j, :])
             if bestAction == ACTION_UP:
                 optimalPolicy[-1].append('U')
             elif bestAction == ACTION_DOWN:

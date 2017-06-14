@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
 import matplotlib.pyplot as plt
 # goal
 GOAL = 100
@@ -49,7 +48,7 @@ for state in states[1:GOAL]:
     for action in actions:
         actionReturns.append(headProb * stateValue[state + action] + (1 - headProb) * stateValue[state - action])
     # due to tie, can't reproduce the optimal policy in book
-    policy[state] = actions[argmax(actionReturns)]
+    policy[state] = actions[np.argmax(actionReturns)]
 
 # figure 4.3
 plt.figure(1)

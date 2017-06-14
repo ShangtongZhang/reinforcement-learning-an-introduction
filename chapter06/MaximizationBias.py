@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
 import matplotlib.pyplot as plt
 
 # state A
@@ -53,7 +52,7 @@ def chooseAction(state, stateActionValues):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(stateActions[state])
     else:
-        return argmax(stateActionValues[state])
+        return np.argmax(stateActionValues[state])
 
 # take @action in @state, return the reward
 def takeAction(state, action):
@@ -87,7 +86,7 @@ def qLearning(stateActionValues, stateActionValues2=None):
             else:
                 currentStateActionValues = stateActionValues2
                 anotherStateActionValues = stateActionValues
-            bestAction = argmax(currentStateActionValues[newState])
+            bestAction = np.argmax(currentStateActionValues[newState])
             targetValue = anotherStateActionValues[newState][bestAction]
 
         # Q-Learning update

@@ -9,7 +9,6 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import argmax
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -211,7 +210,7 @@ def monteCarloES(nEpisodes):
         playerSum -= 12
         dealerCard -= 1
         # get argmax of the average returns(s, a)
-        return argmax(stateActionValues[playerSum, dealerCard, usableAce, :]
+        return np.argmax(stateActionValues[playerSum, dealerCard, usableAce, :]
                       / stateActionPairCount[playerSum, dealerCard, usableAce, :])
 
     # play for several episodes
@@ -309,8 +308,8 @@ def figure5_3():
         for j in range(10):
             stateValueNoUsableAce[i, j] = np.max(stateActionValues[i, j, 0, :])
             stateValueUsableAce[i, j] = np.max(stateActionValues[i, j, 1, :])
-            actionNoUsableAce[i, j] = argmax(stateActionValues[i, j, 0, :])
-            actionUsableAce[i, j] = argmax(stateActionValues[i, j, 1, :])
+            actionNoUsableAce[i, j] = np.argmax(stateActionValues[i, j, 0, :])
+            actionUsableAce[i, j] = np.argmax(stateActionValues[i, j, 1, :])
     prettyPrint(stateValueUsableAce, 'Optimal state value with usable Ace')
     prettyPrint(stateValueNoUsableAce, 'Optimal state value with no usable Ace')
     prettyPrint(actionUsableAce, 'Optimal policy with usable Ace', 'Action (0 Hit, 1 Stick)')

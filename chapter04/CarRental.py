@@ -11,7 +11,6 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from utils.utils import *
 from math import *
 
 # maximum # of cars in each location
@@ -167,7 +166,7 @@ while True:
                     actionReturns.append(expectedReturn([i, j], action, stateValue))
                 else:
                     actionReturns.append(-float('inf'))
-            bestAction = argmax(actionReturns)
+            bestAction = np.argmax(actionReturns)
             newPolicy[i, j] = actions[bestAction]
 
         # if policy is stable

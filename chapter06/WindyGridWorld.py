@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
 import matplotlib.pyplot as plt
 
 # world height
@@ -65,7 +64,7 @@ def oneEpisode():
     if np.random.binomial(1, EPSILON) == 1:
         currentAction = np.random.choice(actions)
     else:
-        currentAction = argmax(stateActionValues[currentState[0], currentState[1], :])
+        currentAction = np.argmax(stateActionValues[currentState[0], currentState[1], :])
 
     # keep going until get to the goal state
     while currentState != goalState:
@@ -73,7 +72,7 @@ def oneEpisode():
         if np.random.binomial(1, EPSILON) == 1:
             newAction = np.random.choice(actions)
         else:
-            newAction = argmax(stateActionValues[newState[0], newState[1], :])
+            newAction = np.argmax(stateActionValues[newState[0], newState[1], :])
         # Sarsa update
         stateActionValues[currentState[0], currentState[1], currentAction] += \
             ALPHA * (REWARD + stateActionValues[newState[0], newState[1], newAction] -
@@ -109,7 +108,7 @@ for i in range(0, WORLD_HEIGHT):
         if [i, j] == goalState:
             optimalPolicy[-1].append('G')
             continue
-        bestAction = argmax(stateActionValues[i, j, :])
+        bestAction = np.argmax(stateActionValues[i, j, :])
         if bestAction == ACTION_UP:
             optimalPolicy[-1].append('U')
         elif bestAction == ACTION_DOWN:

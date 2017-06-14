@@ -6,7 +6,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 
 > If you have any confusion about the code or want to report a bug, please open an issue instead of emailing me directly. If you are interested in deep RL implementations, you may find [this](https://github.com/ShangtongZhang/DeepRL) helpful.
 
-# Contents
+# Contents 
 
 > Click to view the sample output
 
@@ -91,7 +91,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 ```commandline
 git clone https://github.com/ShangtongZhang/reinforcement-learning-an-introduction.git
 cd reinforcement-learning-an-introduction
-python chapterXX/XXX.py
+python XXX.py
 ```
 
 # Contribution

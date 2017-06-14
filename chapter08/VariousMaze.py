@@ -8,8 +8,39 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.utils import *
 import matplotlib.pyplot as plt
+import itertools
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self.pq = []
+        self.entry_finder = {}
+        self.REMOVED = '<removed-task>'
+        self.counter = itertools.count()
+
+    def addItem(self, item, priority=0):
+        if item in self.entry_finder:
+            self.removeItem(item)
+        count = next(self.counter)
+        entry = [priority, count, item]
+        self.entry_finder[item] = entry
+        heapq.heappush(self.pq, entry)
+
+    def removeItem(self, item):
+        entry = self.entry_finder.pop(item)
+        entry[-1] = self.REMOVED
+
+    def popTask(self):
+        while self.pq:
+            priority, count, item = heapq.heappop(self.pq)
+            if item is not self.REMOVED:
+                del self.entry_finder[item]
+                return item, priority
+        raise KeyError('pop from an empty priority queue')
+
+    def empty(self):
+        return not self.entry_finder
 
 # A wrapper class for a maze, containing all the information about the maze.
 # Basically it's initialized to DynaMaze by default, however it can be easily adapted
@@ -133,7 +164,7 @@ def chooseAction(state, stateActionValues, maze, dynaParams):
     if np.random.binomial(1, dynaParams.epsilon) == 1:
         return np.random.choice(maze.actions)
     else:
-        return argmax(stateActionValues[state[0], state[1], :])
+        return np.argmax(stateActionValues[state[0], state[1], :])
 
 # Trivial model for planning in Dyna-Q
 class TrivialModel:
@@ -539,7 +570,7 @@ def printActions(stateActionValues, maze):
             if [i, j] in maze.obstacles:
                 bestActions[-1].append('X')
                 continue
-            bestAction = argmax(stateActionValues[i, j, :])
+            bestAction = np.argmax(stateActionValues[i, j, :])
             if bestAction == maze.ACTION_UP:
                 bestActions[-1].append('U')
             if bestAction == maze.ACTION_DOWN:
@@ -561,7 +592,7 @@ def checkPath(stateActionValues, maze):
     currentState = maze.START_STATE
     steps = 0
     while currentState not in maze.GOAL_STATES:
-        bestAction = argmax(stateActionValues[currentState[0], currentState[1], :])
+        bestAction = np.argmax(stateActionValues[currentState[0], currentState[1], :])
         currentState, _ = maze.takeAction(currentState, bestAction)
         steps += 1
         if steps > maxSteps:

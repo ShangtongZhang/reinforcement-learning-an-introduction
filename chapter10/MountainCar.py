@@ -8,8 +8,7 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.TileCoding import *
-from utils.utils import *
+from TileCoding import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -103,7 +102,7 @@ def getAction(position, velocity, valueFunction):
     values = []
     for action in ACTIONS:
         values.append(valueFunction.value(position, velocity, action))
-    return argmax(values) - 1
+    return np.argmax(values) - 1
 
 # semi-gradient n-step Sarsa
 # @valueFunction: state value function to learn

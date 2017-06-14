@@ -7,7 +7,6 @@
 #######################################################################
 
 from __future__ import print_function
-from utils.utils import *
 import numpy as np
 
 WORLD_SIZE = 5
