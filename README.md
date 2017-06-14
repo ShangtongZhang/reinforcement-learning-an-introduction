@@ -90,7 +90,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 # Usage
 ```commandline
 git clone https://github.com/ShangtongZhang/reinforcement-learning-an-introduction.git
-cd reinforcement-learning-an-introduction
+cd reinforcement-learning-an-introduction/chapterXX
 python XXX.py
 ```
 
