@@ -80,7 +80,7 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 5. [Figure 12.11: Summary comparison of Sarsa(λ) algorithms on Mountain Car](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_11)
 
 # Environment
-* Python2 || Python3
+* Python2 or Python3
 * Numpy
 * Matplotlib
 * Six
@@ -105,7 +105,6 @@ Following are known missing figures/examples:
 * Example 5.2: Soap Bubble
 * Example 8.5: Rod Maneuvering
 * Figure 12.14: The effect of λ (I don't have time to replicate it for now)
-* Chapter 13: Some examples about policy gradient
 * Chapter 14 & 15 are about psychology and neuroscience
 * Chapter 16: Backgammon, The Acrobot, Go
 
