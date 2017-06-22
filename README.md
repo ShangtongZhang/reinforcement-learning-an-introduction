@@ -4,7 +4,7 @@
 
 Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction (2nd Edition)*](http://incompleteideas.net/sutton/book/the-book-2nd.html)
 
-> If you have any confusion about the code or want to report a bug, please open an issue instead of emailing me directly. If you are interested in deep RL implementations, you may find [this](https://github.com/ShangtongZhang/DeepRL) helpful.
+> If you have any confusion about the code or want to report a bug, please open an issue instead of emailing me directly.
 
 # Contents 
 
@@ -69,16 +69,15 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 
 ### Chapter 11
 1. [Figure 11.2: Baird's Counterexample](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#11_2)
+2. [Figure 11.6: The behavior of the TDC algorithm on Baird’s counterexample](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#11_6)
+3. [Figure 11.7: The behavior of the ETD algorithm in expectation on Baird’s counterexample](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#11_7)
 
 ### Chapter 12
 1. [Figure 12.3: Off-line λ-return algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_3)
 2. [Figure 12.6: TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_6)
-3. [Figure 12.7: True online TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_7)
-
-### Extra
-1. [Return Specific Importance Sampling](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_1)
-2. [N-Step Tree Backup & N-Step Q(σ)](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_2)
-3. [Sum of TD errors](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#E_3)
+3. [Figure 12.8: True online TD(λ) algorithm on 19-state random walk](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_8)
+4. [Figure 12.10: Sarsa(λ) with replacing traces on Mountain Car](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_10)
+5. [Figure 12.11: Summary comparison of Sarsa(λ) algorithms on Mountain Car](https://shangtongzhang.github.io/reinforcement-learning-an-introduction/#12_11)
 
 # Environment
 * Python2 || Python3
@@ -105,6 +104,7 @@ Following are known missing figures/examples:
 * Example 3.6: Draw Poker
 * Example 5.2: Soap Bubble
 * Example 8.5: Rod Maneuvering
+* Figure 12.14: The effect of λ (I don't have time to replicate it for now)
 * Chapter 13: Some examples about policy gradient
 * Chapter 14 & 15 are about psychology and neuroscience
 * Chapter 16: Backgammon, The Acrobot, Go

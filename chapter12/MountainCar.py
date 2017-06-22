@@ -7,10 +7,9 @@
 
 from __future__ import print_function
 import numpy as np
-from utils.TileCoding import *
-from utils.utils import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from TileCoding import *
 import pickle
 
 # all possible actions
@@ -200,15 +199,15 @@ def play(evaluator):
 
 figureIndex = 0
 
-# figure 12.9, effect of the lambda and alpha on early performance of Sarsa(lambda)
-def figure12_9(load=False):
+# figure 12.10, effect of the lambda and alpha on early performance of Sarsa(lambda)
+def figure12_10(load=False):
     runs = 30
     episodes = 50
     alphas = np.arange(1, 8) / 4.0
     lams = [0.99, 0.95, 0.5, 0]
 
     if load:
-        with open('figure12_9.bin', 'rb') as f:
+        with open('figure12_10.bin', 'rb') as f:
             steps = pickle.load(f)
     else:
         steps = np.zeros((len(lams), len(alphas), runs, episodes))
@@ -240,9 +239,9 @@ def figure12_9(load=False):
     plt.ylim([180, 300])
     plt.legend()
 
-# figure 12.10, summary comparision of Sarsa(lambda) algorithms
+# figure 12.11, summary comparision of Sarsa(lambda) algorithms
 # I use 8 tilings rather than 10 tilings
-def figure12_10(load=False):
+def figure12_11(load=False):
     traceTypes = [dutch_trace, replacing_trace, replacing_trace_with_clearing, accumulating_trace]
     alphas = np.arange(0.2, 2.2, 0.2)
     episodes = 20
@@ -251,7 +250,7 @@ def figure12_10(load=False):
     rewards = np.zeros((len(traceTypes), len(alphas), runs, episodes))
 
     if load:
-        with open('figure12_10.bin', 'rb') as f:
+        with open('figure12_11.bin', 'rb') as f:
             rewards = pickle.load(f)
     else:
         for traceInd, trace in enumerate(traceTypes):
@@ -286,8 +285,8 @@ def figure12_10(load=False):
     plt.legend()
 
 if __name__ == '__main__':
-    # figure12_9()
     figure12_10()
+    figure12_11()
     plt.show()
 
 
