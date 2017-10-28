@@ -164,7 +164,8 @@ def chooseAction(state, stateActionValues, maze, dynaParams):
     if np.random.binomial(1, dynaParams.epsilon) == 1:
         return np.random.choice(maze.actions)
     else:
-        return np.argmax(stateActionValues[state[0], state[1], :])
+        values = stateActionValues[state[0], state[1], :]
+        return np.random.choice([action for action, value in enumerate(values) if value == np.max(values)])
 
 # Trivial model for planning in Dyna-Q
 class TrivialModel:
@@ -361,7 +362,9 @@ def prioritizedSweeping(stateActionValues, model, maze, dynaParams):
             priority, sampleState, sampleAction, sampleNewState, sampleReward = model.sample()
 
             # update the state action value for the sample
-            stateActionValues[sampleState[0], sampleState[1], sampleAction] += dynaParams.alpha * priority
+            delta = sampleReward + dynaParams.gamma * np.max(stateActionValues[sampleNewState[0], sampleNewState[1], :]) - \
+                    stateActionValues[sampleState[0], sampleState[1], sampleAction]
+            stateActionValues[sampleState[0], sampleState[1], sampleAction] += dynaParams.alpha * delta
 
             # deal with all the predecessors of the sample state
             for statePre, actionPre, rewardPre in model.predecessor(sampleState):
