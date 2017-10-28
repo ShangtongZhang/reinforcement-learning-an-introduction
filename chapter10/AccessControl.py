@@ -102,7 +102,7 @@ def getAction(freeServers, priority, valueFunction):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(ACTIONS)
     values = [valueFunction.value(freeServers, priority, action) for action in ACTIONS]
-    return np.argmax(values)
+    return np.random.choice([action_ for action_, value_ in enumerate(values) if value_ == np.max(values)])
 
 # take an action
 def takeAction(freeServers, priority, action):

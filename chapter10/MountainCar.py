@@ -102,7 +102,7 @@ def getAction(position, velocity, valueFunction):
     values = []
     for action in ACTIONS:
         values.append(valueFunction.value(position, velocity, action))
-    return np.argmax(values) - 1
+    return np.random.choice([action_ for action_, value_ in enumerate(values) if value_ == np.max(values)]) - 1
 
 # semi-gradient n-step Sarsa
 # @valueFunction: state value function to learn

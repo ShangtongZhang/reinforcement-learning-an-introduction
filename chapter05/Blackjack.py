@@ -210,8 +210,8 @@ def monteCarloES(nEpisodes):
         playerSum -= 12
         dealerCard -= 1
         # get argmax of the average returns(s, a)
-        return np.argmax(stateActionValues[playerSum, dealerCard, usableAce, :]
-                      / stateActionPairCount[playerSum, dealerCard, usableAce, :])
+        values_ = stateActionValues[playerSum, dealerCard, usableAce, :] / stateActionPairCount[playerSum, dealerCard, usableAce, :]
+        return np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
 
     # play for several episodes
     for episode in range(nEpisodes):
@@ -340,7 +340,7 @@ def offPolicy():
 
 
 if __name__ == "__main__":
-    # onPolicy()
+    onPolicy()
     figure5_3()
-    # offPolicy()
+    offPolicy()
 

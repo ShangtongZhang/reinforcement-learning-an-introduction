@@ -64,7 +64,8 @@ def chooseAction(state, stateActionValues):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(actions)
     else:
-        return np.argmax(stateActionValues[state[0], state[1], :])
+        values_ = stateActionValues[state[0], state[1], :]
+        return np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
 
 # an episode with Sarsa
 # @stateActionValues: values for state action pair, will be updated

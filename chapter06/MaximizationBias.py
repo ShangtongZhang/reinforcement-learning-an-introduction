@@ -52,7 +52,8 @@ def chooseAction(state, stateActionValues):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(stateActions[state])
     else:
-        return np.argmax(stateActionValues[state])
+        values_ = stateActionValues[state]
+        return np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
 
 # take @action in @state, return the reward
 def takeAction(state, action):

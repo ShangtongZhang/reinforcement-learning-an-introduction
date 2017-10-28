@@ -64,7 +64,8 @@ def oneEpisode():
     if np.random.binomial(1, EPSILON) == 1:
         currentAction = np.random.choice(actions)
     else:
-        currentAction = np.argmax(stateActionValues[currentState[0], currentState[1], :])
+        values_ = stateActionValues[currentState[0], currentState[1], :]
+        currentAction = np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
 
     # keep going until get to the goal state
     while currentState != goalState:
@@ -72,7 +73,8 @@ def oneEpisode():
         if np.random.binomial(1, EPSILON) == 1:
             newAction = np.random.choice(actions)
         else:
-            newAction = np.argmax(stateActionValues[newState[0], newState[1], :])
+            values_ = stateActionValues[newState[0], newState[1], :]
+            newAction = np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
         # Sarsa update
         stateActionValues[currentState[0], currentState[1], currentAction] += \
             ALPHA * (REWARD + stateActionValues[newState[0], newState[1], newAction] -
