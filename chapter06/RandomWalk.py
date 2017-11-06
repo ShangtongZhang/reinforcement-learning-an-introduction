@@ -104,10 +104,12 @@ def RMSError():
     axisX = np.arange(0, episodes)
     for i, alpha in enumerate(TDAlpha + MCAlpha):
         totalErrors = np.zeros(episodes)
+        linestyle = 'solid'
         if i < len(TDAlpha):
             method = 'TD'
         else:
             method = 'MC'
+            linestyle = 'dashdot'
         for run in range(0, runs):
             errors = []
             currentStates = np.copy(states)
@@ -119,7 +121,7 @@ def RMSError():
                     monteCarlo(currentStates, alpha=alpha)
             totalErrors += np.asarray(errors)
         totalErrors /= runs
-        plt.plot(axisX, totalErrors, label=method + ', alpha=' + str(alpha))
+        plt.plot(axisX, totalErrors, linestyle=linestyle, label=method + ', alpha=' + str(alpha))
     plt.xlabel('episodes')
     plt.legend()
 
