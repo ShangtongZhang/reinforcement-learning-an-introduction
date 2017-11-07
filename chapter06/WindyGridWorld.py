@@ -85,7 +85,6 @@ def oneEpisode():
     return time
 
 # play for 500 episodes to make sure to get a more converged policy
-# episodeLimit = 200
 
 # figure 6.4
 episodeLimit = 500
