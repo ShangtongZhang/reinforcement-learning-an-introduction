@@ -1,12 +1,11 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2017 Ji Yang(jyang7@ualberta.ca)                                    #
 # 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
+# 2017 Ji Yang(jyang7@ualberta.ca)                                    #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
-
 """
 Simulation of applying the in-place version of iterative policy evaluation algorithm in
 the grid world, from Sutton & Barto's RL Book, Section 4.1 Policy Evaluation (Prediction)
@@ -63,7 +62,8 @@ states = []
 for i in range(0, WORLD_SIZE):
     for j in range(0, WORLD_SIZE):
         # handle the top-left and bottom-right terminal state
-        if (i == 0 and j == 0) or (i == WORLD_SIZE - 1 and j == WORLD_SIZE - 1):
+        if (i == 0 and j == 0) or (i == WORLD_SIZE - 1
+                                   and j == WORLD_SIZE - 1):
             continue
         else:
             states.append([i, j])
@@ -85,7 +85,8 @@ while True:
         for action in actions:
             new_state = next_state[i][j][action]
             # expected update by the Bellman equation
-            new_world[i, j] += ACTION_PROB * GAMMA * (REWARD + world[new_state[0], new_state[1]])
+            new_world[i, j] += ACTION_PROB * GAMMA * (
+                REWARD + world[new_state[0], new_state[1]])
 
     # convergence check
     if np.sum(np.abs(world - new_world)) < threshold_delta:
