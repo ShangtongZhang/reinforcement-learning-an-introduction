@@ -95,20 +95,21 @@ def stateValue():
 
 # Figure 6.2 right
 def RMSError():
-    # I'm lazy here, so do not let same alpha value appear in both arrays
-    # For example, if in TD you want to use alpha = 0.2, then in MC you can use alpha = 0.201
+    # Same alpha value can appear in both arrays
     TDAlpha = [0.15, 0.1, 0.05]
     MCAlpha = [0.01, 0.02, 0.03, 0.04]
     episodes = 100 + 1
     runs = 100
     plt.figure(2)
     axisX = np.arange(0, episodes)
-    for alpha in TDAlpha + MCAlpha:
+    for i, alpha in enumerate(TDAlpha + MCAlpha):
         totalErrors = np.zeros(episodes)
-        if alpha in TDAlpha:
+        linestyle = 'solid'
+        if i < len(TDAlpha):
             method = 'TD'
         else:
             method = 'MC'
+            linestyle = 'dashdot'
         for run in range(0, runs):
             errors = []
             currentStates = np.copy(states)
@@ -120,7 +121,7 @@ def RMSError():
                     monteCarlo(currentStates, alpha=alpha)
             totalErrors += np.asarray(errors)
         totalErrors /= runs
-        plt.plot(axisX, totalErrors, label=method + ', alpha=' + str(alpha))
+        plt.plot(axisX, totalErrors, linestyle=linestyle, label=method + ', alpha=' + str(alpha))
     plt.xlabel('episodes')
     plt.legend()
 

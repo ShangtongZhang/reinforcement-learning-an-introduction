@@ -85,7 +85,6 @@ def oneEpisode():
     return time
 
 # play for 500 episodes to make sure to get a more converged policy
-# episodeLimit = 200
 
 # figure 6.4
 episodeLimit = 500
@@ -119,7 +118,8 @@ for i in range(0, WORLD_HEIGHT):
             optimalPolicy[-1].append('L')
         elif bestAction == ACTION_RIGHT:
             optimalPolicy[-1].append('R')
+print('Optimal policy is:')
 for row in optimalPolicy:
     print(row)
-print([str(w) for w in WIND])
+print('Wind strength for each column:\n{}'.format([str(w) for w in WIND]))
 
