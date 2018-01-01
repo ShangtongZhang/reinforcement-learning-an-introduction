@@ -186,15 +186,19 @@ def monteCarloOnPolicy(nEpisodes):
     # initialze counts to 1 to avoid 0 being divided
     statesNoUsableAceCount = np.ones((10, 10))
     for i in range(0, nEpisodes):
-        state, reward, _ = play(targetPolicyPlayer)
-        state[1] -= 12
-        state[2] -= 1
-        if state[0]:
-            statesUsableAceCount[state[1], state[2]] += 1
-            statesUsableAce[state[1], state[2]] += reward
-        else:
-            statesNoUsableAceCount[state[1], state[2]] += 1
-            statesNoUsableAce[state[1], state[2]] += reward
+        state, reward, playerTrajectory = play(targetPolicyPlayer)
+        for _, (usableAce, playerSum, dealerCard) in playerTrajectory:
+            state[0]=usableAce
+            state[1]=playerSum
+            state[2]=dealerCard
+            state[1] -= 12
+            state[2] -= 1
+            if state[0]:
+                statesUsableAceCount[state[1], state[2]] += 1
+                statesUsableAce[state[1], state[2]] += reward
+            else:
+                statesNoUsableAceCount[state[1], state[2]] += 1
+                statesNoUsableAce[state[1], state[2]] += reward
     return statesUsableAce / statesUsableAceCount, statesNoUsableAce / statesNoUsableAceCount
 
 # Monte Carlo with Exploring Starts
