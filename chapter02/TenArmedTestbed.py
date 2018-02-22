@@ -59,8 +59,7 @@ class Bandit:
         # explore
         if self.epsilon > 0:
             if np.random.binomial(1, self.epsilon) == 1:
-                np.random.shuffle(self.indices)
-                return self.indices[0]
+                return np.random.choice(self.indices)
 
         # exploit
         if self.UCBParam is not None:
