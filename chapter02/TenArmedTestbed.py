@@ -208,10 +208,10 @@ def figure2_6(nBandits, time):
                   lambda alpha: Bandit(gradient=True, stepSize=alpha, gradientBaseline=True),
                   lambda coef: Bandit(epsilon=0, stepSize=0.1, UCBParam=coef),
                   lambda initial: Bandit(epsilon=0, initial=initial, stepSize=0.1)]
-    parameters = [np.arange(-7, -1),
-                  np.arange(-5, 2),
-                  np.arange(-4, 3),
-                  np.arange(-2, 3)]
+    parameters = [np.arange(-7, -1, dtype=np.float),
+                  np.arange(-5, 2, dtype=np.float),
+                  np.arange(-4, 3, dtype=np.float),
+                  np.arange(-2, 3, dtype=np.float)]
 
     bandits = [[generator(pow(2, param)) for _ in range(0, nBandits)] for generator, parameter in zip(generators, parameters) for param in parameter]
     _, averageRewards = banditSimulation(nBandits, time, bandits)
