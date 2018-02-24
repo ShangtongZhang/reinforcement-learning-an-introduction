@@ -8,6 +8,8 @@
 
 from __future__ import print_function
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.table import Table
 
 WORLD_SIZE = 5
 A_POS = [0, 1]
@@ -74,6 +76,37 @@ for i in range(0, WORLD_SIZE):
         nextState[i].append(next)
         actionReward[i].append(reward)
 
+
+def draw_image(image):
+    fig, ax = plt.subplots()
+    ax.set_axis_off()
+    tb = Table(ax, bbox=[0,0,1,1])
+
+    nrows, ncols = image.shape
+    width, height = 1.0 / ncols, 1.0 / nrows
+
+    # Add cells
+    for (i,j), val in np.ndenumerate(image):
+        # Index either the first or second item of bkg_colors based on
+        # a checker board pattern
+        idx = [j % 2, (j + 1) % 2][i % 2]
+        color = 'white'
+
+        tb.add_cell(i, j, width, height, text=val, 
+                    loc='center', facecolor=color)
+
+    # Row Labels...
+    for i, label in enumerate(range(len(image))):
+        tb.add_cell(i, -1, width, height, text=label+1, loc='right', 
+                    edgecolor='none', facecolor='none')
+    # Column Labels...
+    for j, label in enumerate(range(len(image))):
+        tb.add_cell(-1, j, width, height/2, text=label+1, loc='center', 
+                           edgecolor='none', facecolor='none')
+    ax.add_table(tb)
+    plt.show()
+
+    
 # for figure 3.5
 while True:
     # keep iteration until convergence
@@ -86,7 +119,7 @@ while True:
                 newWorld[i, j] += actionProb[i][j][action] * (actionReward[i][j][action] + discount * world[newPosition[0], newPosition[1]])
     if np.sum(np.abs(world - newWorld)) < 1e-4:
         print('Random Policy')
-        print(newWorld)
+        draw_image(np.round(newWorld, decimals=2))
         break
     world = newWorld
 
@@ -105,7 +138,7 @@ while True:
             newWorld[i][j] = np.max(values)
     if np.sum(np.abs(world - newWorld)) < 1e-4:
         print('Optimal Policy')
-        print(newWorld)
+        draw_image(np.round(newWorld, decimals=2))
         break
     world = newWorld
 
