@@ -8,6 +8,8 @@
 
 from __future__ import print_function
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.table import Table
 
 WORLD_SIZE = 4
 REWARD = -1.0
@@ -53,7 +55,37 @@ for i in range(0, WORLD_SIZE):
         else:
             states.append([i, j])
 
+def draw_image(image):
+    fig, ax = plt.subplots()
+    ax.set_axis_off()
+    tb = Table(ax, bbox=[0,0,1,1])
+
+    nrows, ncols = image.shape
+    width, height = 1.0 / ncols, 1.0 / nrows
+
+    # Add cells
+    for (i,j), val in np.ndenumerate(image):
+        # Index either the first or second item of bkg_colors based on
+        # a checker board pattern
+        idx = [j % 2, (j + 1) % 2][i % 2]
+        color = 'white'
+
+        tb.add_cell(i, j, width, height, text=val, 
+                    loc='center', facecolor=color)
+
+    # Row Labels...
+    for i, label in enumerate(range(len(image))):
+        tb.add_cell(i, -1, width, height, text=label+1, loc='right', 
+                    edgecolor='none', facecolor='none')
+    # Column Labels...
+    for j, label in enumerate(range(len(image))):
+        tb.add_cell(-1, j, width, height/2, text=label+1, loc='center', 
+                           edgecolor='none', facecolor='none')
+    ax.add_table(tb)
+    plt.show()
+
 # for figure 4.1
+num_iter = 0
 while True:
     # keep iteration until convergence
     newWorld = np.zeros((WORLD_SIZE, WORLD_SIZE))
@@ -64,6 +96,38 @@ while True:
             newWorld[i, j] += ACTION_PROB * (REWARD + world[newPosition[0], newPosition[1]])
     if np.sum(np.abs(world - newWorld)) < 1e-4:
         print('Random Policy')
-        print(newWorld)
+        draw_image(np.round(newWorld, decimals=2))
         break
     world = newWorld
+    num_iter += 1
+print('number of iterations: {}'.format(num_iter))
+
+
+# softmax function
+def softmax(Z):
+    exps = np.exp(Z)
+    return exps / np.sum(exps)
+
+# update the actionProbs along the way in every iteration k
+world = np.zeros((WORLD_SIZE, WORLD_SIZE))
+num_iter = 0
+while True:
+    # keep iteration until convergence
+    newWorld = np.zeros((WORLD_SIZE, WORLD_SIZE))
+    for i, j in states:
+        newPositions = nextState[i][j]
+        currentVals = [world[newPositions[action][0], newPositions[action][1]] for action in actions]
+        actionProbs = {action: prob for action, prob in zip(actions, softmax(currentVals))}
+        
+        for action in actions:
+            newPosition = nextState[i][j][action]
+            # bellman equation
+            newWorld[i, j] += actionProbs[action] * (REWARD + world[newPosition[0], newPosition[1]]) # notice that here updated actionProbs is taken instead of equiprobable actions
+    if np.sum(np.abs(world - newWorld)) < 1e-4:
+        print('Random Policy')
+        draw_image(np.round(newWorld, decimals=2))
+        break
+    world = newWorld
+    num_iter += 1
+
+print('number of iterations: {}'.format(num_iter))
