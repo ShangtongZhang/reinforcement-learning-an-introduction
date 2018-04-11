@@ -158,7 +158,12 @@ def play(policyPlayerFn, initialState=None, initialAction=None):
         if action == ACTION_STAND:
             break
         # if hit, get a new card
-        dealerSum += getCard()
+        new_card = getCard()
+        if new_card == 1 and dealerSum + 11 < 21:
+            dealerSum += 11
+            usableAceDealer = True
+        else:
+            dealerSum += new_card
         # dealer busts
         if dealerSum > 21:
             if usableAceDealer == True:
