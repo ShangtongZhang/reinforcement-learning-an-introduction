@@ -134,7 +134,7 @@ def play(policyPlayerFn, initialState=None, initialAction=None):
             action = policyPlayerFn(usableAcePlayer, playerSum, dealerCard1)
 
         # track player's trajectory for importance sampling
-        playerTrajectory.append([action, (usableAcePlayer, playerSum, dealerCard1)])
+        playerTrajectory.append([(usableAcePlayer, playerSum, dealerCard1), action])
 
         if action == ACTION_STAND:
             break
@@ -192,8 +192,7 @@ def monteCarloOnPolicy(nEpisodes):
     statesNoUsableAceCount = np.ones((10, 10))
     for i in range(0, nEpisodes):
         state, reward, playerTrajectory = play(targetPolicyPlayer)
-        playerTrajectory.insert(0, (None, state))
-        for _, (usableAce, playerSum, dealerCard) in playerTrajectory:
+        for (usableAce, playerSum, dealerCard), _ in playerTrajectory:
             playerSum -= 12
             dealerCard -= 1
             if usableAce:
@@ -230,7 +229,7 @@ def monteCarloES(nEpisodes):
                        np.random.choice(range(1, 11))]
         initialAction = np.random.choice(actions)
         _, reward, trajectory = play(behaviorPolicy, initialState, initialAction)
-        for action, (usableAce, playerSum, dealerCard) in trajectory:
+        for (usableAce, playerSum, dealerCard), action in trajectory:
             usableAce = int(usableAce)
             playerSum -= 12
             dealerCard -= 1
@@ -251,7 +250,7 @@ def monteCarloOffPolicy(nEpisodes):
         # get the importance ratio
         importanceRatioAbove = 1.0
         importanceRatioBelow = 1.0
-        for action, (usableAce, playerSum, dealerCard) in playerTrajectory:
+        for (usableAce, playerSum, dealerCard), action in playerTrajectory:
             if action == targetPolicyPlayer(usableAce, playerSum, dealerCard):
                 importanceRatioBelow *= 0.5
             else:
