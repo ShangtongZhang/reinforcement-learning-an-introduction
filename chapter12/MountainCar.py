@@ -172,7 +172,7 @@ def getAction(position, velocity, valueFunction):
     values = []
     for action in ACTIONS:
         values.append(valueFunction.value(position, velocity, action))
-    return argmax(values) - 1
+    return np.argmax(values) - 1
 
 # play Mountain Car for one episode based on given method @evaluator
 # @return: total steps in this episode
