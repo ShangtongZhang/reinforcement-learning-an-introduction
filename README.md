@@ -108,5 +108,3 @@ Following are known missing figures/examples:
 * Chapter 14 & 15 are about psychology and neuroscience
 * Chapter 16: Backgammon, The Acrobot, Go
 
-A Jupyter Notebook version is being developed by [Kulbear](https://github.com/Kulbear) now, completed chapters are available in the [notebook](https://github.com/ShangtongZhang/reinforcement-learning-an-introduction/tree/notebook) branch.
-
