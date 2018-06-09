@@ -54,6 +54,7 @@ for i in range(0, WORLD_SIZE):
             states.append([i, j])
 
 # for figure 4.1
+iteration = 0
 while True:
     # keep iteration until convergence
     newWorld = np.zeros((WORLD_SIZE, WORLD_SIZE))
@@ -62,8 +63,11 @@ while True:
             newPosition = nextState[i][j][action]
             # bellman equation
             newWorld[i, j] += ACTION_PROB * (REWARD + world[newPosition[0], newPosition[1]])
+    iteration += 1
     if np.sum(np.abs(world - newWorld)) < 1e-4:
         print('Random Policy')
         print(newWorld)
+        print('Iteration Times')
+        print(iteration)
         break
     world = newWorld
