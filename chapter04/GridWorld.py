@@ -7,10 +7,10 @@
 #######################################################################
 
 from __future__ import print_function
-import numpy as np 
+import numpy as np
 
 WORLD_SIZE = 4
-ACTION_PORB = 0.25
+ACTION_PROB = 0.25
 REWARD = -1
 
 def next_state(state, action):
@@ -52,7 +52,7 @@ def compute_state_values(in_place=False):
             value = 0
             for action in actions:
                 next_i, next_j = next_state([i, j], action)
-                value += ACTION_PORB * (REWARD + src[next_i, next_j])
+                value += ACTION_PROB * (REWARD + src[next_i, next_j])
             new_state_values[i, j] = value
 
         if np.sum(np.abs(new_state_values - state_values)) < 1e-4:
