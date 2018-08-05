@@ -1,6 +1,6 @@
 .idea
 *.pyc
-chapter01/optimal_policy*
 latex
 *.bin
 extra
+.DS_Store
