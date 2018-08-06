@@ -205,40 +205,40 @@ def monte_carlo_on_policy(episodes):
     return states_usable_ace / states_usable_ace_count, states_no_usable_ace / states_no_usable_ace_count
 
 # Monte Carlo with Exploring Starts
-def monteCarloES(nEpisodes):
+def monte_carlo_es(episodes):
     # (playerSum, dealerCard, usableAce, action)
-    stateActionValues = np.zeros((10, 10, 2, 2))
+    state_action_values = np.zeros((10, 10, 2, 2))
     # initialze counts to 1 to avoid division by 0
-    stateActionPairCount = np.ones((10, 10, 2, 2))
+    state_action_pair_count = np.ones((10, 10, 2, 2))
 
     # behavior policy is greedy
-    def behaviorPolicy(usableAce, playerSum, dealerCard):
-        usableAce = int(usableAce)
-        playerSum -= 12
-        dealerCard -= 1
+    def behavior_policy(usable_ace, player_sum, dealer_card):
+        usable_ace = int(usable_ace)
+        player_sum -= 12
+        dealer_card -= 1
         # get argmax of the average returns(s, a)
-        values_ = stateActionValues[playerSum, dealerCard, usableAce, :] / stateActionPairCount[playerSum, dealerCard, usableAce, :]
+        values_ = state_action_values[player_sum, dealer_card, usable_ace, :] / \
+                  state_action_pair_count[player_sum, dealer_card, usable_ace, :]
         return np.random.choice([action_ for action_, value_ in enumerate(values_) if value_ == np.max(values_)])
 
     # play for several episodes
-    for episode in range(nEpisodes):
-        if episode % 1000 == 0:
-            print('episode:', episode)
+    for episode in tqdm(range(episodes)):
         # for each episode, use a randomly initialized state and action
         initialState = [bool(np.random.choice([0, 1])),
                        np.random.choice(range(12, 22)),
                        np.random.choice(range(1, 11))]
         initialAction = np.random.choice(ACTIONS)
-        _, reward, trajectory = play(behaviorPolicy, initialState, initialAction)
+        current_policy = behavior_policy if episode else target_policy_player
+        _, reward, trajectory = play(current_policy, initialState, initialAction)
         for (usableAce, playerSum, dealerCard), action in trajectory:
             usableAce = int(usableAce)
             playerSum -= 12
             dealerCard -= 1
             # update values of state-action pairs
-            stateActionValues[playerSum, dealerCard, usableAce, action] += reward
-            stateActionPairCount[playerSum, dealerCard, usableAce, action] += 1
+            state_action_values[playerSum, dealerCard, usableAce, action] += reward
+            state_action_pair_count[playerSum, dealerCard, usableAce, action] += 1
 
-    return stateActionValues / stateActionPairCount
+    return state_action_values / state_action_pair_count
 
 # Monte Carlo Sample with Off-Policy
 def monteCarloOffPolicy(nEpisodes):
@@ -297,45 +297,63 @@ def figure_5_1():
     states_usable_ace_1, states_no_usable_ace_1 = monte_carlo_on_policy(10000)
     states_usable_ace_2, states_no_usable_ace_2 = monte_carlo_on_policy(500000)
 
-    states = [states_usable_ace_1, states_no_usable_ace_1,
-              states_usable_ace_2, states_no_usable_ace_2]
+    states = [states_usable_ace_1,
+              states_usable_ace_2,
+              states_no_usable_ace_1,
+              states_no_usable_ace_2]
 
-    titles = ['Usable Ace, 10000 Episodes', 'No Usable Ace, 10000 Episodes',
-              'Usable Ace, 500000 Episodes', 'No Usable Ace, 500000 Episodes']
+    titles = ['Usable Ace, 10000 Episodes',
+              'Usable Ace, 500000 Episodes',
+              'No Usable Ace, 10000 Episodes',
+              'No Usable Ace, 500000 Episodes']
 
     _, axes = plt.subplots(2, 2, figsize=(40, 30))
     plt.subplots_adjust(wspace=0.1, hspace=0.2)
     axes = axes.flatten()
 
     for state, title, axis in zip(states, titles, axes):
-        fig = sns.heatmap(state, cmap="YlGnBu", ax=axis, xticklabels=range(1, 11),
-                          yticklabels=range(12, 22))
-        fig.set_ylabel('player sum')
-        fig.set_xlabel('dealer showing')
-        fig.set_title(title)
+        fig = sns.heatmap(np.flipud(state), cmap="YlGnBu", ax=axis, xticklabels=range(1, 11),
+                          yticklabels=list(reversed(range(12, 22))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+        fig.set_title(title, fontsize=30)
 
     plt.savefig('../images/figure_5_1.png')
     plt.close()
 
-# Figure 5.3
-def figure5_3():
-    stateActionValues = monteCarloES(500000)
-    stateValueUsableAce = np.zeros((10, 10))
-    stateValueNoUsableAce = np.zeros((10, 10))
+def figure_5_3():
+    state_action_values = monte_carlo_es(500000)
+
+    state_value_no_usable_ace = np.max(state_action_values[:, :, 0, :], axis=-1)
+    state_value_usable_ace = np.max(state_action_values[:, :, 1, :], axis=-1)
+
     # get the optimal policy
-    actionUsableAce = np.zeros((10, 10), dtype='int')
-    actionNoUsableAce = np.zeros((10, 10), dtype='int')
-    for i in range(10):
-        for j in range(10):
-            stateValueNoUsableAce[i, j] = np.max(stateActionValues[i, j, 0, :])
-            stateValueUsableAce[i, j] = np.max(stateActionValues[i, j, 1, :])
-            actionNoUsableAce[i, j] = np.argmax(stateActionValues[i, j, 0, :])
-            actionUsableAce[i, j] = np.argmax(stateActionValues[i, j, 1, :])
-    prettyPrint(stateValueUsableAce, 'Optimal state value with usable Ace')
-    prettyPrint(stateValueNoUsableAce, 'Optimal state value with no usable Ace')
-    prettyPrint(actionUsableAce, 'Optimal policy with usable Ace', 'Action (0 Hit, 1 Stick)')
-    prettyPrint(actionNoUsableAce, 'Optimal policy with no usable Ace', 'Action (0 Hit, 1 Stick)')
-    plt.show()
+    action_no_usable_ace = np.argmax(state_action_values[:, :, 0, :], axis=-1)
+    action_usable_ace = np.argmax(state_action_values[:, :, 1, :], axis=-1)
+
+    images = [action_usable_ace,
+              state_value_usable_ace,
+              action_no_usable_ace,
+              state_value_no_usable_ace]
+
+    titles = ['Optimal policy with usable Ace',
+              'Optimal value with usable Ace',
+              'Optimal policy without usable Ace',
+              'Optimal value without usable Ace']
+
+    _, axes = plt.subplots(2, 2, figsize=(40, 30))
+    plt.subplots_adjust(wspace=0.1, hspace=0.2)
+    axes = axes.flatten()
+
+    for image, title, axis in zip(images, titles, axes):
+        fig = sns.heatmap(np.flipud(image), cmap="YlGnBu", ax=axis, xticklabels=range(1, 11),
+                          yticklabels=list(reversed(range(12, 22))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+        fig.set_title(title, fontsize=30)
+
+    plt.savefig('../images/figure_5_3.png')
+    plt.close()
 
 # Figure 5.4
 def offPolicy():
@@ -362,4 +380,5 @@ def offPolicy():
 
 if __name__ == '__main__':
     figure_5_1()
+    figure_5_3()
 
