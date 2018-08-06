@@ -109,11 +109,11 @@ def sarsa(q_value, expected=False, step_size=ALPHA):
             target = 0.0
             q_next = q_value[next_state[0], next_state[1], :]
             best_actions = np.argwhere(q_next == np.max(q_next))
-            for action in ACTIONS:
-                if action in best_actions:
-                    target += ((1.0 - EPSILON) / len(best_actions) + EPSILON / len(ACTIONS)) * q_value[next_state[0], next_state[1], action]
+            for action_ in ACTIONS:
+                if action_ in best_actions:
+                    target += ((1.0 - EPSILON) / len(best_actions) + EPSILON / len(ACTIONS)) * q_value[next_state[0], next_state[1], action_]
                 else:
-                    target += EPSILON / len(ACTIONS) * q_value[next_state[0], next_state[1], action]
+                    target += EPSILON / len(ACTIONS) * q_value[next_state[0], next_state[1], action_]
         target *= GAMMA
         q_value[state[0], state[1], action] += step_size * (
                 reward + target - q_value[state[0], state[1], action])
@@ -209,8 +209,8 @@ def figure_6_4():
 # with 100,000 episodes and 50,000 runs to get the fully averaged performance
 # However even I only play for 1,000 episodes and 10 runs, the curves looks still good.
 def figure_6_6():
-    stepSizes = np.arange(0.1, 1.1, 0.1)
-    nEpisodes = 1000
+    step_sizes = np.arange(0.1, 1.1, 0.1)
+    episodes = 1000
     runs = 10
 
     ASY_SARSA = 0
@@ -221,36 +221,39 @@ def figure_6_6():
     INT_QLEARNING = 5
     methods = range(0, 6)
 
-    performace = np.zeros((6, len(stepSizes)))
-    for run in range(0, runs):
-        for ind, stepSize in zip(range(0, len(stepSizes)), stepSizes):
-            stateActionValuesSarsa = np.copy(q_value)
-            stateActionValuesExpectedSarsa = np.copy(q_value)
-            stateActionValuesQLearning = np.copy(q_value)
-            for ep in range(0, nEpisodes):
-                print('run:', run, 'step size:', stepSize, 'episode:', ep)
-                sarsaReward = sarsa(stateActionValuesSarsa, expected=False, step_size=stepSize)
-                expectedSarsaReward = sarsa(stateActionValuesExpectedSarsa, expected=True, step_size=stepSize)
-                qLearningReward = q_learning(stateActionValuesQLearning, step_size=stepSize)
-                performace[ASY_SARSA, ind] += sarsaReward
-                performace[ASY_EXPECTED_SARSA, ind] += expectedSarsaReward
-                performace[ASY_QLEARNING, ind] += qLearningReward
+    performace = np.zeros((6, len(step_sizes)))
+    for run in range(runs):
+        for ind, step_size in tqdm(list(zip(range(0, len(step_sizes)), step_sizes))):
+            q_sarsa = np.zeros((WORLD_HEIGHT, WORLD_WIDTH, 4))
+            q_expected_sarsa = np.copy(q_sarsa)
+            q_q_learning = np.copy(q_sarsa)
+            for ep in range(episodes):
+                sarsa_reward = sarsa(q_sarsa, expected=False, step_size=step_size)
+                expected_sarsa_reward = sarsa(q_expected_sarsa, expected=True, step_size=step_size)
+                q_learning_reward = q_learning(q_q_learning, step_size=step_size)
+                performace[ASY_SARSA, ind] += sarsa_reward
+                performace[ASY_EXPECTED_SARSA, ind] += expected_sarsa_reward
+                performace[ASY_QLEARNING, ind] += q_learning_reward
 
                 if ep < 100:
-                    performace[INT_SARSA, ind] += sarsaReward
-                    performace[INT_EXPECTED_SARSA, ind] += expectedSarsaReward
-                    performace[INT_QLEARNING, ind] += qLearningReward
+                    performace[INT_SARSA, ind] += sarsa_reward
+                    performace[INT_EXPECTED_SARSA, ind] += expected_sarsa_reward
+                    performace[INT_QLEARNING, ind] += q_learning_reward
 
-    performace[:3, :] /= nEpisodes * runs
-    performace[3:, :] /= runs * 100
+    performace[:3, :] /= episodes * runs
+    performace[3:, :] /= 100 * runs
     labels = ['Asymptotic Sarsa', 'Asymptotic Expected Sarsa', 'Asymptotic Q-Learning',
               'Interim Sarsa', 'Interim Expected Sarsa', 'Interim Q-Learning']
-    plt.figure(2)
+
     for method, label in zip(methods, labels):
-        plt.plot(stepSizes, performace[method, :], label=label)
+        plt.plot(step_sizes, performace[method, :], label=label)
     plt.xlabel('alpha')
     plt.ylabel('reward per episode')
     plt.legend()
 
+    plt.savefig('../images/figure_6_6.png')
+    plt.close()
+
 if __name__ == '__main__':
     figure_6_4()
+    figure_6_6()
