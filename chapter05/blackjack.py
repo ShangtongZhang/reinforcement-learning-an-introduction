@@ -13,7 +13,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
-from mpl_toolkits.mplot3d import Axes3D
 
 # actions: hit or stand
 ACTION_HIT = 0
@@ -241,57 +240,41 @@ def monte_carlo_es(episodes):
     return state_action_values / state_action_pair_count
 
 # Monte Carlo Sample with Off-Policy
-def monteCarloOffPolicy(nEpisodes):
-    initialState = [True, 13, 2]
-    sumOfImportanceRatio = [0]
-    sumOfRewards = [0]
-    for i in range(0, nEpisodes):
-        _, reward, playerTrajectory = play(behavior_policy_player, initial_state=initialState)
+def monte_carlo_off_policy(episodes):
+    initial_state = [True, 13, 2]
+
+    rhos = []
+    returns = []
+
+    for i in range(0, episodes):
+        _, reward, player_trajectory = play(behavior_policy_player, initial_state=initial_state)
 
         # get the importance ratio
-        importanceRatioAbove = 1.0
-        importanceRatioBelow = 1.0
-        for (usableAce, playerSum, dealerCard), action in playerTrajectory:
-            if action == target_policy_player(usableAce, playerSum, dealerCard):
-                importanceRatioBelow *= 0.5
+        numerator = 1.0
+        denominator = 1.0
+        for (usable_ace, player_sum, dealer_card), action in player_trajectory:
+            if action == target_policy_player(usable_ace, player_sum, dealer_card):
+                denominator *= 0.5
             else:
-                importanceRatioAbove = 0.0
+                numerator = 0.0
                 break
-        importanceRatio = importanceRatioAbove / importanceRatioBelow
-        sumOfImportanceRatio.append(sumOfImportanceRatio[-1] + importanceRatio)
-        sumOfRewards.append(sumOfRewards[-1] + reward * importanceRatio)
-    del sumOfImportanceRatio[0]
-    del sumOfRewards[0]
+        rho = numerator / denominator
+        rhos.append(rho)
+        returns.append(reward)
 
-    sumOfRewards= np.asarray(sumOfRewards)
-    sumOfImportanceRatio= np.asarray(sumOfImportanceRatio)
-    ordinarySampling = sumOfRewards / np.arange(1, nEpisodes + 1)
+    rhos = np.asarray(rhos)
+    returns = np.asarray(returns)
+    weighted_returns = rhos * returns
+
+    weighted_returns = np.add.accumulate(weighted_returns)
+    rhos = np.add.accumulate(rhos)
+
+    ordinary_sampling = weighted_returns / np.arange(1, episodes + 1)
 
     with np.errstate(divide='ignore',invalid='ignore'):
-        weightedSampling = np.where(sumOfImportanceRatio != 0, sumOfRewards / sumOfImportanceRatio, 0)
+        weighted_sampling = np.where(rhos != 0, weighted_returns / rhos, 0)
 
-    return ordinarySampling, weightedSampling
-
-# print the state value
-figureIndex = 0
-def prettyPrint(data, tile, zlabel='reward'):
-    global figureIndex
-    fig = plt.figure(figureIndex)
-    figureIndex += 1
-    fig.suptitle(tile)
-    ax = fig.add_subplot(111, projection='3d')
-    axisX = []
-    axisY = []
-    axisZ = []
-    for i in range(12, 22):
-        for j in range(1, 11):
-            axisX.append(i)
-            axisY.append(j)
-            axisZ.append(data[i - 12, j - 1])
-    ax.scatter(axisX, axisY, axisZ)
-    ax.set_xlabel('player sum')
-    ax.set_ylabel('dealer showing')
-    ax.set_zlabel(zlabel)
+    return ordinary_sampling, weighted_sampling
 
 def figure_5_1():
     states_usable_ace_1, states_no_usable_ace_1 = monte_carlo_on_policy(10000)
@@ -321,7 +304,7 @@ def figure_5_1():
     plt.savefig('../images/figure_5_1.png')
     plt.close()
 
-def figure_5_3():
+def figure_5_2():
     state_action_values = monte_carlo_es(500000)
 
     state_value_no_usable_ace = np.max(state_action_values[:, :, 0, :], axis=-1)
@@ -352,33 +335,36 @@ def figure_5_3():
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title(title, fontsize=30)
 
-    plt.savefig('../images/figure_5_3.png')
+    plt.savefig('../images/figure_5_2.png')
     plt.close()
 
-# Figure 5.4
-def offPolicy():
-    trueValue = -0.27726
-    nEpisodes = 10000
-    nRuns = 100
-    ordinarySampling = np.zeros(nEpisodes)
-    weightedSampling = np.zeros(nEpisodes)
-    for i in range(0, nRuns):
-        ordinarySampling_, weightedSampling_ = monteCarloOffPolicy(nEpisodes)
+def figure_5_3():
+    true_value = -0.27726
+    episodes = 10000
+    runs = 100
+    error_ordinary = np.zeros(episodes)
+    error_weighted = np.zeros(episodes)
+    for i in tqdm(range(0, runs)):
+        ordinary_sampling_, weighted_sampling_ = monte_carlo_off_policy(episodes)
         # get the squared error
-        ordinarySampling += np.power(ordinarySampling_ - trueValue, 2)
-        weightedSampling += np.power(weightedSampling_ - trueValue, 2)
-    ordinarySampling /= nRuns
-    weightedSampling /= nRuns
-    axisX = np.log10(np.arange(1, nEpisodes + 1))
-    plt.plot(axisX, ordinarySampling, label='Ordinary Importance Sampling')
-    plt.plot(axisX, weightedSampling, label='Weighted Importance Sampling')
-    plt.xlabel('Episodes (10^x)')
+        error_ordinary += np.power(ordinary_sampling_ - true_value, 2)
+        error_weighted += np.power(weighted_sampling_ - true_value, 2)
+    error_ordinary /= runs
+    error_weighted /= runs
+
+    plt.plot(error_ordinary, label='Ordinary Importance Sampling')
+    plt.plot(error_weighted, label='Weighted Importance Sampling')
+    plt.xlabel('Episodes (log scale)')
     plt.ylabel('Mean square error')
+    plt.xscale('log')
     plt.legend()
-    plt.show()
+
+    plt.savefig('../images/figure_5_3.png')
+    plt.close()
 
 
 if __name__ == '__main__':
     figure_5_1()
+    figure_5_2()
     figure_5_3()
 
