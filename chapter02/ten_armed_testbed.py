@@ -57,7 +57,7 @@ class Bandit:
 
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
-                     self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1))
+                     self.UCB_param * np.sqrt(np.log((self.time + 1) / (self.action_count + 1)))
             return np.argmax(UCB_estimation)
 
         if self.gradient:
