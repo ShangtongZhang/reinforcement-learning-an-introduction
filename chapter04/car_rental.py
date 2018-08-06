@@ -119,10 +119,10 @@ def figure_4_2(constant_returned_cars=True):
     axes = axes.flatten()
     while True:
         fig = sns.heatmap(np.flipud(policy), cmap="YlGnBu", ax=axes[iterations])
-        fig.set_ylabel('# cars at first location')
+        fig.set_ylabel('# cars at first location', fontsize=30)
         fig.set_yticks(list(reversed(range(MAX_CARS + 1))))
-        fig.set_xlabel('# cars at second location')
-        fig.set_title('policy %d' % (iterations))
+        fig.set_xlabel('# cars at second location', fontsize=30)
+        fig.set_title('policy %d' % (iterations), fontsize=30)
 
         # policy evaluation (in-place)
         while True:
@@ -154,10 +154,10 @@ def figure_4_2(constant_returned_cars=True):
         policy = new_policy
         if policy_change == 0:
             fig = sns.heatmap(np.flipud(value), cmap="YlGnBu", ax=axes[-1])
-            fig.set_ylabel('# cars at first location')
+            fig.set_ylabel('# cars at first location', fontsize=30)
             fig.set_yticks(list(reversed(range(MAX_CARS + 1))))
-            fig.set_xlabel('# cars at second location')
-            fig.set_title('optimal value')
+            fig.set_xlabel('# cars at second location', fontsize=30)
+            fig.set_title('optimal value', fontsize=30)
             break
 
         iterations += 1
