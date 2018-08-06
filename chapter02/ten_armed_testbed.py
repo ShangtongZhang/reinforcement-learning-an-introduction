@@ -57,8 +57,9 @@ class Bandit:
 
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
-                     self.UCB_param * np.sqrt(np.log((self.time + 1) / (self.action_count + 1)))
-            return np.argmax(UCB_estimation)
+                     self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
+            q_best = np.max(UCB_estimation)
+            return np.random.choice([action for action, q in enumerate(UCB_estimation) if q == q_best])
 
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
@@ -152,8 +153,8 @@ def figure_2_3(runs=2000, time=1000):
 
 def figure_2_4(runs=2000, time=1000):
     bandits = []
-    bandits.append(Bandit(epsilon=0, step_size=0.1, UCB_param=2))
-    bandits.append(Bandit(epsilon=0.1, step_size=0.1))
+    bandits.append(Bandit(epsilon=0, UCB_param=2, sample_averages=True))
+    bandits.append(Bandit(epsilon=0.1, sample_averages=True))
     _, average_rewards = simulate(runs, time, bandits)
 
     plt.plot(average_rewards[0], label='UCB c = 2')
@@ -191,8 +192,8 @@ def figure_2_6(runs=2000, time=1000):
               'UCB', 'optimistic initialization']
     generators = [lambda epsilon: Bandit(epsilon=epsilon, sample_averages=True),
                   lambda alpha: Bandit(gradient=True, step_size=alpha, gradient_baseline=True),
-                  lambda coef: Bandit(epsilon=0, step_size=0.1, UCB_param=coef),
-                  lambda initial: Bandit(epsilon=0, initial=initial, step_size=0.1)]
+                  lambda coef: Bandit(epsilon=0, UCB_param=coef, sample_averages=True),
+                  lambda initial: Bandit(epsilon=0, initial=initial, sample_averages=True)]
     parameters = [np.arange(-7, -1, dtype=np.float),
                   np.arange(-5, 2, dtype=np.float),
                   np.arange(-4, 3, dtype=np.float),
