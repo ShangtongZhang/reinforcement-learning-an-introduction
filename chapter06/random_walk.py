@@ -97,7 +97,7 @@ def compute_state_value():
     plt.legend()
 
 # Example 6.2 right
-def RMSError():
+def rms_error():
     # Same alpha value can appear in both arrays
     td_alphas = [0.15, 0.1, 0.05]
     mc_alphas = [0.01, 0.02, 0.03, 0.04]
@@ -127,24 +127,23 @@ def RMSError():
     plt.ylabel('RMS')
     plt.legend()
 
-# Figure 6.3
+# Figure 6.2
 # @method: 'TD' or 'MC'
-def batchUpdating(method, episodes, alpha=0.001):
+def batch_updating(method, episodes, alpha=0.001):
     # perform 100 independent runs
     runs = 100
-    totalErrors = np.zeros(episodes - 1)
-    for run in range(0, runs):
-        currentStates = np.copy(VALUES)
+    total_errors = np.zeros(episodes)
+    for r in tqdm(range(0, runs)):
+        current_values = np.copy(VALUES)
         errors = []
         # track shown trajectories and reward/return sequences
         trajectories = []
         rewards = []
-        for ep in range(1, episodes):
-            print('Run:', run, 'Episode:', ep)
+        for ep in range(episodes):
             if method == 'TD':
-                trajectory_, rewards_ = temporal_difference(currentStates, batch=True)
+                trajectory_, rewards_ = temporal_difference(current_values, batch=True)
             else:
-                trajectory_, rewards_ = monte_carlo(currentStates, batch=True)
+                trajectory_, rewards_ = monte_carlo(current_values, batch=True)
             trajectories.append(trajectory_)
             rewards.append(rewards_)
             while True:
@@ -153,45 +152,44 @@ def batchUpdating(method, episodes, alpha=0.001):
                 for trajectory_, rewards_ in zip(trajectories, rewards):
                     for i in range(0, len(trajectory_) - 1):
                         if method == 'TD':
-                            updates[trajectory_[i]] += rewards_[i] + currentStates[trajectory_[i + 1]] - currentStates[trajectory_[i]]
+                            updates[trajectory_[i]] += rewards_[i] + current_values[trajectory_[i + 1]] - current_values[trajectory_[i]]
                         else:
-                            updates[trajectory_[i]] += rewards_[i] - currentStates[trajectory_[i]]
+                            updates[trajectory_[i]] += rewards_[i] - current_values[trajectory_[i]]
                 updates *= alpha
                 if np.sum(np.abs(updates)) < 1e-3:
                     break
                 # perform batch updating
-                currentStates += updates
+                current_values += updates
             # calculate rms error
-            errors.append(np.sqrt(np.sum(np.power(currentStates - TRUE_VALUE, 2)) / 5.0))
-        totalErrors += np.asarray(errors)
-    totalErrors /= runs
-    return totalErrors
+            errors.append(np.sqrt(np.sum(np.power(current_values - TRUE_VALUE, 2)) / 5.0))
+        total_errors += np.asarray(errors)
+    total_errors /= runs
+    return total_errors
 
 def example_6_2():
     plt.subplot(2, 1, 1)
     compute_state_value()
     plt.subplot(2, 1, 2)
-    RMSError()
+    rms_error()
     plt.tight_layout()
 
     plt.savefig('../images/example_6_2.png')
     plt.close()
 
-def figure6_3():
+def figure_6_2():
     episodes = 100 + 1
-    TDErrors = batchUpdating('TD', episodes)
-    MCErrors = batchUpdating('MC', episodes)
-    axisX = np.arange(1, episodes)
-    plt.figure(3)
-    plt.plot(axisX, TDErrors, label='TD')
-    plt.plot(axisX, MCErrors, label='MC')
+    td_erros = batch_updating('TD', episodes)
+    mc_erros = batch_updating('MC', episodes)
+
+    plt.plot(td_erros, label='TD')
+    plt.plot(mc_erros, label='MC')
     plt.xlabel('episodes')
     plt.ylabel('RMS error')
     plt.legend()
 
+    plt.savefig('../images/figure_6_2.png')
+    plt.close()
+
 if __name__ == '__main__':
     example_6_2()
-
-
-# Figure 6.3 may take a while to calculate
-# figure6_3()
+    figure_6_2()
