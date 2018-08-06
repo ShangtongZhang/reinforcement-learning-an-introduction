@@ -223,19 +223,19 @@ def monte_carlo_es(episodes):
     # play for several episodes
     for episode in tqdm(range(episodes)):
         # for each episode, use a randomly initialized state and action
-        initialState = [bool(np.random.choice([0, 1])),
+        initial_state = [bool(np.random.choice([0, 1])),
                        np.random.choice(range(12, 22)),
                        np.random.choice(range(1, 11))]
-        initialAction = np.random.choice(ACTIONS)
+        initial_action = np.random.choice(ACTIONS)
         current_policy = behavior_policy if episode else target_policy_player
-        _, reward, trajectory = play(current_policy, initialState, initialAction)
-        for (usableAce, playerSum, dealerCard), action in trajectory:
-            usableAce = int(usableAce)
-            playerSum -= 12
-            dealerCard -= 1
+        _, reward, trajectory = play(current_policy, initial_state, initial_action)
+        for (usable_ace, player_sum, dealer_card), action in trajectory:
+            usable_ace = int(usable_ace)
+            player_sum -= 12
+            dealer_card -= 1
             # update values of state-action pairs
-            state_action_values[playerSum, dealerCard, usableAce, action] += reward
-            state_action_pair_count[playerSum, dealerCard, usableAce, action] += 1
+            state_action_values[player_sum, dealer_card, usable_ace, action] += reward
+            state_action_pair_count[player_sum, dealer_card, usable_ace, action] += 1
 
     return state_action_values / state_action_pair_count
 
