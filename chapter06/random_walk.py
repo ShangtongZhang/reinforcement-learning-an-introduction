@@ -1,42 +1,44 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016-2018 Shangtong Zhang(zhangshangtong.cpp@gmail.com)             #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
 
-from __future__ import print_function
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 # 0 is the left terminal state
 # 6 is the right terminal state
 # 1 ... 5 represents A ... E
-states = np.zeros(7)
-states[1:6] = 0.5
+VALUES = np.zeros(7)
+VALUES[1:6] = 0.5
 # For convenience, we assume all rewards are 0
 # and the left terminal state has value 0, the right terminal state has value 1
 # This trick has been used in Gambler's Problem
-states[6] = 1
+VALUES[6] = 1
 
 # set up true state values
-trueValue = np.zeros(7)
-trueValue[1:6] = np.arange(1, 6) / 6.0
-trueValue[6] = 1
+TRUE_VALUE = np.zeros(7)
+TRUE_VALUE[1:6] = np.arange(1, 6) / 6.0
+TRUE_VALUE[6] = 1
 
 ACTION_LEFT = 0
 ACTION_RIGHT = 1
 
-# @states: current states value, will be updated if @batch is False
+# @values: current states value, will be updated if @batch is False
 # @alpha: step size
-# @batch: whether to update @states
-def temporalDifference(states, alpha=0.1, batch=False):
+# @batch: whether to update @values
+def temporal_difference(values, alpha=0.1, batch=False):
     state = 3
     trajectory = [state]
     rewards = [0]
     while True:
-        oldState = state
+        old_state = state
         if np.random.binomial(1, 0.5) == ACTION_LEFT:
             state -= 1
         else:
@@ -46,21 +48,21 @@ def temporalDifference(states, alpha=0.1, batch=False):
         trajectory.append(state)
         # TD update
         if not batch:
-            states[oldState] += alpha * (reward + states[state] - states[oldState])
+            values[old_state] += alpha * (reward + values[state] - values[old_state])
         if state == 6 or state == 0:
             break
         rewards.append(reward)
     return trajectory, rewards
 
-# @states: current states value, will be updated if @batch is False
+# @values: current states value, will be updated if @batch is False
 # @alpha: step size
-# @batch: whether to update @states
-def monteCarlo(states, alpha=0.1, batch=False):
+# @batch: whether to update @values
+def monte_carlo(values, alpha=0.1, batch=False):
     state = 3
     trajectory = [3]
+
     # if end up with left terminal state, all returns are 0
     # if end up with right terminal state, all returns are 1
-    returns = 0
     while True:
         if np.random.binomial(1, 0.5) == ACTION_LEFT:
             state -= 1
@@ -73,56 +75,56 @@ def monteCarlo(states, alpha=0.1, batch=False):
         elif state == 0:
             returns = 0.0
             break
+
     if not batch:
         for state_ in trajectory[:-1]:
             # MC update
-            states[state_] += alpha * (returns - states[state_])
+            values[state_] += alpha * (returns - values[state_])
     return trajectory, [returns] * (len(trajectory) - 1)
 
-# Figure 6.2 left
-def stateValue():
+# Example 6.2 left
+def compute_state_value():
     episodes = [0, 1, 10, 100]
-    currentStates = np.copy(states)
+    current_values = np.copy(VALUES)
     plt.figure(1)
-    axisX = np.arange(0, 7)
-    for i in range(0, episodes[-1] + 1):
+    for i in range(episodes[-1] + 1):
         if i in episodes:
-            plt.plot(axisX, currentStates, label=str(i) + ' episodes')
-        temporalDifference(currentStates)
-    plt.plot(axisX, trueValue, label='true values')
+            plt.plot(current_values, label=str(i) + ' episodes')
+        temporal_difference(current_values)
+    plt.plot(TRUE_VALUE, label='true values')
     plt.xlabel('state')
+    plt.ylabel('estimated value')
     plt.legend()
 
-# Figure 6.2 right
+# Example 6.2 right
 def RMSError():
     # Same alpha value can appear in both arrays
-    TDAlpha = [0.15, 0.1, 0.05]
-    MCAlpha = [0.01, 0.02, 0.03, 0.04]
+    td_alphas = [0.15, 0.1, 0.05]
+    mc_alphas = [0.01, 0.02, 0.03, 0.04]
     episodes = 100 + 1
     runs = 100
-    plt.figure(2)
-    axisX = np.arange(0, episodes)
-    for i, alpha in enumerate(TDAlpha + MCAlpha):
-        totalErrors = np.zeros(episodes)
-        linestyle = 'solid'
-        if i < len(TDAlpha):
+    for i, alpha in enumerate(td_alphas + mc_alphas):
+        total_errors = np.zeros(episodes)
+        if i < len(td_alphas):
             method = 'TD'
+            linestyle = 'solid'
         else:
             method = 'MC'
             linestyle = 'dashdot'
-        for run in range(0, runs):
+        for r in tqdm(range(runs)):
             errors = []
-            currentStates = np.copy(states)
+            current_values = np.copy(VALUES)
             for i in range(0, episodes):
-                errors.append(np.sqrt(np.sum(np.power(trueValue - currentStates, 2)) / 5.0))
+                errors.append(np.sqrt(np.sum(np.power(TRUE_VALUE - current_values, 2)) / 5.0))
                 if method == 'TD':
-                    temporalDifference(currentStates, alpha=alpha)
+                    temporal_difference(current_values, alpha=alpha)
                 else:
-                    monteCarlo(currentStates, alpha=alpha)
-            totalErrors += np.asarray(errors)
-        totalErrors /= runs
-        plt.plot(axisX, totalErrors, linestyle=linestyle, label=method + ', alpha=' + str(alpha))
+                    monte_carlo(current_values, alpha=alpha)
+            total_errors += np.asarray(errors)
+        total_errors /= runs
+        plt.plot(total_errors, linestyle=linestyle, label=method + ', alpha = %.02f' % (alpha))
     plt.xlabel('episodes')
+    plt.ylabel('RMS')
     plt.legend()
 
 # Figure 6.3
@@ -132,7 +134,7 @@ def batchUpdating(method, episodes, alpha=0.001):
     runs = 100
     totalErrors = np.zeros(episodes - 1)
     for run in range(0, runs):
-        currentStates = np.copy(states)
+        currentStates = np.copy(VALUES)
         errors = []
         # track shown trajectories and reward/return sequences
         trajectories = []
@@ -140,9 +142,9 @@ def batchUpdating(method, episodes, alpha=0.001):
         for ep in range(1, episodes):
             print('Run:', run, 'Episode:', ep)
             if method == 'TD':
-                trajectory_, rewards_ = temporalDifference(currentStates, batch=True)
+                trajectory_, rewards_ = temporal_difference(currentStates, batch=True)
             else:
-                trajectory_, rewards_ = monteCarlo(currentStates, batch=True)
+                trajectory_, rewards_ = monte_carlo(currentStates, batch=True)
             trajectories.append(trajectory_)
             rewards.append(rewards_)
             while True:
@@ -160,14 +162,20 @@ def batchUpdating(method, episodes, alpha=0.001):
                 # perform batch updating
                 currentStates += updates
             # calculate rms error
-            errors.append(np.sqrt(np.sum(np.power(currentStates - trueValue, 2)) / 5.0))
+            errors.append(np.sqrt(np.sum(np.power(currentStates - TRUE_VALUE, 2)) / 5.0))
         totalErrors += np.asarray(errors)
     totalErrors /= runs
     return totalErrors
 
-def figure6_2():
-    stateValue()
+def example_6_2():
+    plt.subplot(2, 1, 1)
+    compute_state_value()
+    plt.subplot(2, 1, 2)
     RMSError()
+    plt.tight_layout()
+
+    plt.savefig('../images/example_6_2.png')
+    plt.close()
 
 def figure6_3():
     episodes = 100 + 1
@@ -181,9 +189,9 @@ def figure6_3():
     plt.ylabel('RMS error')
     plt.legend()
 
-figure6_2()
+if __name__ == '__main__':
+    example_6_2()
+
 
 # Figure 6.3 may take a while to calculate
 # figure6_3()
-
-plt.show()
