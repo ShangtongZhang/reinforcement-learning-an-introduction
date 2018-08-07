@@ -511,50 +511,46 @@ def figure_8_4():
     plt.close()
 
 
-# Figure 8.6, ShortcutMaze
-def figure8_6():
+# Figure 8.5, ShortcutMaze
+def figure_8_5():
     # set up a shortcut maze instance
-    shortcutMaze = Maze()
-    shortcutMaze.START_STATE = [5, 3]
-    shortcutMaze.GOAL_STATES = [[0, 8]]
-    shortcutMaze.old_obstacles = [[3, i] for i in range(1, 9)]
+    shortcut_maze = Maze()
+    shortcut_maze.START_STATE = [5, 3]
+    shortcut_maze.GOAL_STATES = [[0, 8]]
+    shortcut_maze.old_obstacles = [[3, i] for i in range(1, 9)]
 
     # new obstacles will have a shorter path
-    shortcutMaze.new_obstacles = [[3, i] for i in range(1, 8)]
+    shortcut_maze.new_obstacles = [[3, i] for i in range(1, 8)]
 
     # step limit
-    shortcutMaze.max_steps = 6000
+    shortcut_maze.max_steps = 6000
 
     # obstacles will change after 3000 steps
     # the exact step for changing will be different
     # However given that 3000 steps is long enough for both algorithms to converge,
     # the difference is guaranteed to be very small
-    shortcutMaze.obstacle_switch_time = 3000
+    shortcut_maze.obstacle_switch_time = 3000
 
     # set up parameters
-    dynaParams = DynaParams()
+    dyna_params = DynaParams()
 
     # 50-step planning
-    dynaParams.planning_steps = 50
-
-    # average over 5 independent runs
-    dynaParams.runs = 5
-
-    # weight for elapsed time sine last visit
-    dynaParams.time_weight = 1e-3
-
-    # also a tricky alpha ...
-    dynaParams.alpha = 0.7
+    dyna_params.planning_steps = 50
+    dyna_params.runs = 5
+    dyna_params.time_weight = 1e-3
+    dyna_params.alpha = 1.0
 
     # play
-    rewards = changing_maze(shortcutMaze, dynaParams)
+    rewards = changing_maze(shortcut_maze, dyna_params)
 
-    plt.figure(2)
-    for i in range(0, len(dynaParams.methods)):
-        plt.plot(range(0, shortcutMaze.max_steps), rewards[i, :], label=dynaParams.methods[i])
+    for i in range(len(dyna_params.methods)):
+        plt.plot( rewards[i, :], label=dyna_params.methods[i])
     plt.xlabel('time steps')
     plt.ylabel('cumulative reward')
     plt.legend()
+
+    plt.savefig('../images/figure_8_5.png')
+    plt.close()
 
 # Helper function to display best actions, just for debug
 def printActions(stateActionValues, maze):
@@ -677,5 +673,6 @@ def figure8_7():
 
 if __name__ == '__main__':
     # figure_8_2()
-    figure_8_4()
+    # figure_8_4()
+    figure_8_5()
 
