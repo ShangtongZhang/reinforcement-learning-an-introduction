@@ -1,16 +1,72 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016-2018 Shangtong Zhang(zhangshangtong.cpp@gmail.com)             #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
 
-from __future__ import print_function
 import numpy as np
-from TileCoding import *
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from tqdm import tqdm
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+from math import floor
+
+# from http://incompleteideas.net/tiles/tiles3.py-remove
+class IHT:
+    "Structure to handle collisions"
+    def __init__(self, size_val):
+        self.size = size_val
+        self.overfull_count = 0
+        self.dictionary = {}
+
+    def count(self):
+        return len(self.dictionary)
+
+    def full(self):
+        return len(self.dictionary) >= self.size
+
+    def get_index(self, obj, read_only=False):
+        d = self.dictionary
+        if obj in d:
+            return d[obj]
+        elif read_only:
+            return None
+        size = self.size
+        count = self.count()
+        if count >= size:
+            if self.overfull_count == 0: print('IHT full, starting to allow collisions')
+            self.overfull_count += 1
+            return hash(obj) % self.size
+        else:
+            d[obj] = count
+            return count
+
+# from http://incompleteideas.net/tiles/tiles3.py-remove
+def hash_coords(coordinates, m, read_only=False):
+    if isinstance(m, IHT): return m.get_index(tuple(coordinates), read_only)
+    if isinstance(m, int): return hash(tuple(coordinates)) % m
+    if m is None: return coordinates
+
+# from http://incompleteideas.net/tiles/tiles3.py-remove
+def tiles(iht_or_size, num_tilings, floats, ints=None, read_only=False):
+    """returns num-tilings tile indices corresponding to the floats and ints"""
+    if ints is None:
+        ints = []
+    qfloats = [floor(f * num_tilings) for f in floats]
+    tiles = []
+    for tiling in range(num_tilings):
+        tilingX2 = tiling * 2
+        coords = [tiling]
+        b = tiling
+        for q in qfloats:
+            coords.append((q + b) // num_tilings)
+            b += tilingX2
+        coords.extend(ints)
+        tiles.append(hash_coords(coords, iht_or_size, read_only))
+    return tiles
 
 # all possible actions
 ACTION_REVERSE = -1
@@ -30,15 +86,15 @@ EPSILON = 0
 
 # take an @action at @position and @velocity
 # @return: new position, new velocity, reward (always -1)
-def takeAction(position, velocity, action):
-    newVelocity = velocity + 0.001 * action - 0.0025 * np.cos(3 * position)
-    newVelocity = min(max(VELOCITY_MIN, newVelocity), VELOCITY_MAX)
-    newPosition = position + newVelocity
-    newPosition = min(max(POSITION_MIN, newPosition), POSITION_MAX)
+def step(position, velocity, action):
+    new_velocity = velocity + 0.001 * action - 0.0025 * np.cos(3 * position)
+    new_velocity = min(max(VELOCITY_MIN, new_velocity), VELOCITY_MAX)
+    new_position = position + new_velocity
+    new_position = min(max(POSITION_MIN, new_position), POSITION_MAX)
     reward = -1.0
-    if newPosition == POSITION_MIN:
-        newVelocity = 0.0
-    return newPosition, newVelocity, reward
+    if new_position == POSITION_MIN:
+        new_velocity = 0.0
+    return new_position, new_velocity, reward
 
 # wrapper class for state action value function
 class ValueFunction:
@@ -48,77 +104,77 @@ class ValueFunction:
     # View the following webpage for more information
     # http://incompleteideas.net/sutton/tiles/tiles3.html
     # @maxSize: the maximum # of indices
-    def __init__(self, stepSize, numOfTilings=8, maxSize=2048):
-        self.maxSize = maxSize
-        self.numOfTilings = numOfTilings
+    def __init__(self, step_size, num_of_tilings=8, max_size=2048):
+        self.max_size = max_size
+        self.num_of_tilings = num_of_tilings
 
         # divide step size equally to each tiling
-        self.stepSize = stepSize / numOfTilings
+        self.step_size = step_size / num_of_tilings
 
-        self.hashTable = IHT(maxSize)
+        self.hash_table = IHT(max_size)
 
         # weight for each tile
-        self.weights = np.zeros(maxSize)
+        self.weights = np.zeros(max_size)
 
         # position and velocity needs scaling to satisfy the tile software
-        self.positionScale = self.numOfTilings / (POSITION_MAX - POSITION_MIN)
-        self.velocityScale = self.numOfTilings / (VELOCITY_MAX - VELOCITY_MIN)
+        self.position_scale = self.num_of_tilings / (POSITION_MAX - POSITION_MIN)
+        self.velocity_scale = self.num_of_tilings / (VELOCITY_MAX - VELOCITY_MIN)
 
     # get indices of active tiles for given state and action
-    def getActiveTiles(self, position, velocity, action):
+    def get_active_tiles(self, position, velocity, action):
         # I think positionScale * (position - position_min) would be a good normalization.
         # However positionScale * position_min is a constant, so it's ok to ignore it.
-        activeTiles = tiles(self.hashTable, self.numOfTilings,
-                            [self.positionScale * position, self.velocityScale * velocity],
+        active_tiles = tiles(self.hash_table, self.num_of_tilings,
+                            [self.position_scale * position, self.velocity_scale * velocity],
                             [action])
-        return activeTiles
+        return active_tiles
 
     # estimate the value of given state and action
     def value(self, position, velocity, action):
         if position == POSITION_MAX:
             return 0.0
-        activeTiles = self.getActiveTiles(position, velocity, action)
-        return np.sum(self.weights[activeTiles])
+        active_tiles = self.get_active_tiles(position, velocity, action)
+        return np.sum(self.weights[active_tiles])
 
     # learn with given state, action and target
     def learn(self, position, velocity, action, target):
-        activeTiles = self.getActiveTiles(position, velocity, action)
-        estimation = np.sum(self.weights[activeTiles])
-        delta = self.stepSize * (target - estimation)
-        for activeTile in activeTiles:
-            self.weights[activeTile] += delta
+        active_tiles = self.get_active_tiles(position, velocity, action)
+        estimation = np.sum(self.weights[active_tiles])
+        delta = self.step_size * (target - estimation)
+        for active_tile in active_tiles:
+            self.weights[active_tile] += delta
 
     # get # of steps to reach the goal under current state value function
-    def costToGo(self, position, velocity):
+    def cost_to_go(self, position, velocity):
         costs = []
         for action in ACTIONS:
             costs.append(self.value(position, velocity, action))
         return -np.max(costs)
 
 # get action at @position and @velocity based on epsilon greedy policy and @valueFunction
-def getAction(position, velocity, valueFunction):
+def get_action(position, velocity, value_function):
     if np.random.binomial(1, EPSILON) == 1:
         return np.random.choice(ACTIONS)
     values = []
     for action in ACTIONS:
-        values.append(valueFunction.value(position, velocity, action))
+        values.append(value_function.value(position, velocity, action))
     return np.random.choice([action_ for action_, value_ in enumerate(values) if value_ == np.max(values)]) - 1
 
 # semi-gradient n-step Sarsa
 # @valueFunction: state value function to learn
 # @n: # of steps
-def semiGradientNStepSarsa(valueFunction, n=1):
+def semi_gradient_n_step_sarsa(value_function, n=1):
     # start at a random position around the bottom of the valley
-    currentPosition = np.random.uniform(-0.6, -0.4)
+    current_position = np.random.uniform(-0.6, -0.4)
     # initial velocity is 0
-    currentVelocity = 0.0
+    current_velocity = 0.0
     # get initial action
-    currentAction = getAction(currentPosition, currentVelocity, valueFunction)
+    current_action = get_action(current_position, current_velocity, value_function)
 
     # track previous position, velocity, action and reward
-    positions = [currentPosition]
-    velocities = [currentVelocity]
-    actions = [currentAction]
+    positions = [current_position]
+    velocities = [current_velocity]
+    actions = [current_action]
     rewards = [0.0]
 
     # track the time
@@ -132,81 +188,82 @@ def semiGradientNStepSarsa(valueFunction, n=1):
 
         if time < T:
             # take current action and go to the new state
-            newPostion, newVelocity, reward = takeAction(currentPosition, currentVelocity, currentAction)
+            new_postion, new_velocity, reward = step(current_position, current_velocity, current_action)
             # choose new action
-            newAction = getAction(newPostion, newVelocity, valueFunction)
+            new_action = get_action(new_postion, new_velocity, value_function)
 
             # track new state and action
-            positions.append(newPostion)
-            velocities.append(newVelocity)
-            actions.append(newAction)
+            positions.append(new_postion)
+            velocities.append(new_velocity)
+            actions.append(new_action)
             rewards.append(reward)
 
-            if newPostion == POSITION_MAX:
+            if new_postion == POSITION_MAX:
                 T = time
 
         # get the time of the state to update
-        updateTime = time - n
-        if updateTime >= 0:
+        update_time = time - n
+        if update_time >= 0:
             returns = 0.0
             # calculate corresponding rewards
-            for t in range(updateTime + 1, min(T, updateTime + n) + 1):
+            for t in range(update_time + 1, min(T, update_time + n) + 1):
                 returns += rewards[t]
             # add estimated state action value to the return
-            if updateTime + n <= T:
-                returns += valueFunction.value(positions[updateTime + n],
-                                               velocities[updateTime + n],
-                                               actions[updateTime + n])
+            if update_time + n <= T:
+                returns += value_function.value(positions[update_time + n],
+                                                velocities[update_time + n],
+                                                actions[update_time + n])
             # update the state value function
-            if positions[updateTime] != POSITION_MAX:
-                valueFunction.learn(positions[updateTime], velocities[updateTime], actions[updateTime], returns)
-        if updateTime == T - 1:
+            if positions[update_time] != POSITION_MAX:
+                value_function.learn(positions[update_time], velocities[update_time], actions[update_time], returns)
+        if update_time == T - 1:
             break
-        currentPosition = newPostion
-        currentVelocity = newVelocity
-        currentAction = newAction
+        current_position = new_postion
+        current_velocity = new_velocity
+        current_action = new_action
 
     return time
 
-figureIndex = 0
 # print learned cost to go
-def prettyPrint(valueFunction, title):
-    global figureIndex
-    gridSize = 40
-    positionStep = (POSITION_MAX - POSITION_MIN) / gridSize
-    positions = np.arange(POSITION_MIN, POSITION_MAX + positionStep, positionStep)
-    velocityStep = (VELOCITY_MAX - VELOCITY_MIN) / gridSize
-    velocities = np.arange(VELOCITY_MIN, VELOCITY_MAX + velocityStep, velocityStep)
-    axisX = []
-    axisY = []
-    axisZ = []
+def print_cost(value_function, episode, ax):
+    grid_size = 40
+    positions = np.linspace(POSITION_MIN, POSITION_MAX, grid_size)
+    # positionStep = (POSITION_MAX - POSITION_MIN) / grid_size
+    # positions = np.arange(POSITION_MIN, POSITION_MAX + positionStep, positionStep)
+    # velocityStep = (VELOCITY_MAX - VELOCITY_MIN) / grid_size
+    # velocities = np.arange(VELOCITY_MIN, VELOCITY_MAX + velocityStep, velocityStep)
+    velocities = np.linspace(VELOCITY_MIN, VELOCITY_MAX, grid_size)
+    axis_x = []
+    axis_y = []
+    axis_z = []
     for position in positions:
         for velocity in velocities:
-            axisX.append(position)
-            axisY.append(velocity)
-            axisZ.append(valueFunction.costToGo(position, velocity))
+            axis_x.append(position)
+            axis_y.append(velocity)
+            axis_z.append(value_function.cost_to_go(position, velocity))
 
-    fig = plt.figure(figureIndex)
-    figureIndex += 1
-    fig.suptitle(title)
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(axisX, axisY, axisZ)
+    ax.scatter(axis_x, axis_y, axis_z)
     ax.set_xlabel('Position')
     ax.set_ylabel('Velocity')
     ax.set_zlabel('Cost to go')
+    ax.set_title('Episode %d' % (episode + 1))
 
 # Figure 10.1, cost to go in a single run
-def figure10_1():
+def figure_10_1():
     episodes = 9000
-    targetEpisodes = [0, 99, episodes - 1]
-    numOfTilings = 8
+    plot_episodes = [0, 99, episodes - 1]
+    fig = plt.figure(figsize=(40, 10))
+    axes = [fig.add_subplot(1, len(plot_episodes), i+1, projection='3d') for i in range(len(plot_episodes))]
+    num_of_tilings = 8
     alpha = 0.3
-    valueFunction = ValueFunction(alpha, numOfTilings)
-    for episode in range(0, episodes):
-        print('episode:', episode)
-        semiGradientNStepSarsa(valueFunction)
-        if episode in targetEpisodes:
-            prettyPrint(valueFunction, 'Episode: ' + str(episode + 1))
+    value_function = ValueFunction(alpha, num_of_tilings)
+    for ep in tqdm(range(episodes)):
+        semi_gradient_n_step_sarsa(value_function)
+        if ep in plot_episodes:
+            print_cost(value_function, ep, axes[plot_episodes.index(ep)])
+
+    plt.savefig('../images/figure_10_1.png')
+    plt.close()
 
 # Figure 10.2, semi-gradient Sarsa with different alphas
 def figure10_2():
@@ -221,7 +278,7 @@ def figure10_2():
         for index in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
                 print('run:', run, 'alpha:', alphas[index], 'episode:', episode)
-                step = semiGradientNStepSarsa(valueFunctions[index])
+                step = semi_gradient_n_step_sarsa(valueFunctions[index])
                 steps[index, episode] += step
 
     steps /= runs
@@ -250,7 +307,7 @@ def figure10_3():
         for index in range(0, len(valueFunctions)):
             for episode in range(0, episodes):
                 print('run:', run, 'steps:', nSteps[index], 'episode:', episode)
-                step = semiGradientNStepSarsa(valueFunctions[index], nSteps[index])
+                step = semi_gradient_n_step_sarsa(valueFunctions[index], nSteps[index])
                 steps[index, episode] += step
 
     steps /= runs
@@ -284,7 +341,7 @@ def figure10_4():
                 valueFunction = ValueFunction(alpha)
                 for episode in range(0, episodes):
                     print('run:', run, 'steps:', nStep, 'alpha:', alpha, 'episode:', episode)
-                    step = semiGradientNStepSarsa(valueFunction, nStep)
+                    step = semi_gradient_n_step_sarsa(valueFunction, nStep)
                     steps[nStepIndex, alphaIndex] += step
     # average over independent runs and episodes
     steps /= runs * episodes
@@ -300,11 +357,8 @@ def figure10_4():
     plt.ylabel('Steps per episode')
     plt.legend()
 
-figure10_1()
-figure10_2()
-figure10_3()
-figure10_4()
-plt.show()
+if __name__ == '__main__':
+    figure_10_1()
 
 
 
