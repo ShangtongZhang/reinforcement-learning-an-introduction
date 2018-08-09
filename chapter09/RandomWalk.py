@@ -15,9 +15,6 @@ from tqdm import tqdm
 # # of states except for terminal states
 N_STATES = 1000
 
-# true state value, just a promising guess
-TRUE_VALUE = np.arange(-1001, 1003, 2) / 1001.0
-
 # all states
 STATES = np.arange(1, N_STATES + 1)
 
@@ -36,25 +33,29 @@ ACTIONS = [ACTION_LEFT, ACTION_RIGHT]
 STEP_RANGE = 100
 
 def compute_true_value():
+    # true state value, just a promising guess
+    true_value = np.arange(-1001, 1003, 2) / 1001.0
+
     # Dynamic programming to find the true state values, based on the promising guess above
     # Assume all rewards are 0, given that we have already given value -1 and 1 to terminal states
     while True:
-        old_value = np.copy(TRUE_VALUE)
+        old_value = np.copy(true_value)
         for state in STATES:
-            TRUE_VALUE[state] = 0
+            true_value[state] = 0
             for action in ACTIONS:
                 for step in range(1, STEP_RANGE + 1):
                     step *= action
                     next_state = state + step
                     next_state = max(min(next_state, N_STATES + 1), 0)
                     # asynchronous update for faster convergence
-                    TRUE_VALUE[state] += 1.0 / (2 * STEP_RANGE) * TRUE_VALUE[next_state]
-        error = np.sum(np.abs(old_value - TRUE_VALUE))
-        print(error)
+                    true_value[state] += 1.0 / (2 * STEP_RANGE) * true_value[next_state]
+        error = np.sum(np.abs(old_value - true_value))
         if error < 1e-2:
             break
     # correct the state value for terminal states to 0
-    TRUE_VALUE[0] = TRUE_VALUE[-1] = 0
+    true_value[0] = true_value[-1] = 0
+
+    return true_value
 
 # take an @action at @state, return new state and reward for this transition
 def step(state, action):
@@ -207,13 +208,13 @@ def gradient_monte_carlo(value_function, alpha, distribution=None):
 # @valueFunction: an instance of class ValueFunction
 # @n: # of steps
 # @alpha: step size
-def semiGradientTemporalDifference(valueFunction, n, alpha):
+def semi_gradient_temporal_difference(value_function, n, alpha):
     # initial starting state
-    currentState = START_STATE
+    state = START_STATE
 
     # arrays to store states and rewards for an episode
     # space isn't a major consideration, so I didn't use the mod trick
-    states = [currentState]
+    states = [state]
     rewards = [0]
 
     # track the time
@@ -228,36 +229,36 @@ def semiGradientTemporalDifference(valueFunction, n, alpha):
         if time < T:
             # choose an action randomly
             action = get_action()
-            newState, reward = step(currentState, action)
+            next_state, reward = step(state, action)
 
             # store new state and new reward
-            states.append(newState)
+            states.append(next_state)
             rewards.append(reward)
 
-            if newState in END_STATES:
+            if next_state in END_STATES:
                 T = time
 
         # get the time of the state to update
-        updateTime = time - n
-        if updateTime >= 0:
+        update_time = time - n
+        if update_time >= 0:
             returns = 0.0
             # calculate corresponding rewards
-            for t in range(updateTime + 1, min(T, updateTime + n) + 1):
+            for t in range(update_time + 1, min(T, update_time + n) + 1):
                 returns += rewards[t]
             # add state value to the return
-            if updateTime + n <= T:
-                returns += valueFunction.value(states[updateTime + n])
-            stateToUpdate = states[updateTime]
+            if update_time + n <= T:
+                returns += value_function.value(states[update_time + n])
+            state_to_update = states[update_time]
             # update the value function
-            if not stateToUpdate in END_STATES:
-                delta = alpha * (returns - valueFunction.value(stateToUpdate))
-                valueFunction.update(delta, stateToUpdate)
-        if updateTime == T - 1:
+            if not state_to_update in END_STATES:
+                delta = alpha * (returns - value_function.value(state_to_update))
+                value_function.update(delta, state_to_update)
+        if update_time == T - 1:
             break
-        currentState = newState
+        state = next_state
 
 # Figure 9.1, gradient Monte Carlo algorithm
-def figure_9_1():
+def figure_9_1(true_value):
     episodes = int(1e5)
     alpha = 2e-5
 
@@ -274,7 +275,7 @@ def figure_9_1():
 
     plt.subplot(2, 1, 1)
     plt.plot(STATES, state_values, label='Approximate MC value')
-    plt.plot(STATES, TRUE_VALUE[1: -1], label='True value')
+    plt.plot(STATES, true_value[1: -1], label='True value')
     plt.xlabel('State')
     plt.ylabel('Value')
     plt.legend()
@@ -289,27 +290,22 @@ def figure_9_1():
     plt.close()
 
 # semi-gradient TD on 1000-state random walk
-def figure9_2Left():
-    nEpisodes = int(1e5)
+def figure_9_2_left(true_value):
+    episodes = int(1e5)
     alpha = 2e-4
-    valueFunction = ValueFunction(10)
-    for episode in range(0, nEpisodes):
-        print('episode:', episode)
-        semiGradientTemporalDifference(valueFunction, 1, alpha)
+    value_function = ValueFunction(10)
+    for ep in tqdm(range(episodes)):
+        semi_gradient_temporal_difference(value_function, 1, alpha)
 
-    stateValues = [valueFunction.value(i) for i in STATES]
-    plt.figure(2)
+    stateValues = [value_function.value(i) for i in STATES]
     plt.plot(STATES, stateValues, label='Approximate TD value')
-    plt.plot(STATES, TRUE_VALUE[1: -1], label='True value')
+    plt.plot(STATES, true_value[1: -1], label='True value')
     plt.xlabel('State')
     plt.ylabel('Value')
     plt.legend()
 
 # different alphas and steps for semi-gradient TD
-def figure9_2Right():
-    # truncate value for better display
-    truncateValue = 0.55
-
+def figure_9_2_right(true_value):
     # all possible steps
     steps = np.power(2, np.arange(0, 10))
 
@@ -324,32 +320,35 @@ def figure9_2Right():
 
     # track the errors for each (step, alpha) combination
     errors = np.zeros((len(steps), len(alphas)))
-    for run in range(0, runs):
-        for stepInd, step in zip(range(len(steps)), steps):
-            for alphaInd, alpha in zip(range(len(alphas)), alphas):
-                print('run:', run, 'step:', step, 'alpha:', alpha)
+    for run in tqdm(range(runs)):
+        for step_ind, step in zip(range(len(steps)), steps):
+            for alpha_ind, alpha in zip(range(len(alphas)), alphas):
                 # we have 20 aggregations in this example
-                valueFunction = ValueFunction(20)
+                value_function = ValueFunction(20)
                 for ep in range(0, episodes):
-                    semiGradientTemporalDifference(valueFunction, step, alpha)
+                    semi_gradient_temporal_difference(value_function, step, alpha)
                     # calculate the RMS error
-                    currentStateValues = np.asarray([valueFunction.value(i) for i in STATES])
-                    errors[stepInd, alphaInd] += np.sqrt(np.sum(np.power(currentStateValues - TRUE_VALUE[1: -1], 2)) / N_STATES)
+                    state_value = np.asarray([value_function.value(i) for i in STATES])
+                    errors[step_ind, alpha_ind] += np.sqrt(np.sum(np.power(state_value - true_value[1: -1], 2)) / N_STATES)
     # take average
     errors /= episodes * runs
     # truncate the error
-    errors[errors > truncateValue] = truncateValue
-    plt.figure(3)
-    for i in range(0, len(steps)):
+    for i in range(len(steps)):
         plt.plot(alphas, errors[i, :], label='n = ' + str(steps[i]))
     plt.xlabel('alpha')
     plt.ylabel('RMS error')
+    plt.ylim([0.25, 0.55])
     plt.legend()
 
-# Figure 9.2, it will take quite a while
-def figure9_2():
-    figure9_2Left()
-    figure9_2Right()
+def figure_9_2(true_value):
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    figure_9_2_left(true_value)
+    plt.subplot(2, 1, 2)
+    figure_9_2_right(true_value)
+
+    plt.savefig('../images/figure_9_2.png')
+    plt.close()
 
 # Figure 9.5, Fourier basis and polynomials
 def figure9_5():
@@ -380,7 +379,7 @@ def figure9_5():
                     stateValues = [valueFunctions[j].value(state) for state in STATES]
 
                     # get the root-mean-squared error
-                    errors[j, i, episode] += np.sqrt(np.mean(np.power(TRUE_VALUE[1: -1] - stateValues, 2)))
+                    errors[j, i, episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - stateValues, 2)))
 
     # average over independent runs
     errors /= runs
@@ -436,7 +435,7 @@ def figure9_10():
                 stateValues = [valueFunctions[i].value(state) for state in STATES]
 
                 # get the root-mean-squared error
-                errors[i][episode] += np.sqrt(np.mean(np.power(TRUE_VALUE[1: -1] - stateValues, 2)))
+                errors[i][episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - stateValues, 2)))
 
     # average over independent runs
     errors /= runs
@@ -449,7 +448,11 @@ def figure9_10():
     plt.legend()
 
 if __name__ == '__main__':
-    figure_9_1()
+    # Ture value must be computed before any other figures
+    true_value = compute_true_value()
+
+    figure_9_1(true_value)
+    figure_9_2(true_value)
 
 # figure9_1()
 # figure9_2()
