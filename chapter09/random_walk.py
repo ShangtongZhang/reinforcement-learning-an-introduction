@@ -394,7 +394,7 @@ def figure_9_5(true_value):
     plt.close()
 
 # Figure 9.10, it will take quite a while
-def figure9_10():
+def figure_9_10(true_value):
 
     # My machine can only afford one run, thus the curve isn't so smooth
     runs = 1
@@ -402,26 +402,24 @@ def figure9_10():
     # number of episodes
     episodes = 5000
 
-    numOfTilings = 50
+    num_of_tilings = 50
 
     # each tile will cover 200 states
-    tileWidth = 200
+    tile_width = 200
 
     # how to put so many tilings
-    tilingOffset = 4
+    tiling_offset = 4
 
     labels = ['tile coding (50 tilings)', 'state aggregation (one tiling)']
 
     # track errors for each episode
     errors = np.zeros((len(labels), episodes))
-    for run in range(0, runs):
+    for run in range(runs):
         # initialize value functions for multiple tilings and single tiling
-        valueFunctions = [TilingsValueFunction(numOfTilings, tileWidth, tilingOffset),
-                         ValueFunction(N_STATES // tileWidth)]
-        for i in range(0, len(valueFunctions)):
-            for episode in range(0, episodes):
-                print('run:', run, 'episode:', episode)
-
+        value_functions = [TilingsValueFunction(num_of_tilings, tile_width, tiling_offset),
+                         ValueFunction(N_STATES // tile_width)]
+        for i in range(len(value_functions)):
+            for episode in tqdm(range(episodes)):
                 # I use a changing alpha according to the episode instead of a small fixed alpha
                 # With a small fixed alpha, I don't think 5000 episodes is enough for so many
                 # parameters in multiple tilings.
@@ -430,29 +428,30 @@ def figure9_10():
                 alpha = 1.0 / (episode + 1)
 
                 # gradient Monte Carlo algorithm
-                gradient_monte_carlo(valueFunctions[i], alpha)
+                gradient_monte_carlo(value_functions[i], alpha)
 
                 # get state values under current value function
-                stateValues = [valueFunctions[i].value(state) for state in STATES]
+                state_values = [value_functions[i].value(state) for state in STATES]
 
                 # get the root-mean-squared error
-                errors[i][episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - stateValues, 2)))
+                errors[i][episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - state_values, 2)))
 
     # average over independent runs
     errors /= runs
 
-    plt.figure(4)
     for i in range(0, len(labels)):
         plt.plot(errors[i], label=labels[i])
     plt.xlabel('Episodes')
     plt.ylabel('RMSVE')
     plt.legend()
 
+    plt.savefig('../images/figure_9_10.png')
+    plt.close()
+
 if __name__ == '__main__':
     true_value = compute_true_value()
 
-    # figure_9_1(true_value)
-    # figure_9_2(true_value)
+    figure_9_1(true_value)
+    figure_9_2(true_value)
     figure_9_5(true_value)
-
-# figure9_10()
+    figure_9_10(true_value)
