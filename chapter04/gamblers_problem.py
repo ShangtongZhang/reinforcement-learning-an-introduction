@@ -53,8 +53,11 @@ def figure_4_3():
         # due to tie, can't reproduce the optimal policy in book
         policy[state] = actions[np.argmax(action_returns)]
 
+    plt.figure(figsize=(10, 20))
+
     plt.subplot(2, 1, 1)
     plt.plot(state_value)
+    plt.xlabel('Capital')
     plt.ylabel('Value estimates')
 
     plt.subplot(2, 1, 2)

@@ -120,16 +120,19 @@ def figure_2_2(runs=2000, time=1000):
     bandits = [Bandit(epsilon=eps, sample_averages=True) for eps in epsilons]
     best_action_counts, rewards = simulate(runs, time, bandits)
 
+    plt.figure(figsize=(10, 20))
+
     plt.subplot(2, 1, 1)
     for eps, rewards in zip(epsilons, rewards):
         plt.plot(rewards, label='epsilon = %.02f' % (eps))
+    plt.xlabel('steps')
     plt.ylabel('average reward')
     plt.legend()
 
     plt.subplot(2, 1, 2)
     for eps, counts in zip(epsilons, best_action_counts):
         plt.plot(counts, label='epsilon = %.02f' % (eps))
-    plt.xlabel('Steps')
+    plt.xlabel('steps')
     plt.ylabel('% optimal action')
     plt.legend()
 

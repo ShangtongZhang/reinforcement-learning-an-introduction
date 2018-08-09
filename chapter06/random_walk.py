@@ -167,8 +167,10 @@ def batch_updating(method, episodes, alpha=0.001):
     return total_errors
 
 def example_6_2():
+    plt.figure(figsize=(10, 20))
     plt.subplot(2, 1, 1)
     compute_state_value()
+
     plt.subplot(2, 1, 2)
     rms_error()
     plt.tight_layout()
