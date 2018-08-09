@@ -14,7 +14,13 @@ from tqdm import tqdm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from math import floor
 
-# from http://incompleteideas.net/tiles/tiles3.py-remove
+#######################################################################
+# Following are some utilities for tile coding from Rich.
+# To make each file self-contained, I copied them from
+# http://incompleteideas.net/tiles/tiles3.py-remove
+# with some naming convention changes
+#
+# Tile coding starts
 class IHT:
     "Structure to handle collisions"
     def __init__(self, size_val):
@@ -44,13 +50,11 @@ class IHT:
             d[obj] = count
             return count
 
-# from http://incompleteideas.net/tiles/tiles3.py-remove
 def hash_coords(coordinates, m, read_only=False):
     if isinstance(m, IHT): return m.get_index(tuple(coordinates), read_only)
     if isinstance(m, int): return hash(tuple(coordinates)) % m
     if m is None: return coordinates
 
-# from http://incompleteideas.net/tiles/tiles3.py-remove
 def tiles(iht_or_size, num_tilings, floats, ints=None, read_only=False):
     """returns num-tilings tile indices corresponding to the floats and ints"""
     if ints is None:
@@ -67,6 +71,8 @@ def tiles(iht_or_size, num_tilings, floats, ints=None, read_only=False):
         coords.extend(ints)
         tiles.append(hash_coords(coords, iht_or_size, read_only))
     return tiles
+# Tile coding ends
+#######################################################################
 
 # all possible actions
 ACTION_REVERSE = -1
@@ -266,32 +272,31 @@ def figure_10_1():
     plt.close()
 
 # Figure 10.2, semi-gradient Sarsa with different alphas
-def figure10_2():
+def figure_10_2():
     runs = 10
     episodes = 500
-    numOfTilings = 8
+    num_of_tilings = 8
     alphas = [0.1, 0.2, 0.5]
 
     steps = np.zeros((len(alphas), episodes))
-    for run in range(0, runs):
-        valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
-        for index in range(0, len(valueFunctions)):
-            for episode in range(0, episodes):
-                print('run:', run, 'alpha:', alphas[index], 'episode:', episode)
-                step = semi_gradient_n_step_sarsa(valueFunctions[index])
+    for run in range(runs):
+        value_functions = [ValueFunction(alpha, num_of_tilings) for alpha in alphas]
+        for index in range(len(value_functions)):
+            for episode in tqdm(range(episodes)):
+                step = semi_gradient_n_step_sarsa(value_functions[index])
                 steps[index, episode] += step
 
     steps /= runs
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(0, len(alphas)):
-        plt.plot(steps[i], label='alpha = '+str(alphas[i])+'/'+str(numOfTilings))
+        plt.plot(steps[i], label='alpha = '+str(alphas[i])+'/'+str(num_of_tilings))
     plt.xlabel('Episode')
     plt.ylabel('Steps per episode')
     plt.yscale('log')
     plt.legend()
+
+    plt.savefig('../images/figure_10_2.png')
+    plt.close()
 
 # Figure 10.3, one-step semi-gradient Sarsa vs multi-step semi-gradient Sarsa
 def figure10_3():
@@ -358,7 +363,8 @@ def figure10_4():
     plt.legend()
 
 if __name__ == '__main__':
-    figure_10_1()
+    # figure_10_1()
+    figure_10_2()
 
 
 
