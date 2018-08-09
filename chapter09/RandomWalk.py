@@ -1,23 +1,25 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2016 Shangtong Zhang(zhangshangtong.cpp@gmail.com)                  #
+# 2016-2018 Shangtong Zhang(zhangshangtong.cpp@gmail.com)             #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
 
-from __future__ import print_function
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 # # of states except for terminal states
 N_STATES = 1000
 
-# true state values, just a promising guess
-trueStateValues = np.arange(-1001, 1003, 2) / 1001.0
+# true state value, just a promising guess
+TRUE_VALUE = np.arange(-1001, 1003, 2) / 1001.0
 
 # all states
-states = np.arange(1, N_STATES + 1)
+STATES = np.arange(1, N_STATES + 1)
 
 # start from a central state
 START_STATE = 500
@@ -33,28 +35,29 @@ ACTIONS = [ACTION_LEFT, ACTION_RIGHT]
 # maximum stride for an action
 STEP_RANGE = 100
 
-# Dynamic programming to find the true state values, based on the promising guess above
-# Assume all rewards are 0, given that we have already given value -1 and 1 to terminal states
-while True:
-    oldTrueStateValues = np.copy(trueStateValues)
-    for state in states:
-        trueStateValues[state] = 0
-        for action in ACTIONS:
-            for step in range(1, STEP_RANGE + 1):
-                step *= action
-                newState = state + step
-                newState = max(min(newState, N_STATES + 1), 0)
-                # asynchronous update for faster convergence
-                trueStateValues[state] += 1.0 / (2 * STEP_RANGE) * trueStateValues[newState]
-    error = np.sum(np.abs(oldTrueStateValues - trueStateValues))
-    print(error)
-    if error < 1e-2:
-        break
-# correct the state value for terminal states to 0
-trueStateValues[0] = trueStateValues[-1] = 0
+def compute_true_value():
+    # Dynamic programming to find the true state values, based on the promising guess above
+    # Assume all rewards are 0, given that we have already given value -1 and 1 to terminal states
+    while True:
+        old_value = np.copy(TRUE_VALUE)
+        for state in STATES:
+            TRUE_VALUE[state] = 0
+            for action in ACTIONS:
+                for step in range(1, STEP_RANGE + 1):
+                    step *= action
+                    next_state = state + step
+                    next_state = max(min(next_state, N_STATES + 1), 0)
+                    # asynchronous update for faster convergence
+                    TRUE_VALUE[state] += 1.0 / (2 * STEP_RANGE) * TRUE_VALUE[next_state]
+        error = np.sum(np.abs(old_value - TRUE_VALUE))
+        print(error)
+        if error < 1e-2:
+            break
+    # correct the state value for terminal states to 0
+    TRUE_VALUE[0] = TRUE_VALUE[-1] = 0
 
 # take an @action at @state, return new state and reward for this transition
-def takeAction(state, action):
+def step(state, action):
     step = np.random.randint(1, STEP_RANGE + 1)
     step *= action
     state += step
@@ -68,34 +71,34 @@ def takeAction(state, action):
     return state, reward
 
 # get an action, following random policy
-def getAction():
+def get_action():
     if np.random.binomial(1, 0.5) == 1:
         return 1
     return -1
 
 # a wrapper class for aggregation value function
 class ValueFunction:
-    # @numOfGroups: # of aggregations
-    def __init__(self, numOfGroups):
-        self.numOfGroups = numOfGroups
-        self.groupSize = N_STATES // numOfGroups
+    # @num_of_groups: # of aggregations
+    def __init__(self, num_of_groups):
+        self.num_of_groups = num_of_groups
+        self.group_size = N_STATES // num_of_groups
 
         # thetas
-        self.params = np.zeros(numOfGroups)
+        self.params = np.zeros(num_of_groups)
 
     # get the value of @state
     def value(self, state):
         if state in END_STATES:
             return 0
-        groupIndex = (state - 1) // self.groupSize
-        return self.params[groupIndex]
+        group_index = (state - 1) // self.group_size
+        return self.params[group_index]
 
     # update parameters
     # @delta: step size * (target - old estimation)
     # @state: state of current sample
     def update(self, delta, state):
-        groupIndex = (state - 1) // self.groupSize
-        self.params[groupIndex] += delta
+        group_index = (state - 1) // self.group_size
+        self.params[group_index] += delta
 
 # a wrapper class for tile coding value function
 class TilingsValueFunction:
@@ -178,25 +181,25 @@ class BasesValueFunction:
         self.weights += delta * derivativeValue
 
 # gradient Monte Carlo algorithm
-# @valueFunction: an instance of class ValueFunction
+# @value_function: an instance of class ValueFunction
 # @alpha: step size
 # @distribution: array to store the distribution statistics
-def gradientMonteCarlo(valueFunction, alpha, distribution=None):
-    currentState = START_STATE
-    trajectory = [currentState]
+def gradient_monte_carlo(value_function, alpha, distribution=None):
+    state = START_STATE
+    trajectory = [state]
 
     # We assume gamma = 1, so return is just the same as the latest reward
     reward = 0.0
-    while currentState not in END_STATES:
-        action = getAction()
-        newState, reward = takeAction(currentState, action)
-        trajectory.append(newState)
-        currentState = newState
+    while state not in END_STATES:
+        action = get_action()
+        next_state, reward = step(state, action)
+        trajectory.append(next_state)
+        state = next_state
 
     # Gradient update for each state in this trajectory
     for state in trajectory[:-1]:
-        delta = alpha * (reward - valueFunction.value(state))
-        valueFunction.update(delta, state)
+        delta = alpha * (reward - value_function.value(state))
+        value_function.update(delta, state)
         if distribution is not None:
             distribution[state] += 1
 
@@ -224,8 +227,8 @@ def semiGradientTemporalDifference(valueFunction, n, alpha):
 
         if time < T:
             # choose an action randomly
-            action = getAction()
-            newState, reward = takeAction(currentState, action)
+            action = get_action()
+            newState, reward = step(currentState, action)
 
             # store new state and new reward
             states.append(newState)
@@ -254,32 +257,36 @@ def semiGradientTemporalDifference(valueFunction, n, alpha):
         currentState = newState
 
 # Figure 9.1, gradient Monte Carlo algorithm
-def figure9_1():
-    nEpisodes = int(1e5)
+def figure_9_1():
+    episodes = int(1e5)
     alpha = 2e-5
 
     # we have 10 aggregations in this example, each has 100 states
-    valueFunction = ValueFunction(10)
+    value_function = ValueFunction(10)
     distribution = np.zeros(N_STATES + 2)
-    for episode in range(0, nEpisodes):
-        print('episode:', episode)
-        gradientMonteCarlo(valueFunction, alpha, distribution)
+    for ep in tqdm(range(episodes)):
+        gradient_monte_carlo(value_function, alpha, distribution)
 
     distribution /= np.sum(distribution)
-    stateValues = [valueFunction.value(i) for i in states]
+    state_values = [value_function.value(i) for i in STATES]
 
-    plt.figure(0)
-    plt.plot(states, stateValues, label='Approximate MC value')
-    plt.plot(states, trueStateValues[1: -1], label='True value')
+    plt.figure(figsize=(10, 20))
+
+    plt.subplot(2, 1, 1)
+    plt.plot(STATES, state_values, label='Approximate MC value')
+    plt.plot(STATES, TRUE_VALUE[1: -1], label='True value')
     plt.xlabel('State')
     plt.ylabel('Value')
     plt.legend()
 
-    plt.figure(1)
-    plt.plot(states, distribution[1: -1], label='State distribution')
+    plt.subplot(2, 1, 2)
+    plt.plot(STATES, distribution[1: -1], label='State distribution')
     plt.xlabel('State')
     plt.ylabel('Distribution')
     plt.legend()
+
+    plt.savefig('../images/figure_9_1.png')
+    plt.close()
 
 # semi-gradient TD on 1000-state random walk
 def figure9_2Left():
@@ -290,10 +297,10 @@ def figure9_2Left():
         print('episode:', episode)
         semiGradientTemporalDifference(valueFunction, 1, alpha)
 
-    stateValues = [valueFunction.value(i) for i in states]
+    stateValues = [valueFunction.value(i) for i in STATES]
     plt.figure(2)
-    plt.plot(states, stateValues, label='Approximate TD value')
-    plt.plot(states, trueStateValues[1: -1], label='True value')
+    plt.plot(STATES, stateValues, label='Approximate TD value')
+    plt.plot(STATES, TRUE_VALUE[1: -1], label='True value')
     plt.xlabel('State')
     plt.ylabel('Value')
     plt.legend()
@@ -326,8 +333,8 @@ def figure9_2Right():
                 for ep in range(0, episodes):
                     semiGradientTemporalDifference(valueFunction, step, alpha)
                     # calculate the RMS error
-                    currentStateValues = np.asarray([valueFunction.value(i) for i in states])
-                    errors[stepInd, alphaInd] += np.sqrt(np.sum(np.power(currentStateValues - trueStateValues[1: -1], 2)) / N_STATES)
+                    currentStateValues = np.asarray([valueFunction.value(i) for i in STATES])
+                    errors[stepInd, alphaInd] += np.sqrt(np.sum(np.power(currentStateValues - TRUE_VALUE[1: -1], 2)) / N_STATES)
     # take average
     errors /= episodes * runs
     # truncate the error
@@ -367,13 +374,13 @@ def figure9_5():
                     print('run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode)
 
                     # gradient Monte Carlo algorithm
-                    gradientMonteCarlo(valueFunctions[j], alphas[j])
+                    gradient_monte_carlo(valueFunctions[j], alphas[j])
 
                     # get state values under current value function
-                    stateValues = [valueFunctions[j].value(state) for state in states]
+                    stateValues = [valueFunctions[j].value(state) for state in STATES]
 
                     # get the root-mean-squared error
-                    errors[j, i, episode] += np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues, 2)))
+                    errors[j, i, episode] += np.sqrt(np.mean(np.power(TRUE_VALUE[1: -1] - stateValues, 2)))
 
     # average over independent runs
     errors /= runs
@@ -423,13 +430,13 @@ def figure9_10():
                 alpha = 1.0 / (episode + 1)
 
                 # gradient Monte Carlo algorithm
-                gradientMonteCarlo(valueFunctions[i], alpha)
+                gradient_monte_carlo(valueFunctions[i], alpha)
 
                 # get state values under current value function
-                stateValues = [valueFunctions[i].value(state) for state in states]
+                stateValues = [valueFunctions[i].value(state) for state in STATES]
 
                 # get the root-mean-squared error
-                errors[i][episode] += np.sqrt(np.mean(np.power(trueStateValues[1: -1] - stateValues, 2)))
+                errors[i][episode] += np.sqrt(np.mean(np.power(TRUE_VALUE[1: -1] - stateValues, 2)))
 
     # average over independent runs
     errors /= runs
@@ -441,8 +448,11 @@ def figure9_10():
     plt.ylabel('RMSVE')
     plt.legend()
 
-figure9_1()
-figure9_2()
-figure9_5()
-figure9_10()
-plt.show()
+if __name__ == '__main__':
+    figure_9_1()
+
+# figure9_1()
+# figure9_2()
+# figure9_5()
+# figure9_10()
+# plt.show()
