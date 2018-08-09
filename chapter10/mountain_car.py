@@ -299,72 +299,73 @@ def figure_10_2():
     plt.close()
 
 # Figure 10.3, one-step semi-gradient Sarsa vs multi-step semi-gradient Sarsa
-def figure10_3():
+def figure_10_3():
     runs = 10
     episodes = 500
-    numOfTilings = 8
+    num_of_tilings = 8
     alphas = [0.5, 0.3]
-    nSteps = [1, 8]
+    n_steps = [1, 8]
 
     steps = np.zeros((len(alphas), episodes))
-    for run in range(0, runs):
-        valueFunctions = [ValueFunction(alpha, numOfTilings) for alpha in alphas]
-        for index in range(0, len(valueFunctions)):
-            for episode in range(0, episodes):
-                print('run:', run, 'steps:', nSteps[index], 'episode:', episode)
-                step = semi_gradient_n_step_sarsa(valueFunctions[index], nSteps[index])
+    for run in range(runs):
+        value_functions = [ValueFunction(alpha, num_of_tilings) for alpha in alphas]
+        for index in range(len(value_functions)):
+            for episode in tqdm(range(episodes)):
+                step = semi_gradient_n_step_sarsa(value_functions[index], n_steps[index])
                 steps[index, episode] += step
 
     steps /= runs
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
+
     for i in range(0, len(alphas)):
-        plt.plot(steps[i], label='n = '+str(nSteps[i]))
+        plt.plot(steps[i], label='n = %.01f' % (n_steps[i]))
     plt.xlabel('Episode')
     plt.ylabel('Steps per episode')
     plt.yscale('log')
     plt.legend()
 
+    plt.savefig('../images/figure_10_3.png')
+    plt.close()
+
 # Figure 10.4, effect of alpha and n on multi-step semi-gradient Sarsa
-def figure10_4():
+def figure_10_4():
     alphas = np.arange(0.25, 1.75, 0.25)
-    nSteps = np.power(2, np.arange(0, 5))
+    n_steps = np.power(2, np.arange(0, 5))
     episodes = 50
     runs = 5
 
-    truncateStep = 300
-    steps = np.zeros((len(nSteps), len(alphas)))
-    for run in range(0, runs):
-        for nStepIndex, nStep in zip(range(0, len(nSteps)), nSteps):
-            for alphaIndex, alpha in zip(range(0, len(alphas)), alphas):
-                if (nStep == 8 and alpha > 1) or \
-                        (nStep == 16 and alpha > 0.75):
+    max_steps = 300
+    steps = np.zeros((len(n_steps), len(alphas)))
+    for run in range(runs):
+        for n_step_index, n_step in enumerate(n_steps):
+            for alpha_index, alpha in enumerate(alphas):
+                if (n_step == 8 and alpha > 1) or \
+                        (n_step == 16 and alpha > 0.75):
                     # In these cases it won't converge, so ignore them
-                    steps[nStepIndex, alphaIndex] += truncateStep * episodes
+                    steps[n_step_index, alpha_index] += max_steps * episodes
                     continue
-                valueFunction = ValueFunction(alpha)
-                for episode in range(0, episodes):
-                    print('run:', run, 'steps:', nStep, 'alpha:', alpha, 'episode:', episode)
-                    step = semi_gradient_n_step_sarsa(valueFunction, nStep)
-                    steps[nStepIndex, alphaIndex] += step
+                value_function = ValueFunction(alpha)
+                for episode in tqdm(range(episodes)):
+                    step = semi_gradient_n_step_sarsa(value_function, n_step)
+                    steps[n_step_index, alpha_index] += step
+
     # average over independent runs and episodes
     steps /= runs * episodes
-    # truncate high values for better display
-    steps[steps > truncateStep] = truncateStep
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
-    for i in range(0, len(nSteps)):
-        plt.plot(alphas, steps[i, :], label='n = '+str(nSteps[i]))
+    for i in range(0, len(n_steps)):
+        plt.plot(alphas, steps[i, :], label='n = '+str(n_steps[i]))
     plt.xlabel('alpha * number of tilings(8)')
     plt.ylabel('Steps per episode')
+    plt.ylim([220, max_steps])
     plt.legend()
+
+    plt.savefig('../images/figure_10_4.png')
+    plt.close()
 
 if __name__ == '__main__':
     # figure_10_1()
-    figure_10_2()
+    # figure_10_2()
+    # figure_10_3()
+    figure_10_4()
 
 
 
