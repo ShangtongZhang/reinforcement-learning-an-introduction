@@ -178,8 +178,8 @@ class BasesValueFunction:
         # map the state space into [0, 1]
         state /= float(N_STATES)
         # get derivative value
-        derivativeValue = np.asarray([func(state) for func in self.bases])
-        self.weights += delta * derivativeValue
+        derivative_value = np.asarray([func(state) for func in self.bases])
+        self.weights += delta * derivative_value
 
 # gradient Monte Carlo algorithm
 # @value_function: an instance of class ValueFunction
@@ -351,7 +351,7 @@ def figure_9_2(true_value):
     plt.close()
 
 # Figure 9.5, Fourier basis and polynomials
-def figure9_5():
+def figure_9_5(true_value):
     # my machine can only afford 1 run
     runs = 1
 
@@ -365,32 +365,33 @@ def figure9_5():
 
     # track errors for each episode
     errors = np.zeros((len(alphas), len(orders), episodes))
-    for run in range(0, runs):
-        for i in range(0, len(orders)):
-            valueFunctions = [BasesValueFunction(orders[i], POLYNOMIAL_BASES), BasesValueFunction(orders[i], FOURIER_BASES)]
-            for j in range(0, len(valueFunctions)):
-                for episode in range(0, episodes):
-                    print('run:', run, 'order:', orders[i], labels[j][i], 'episode:', episode)
+    for run in range(runs):
+        for i in range(len(orders)):
+            value_functions = [BasesValueFunction(orders[i], POLYNOMIAL_BASES), BasesValueFunction(orders[i], FOURIER_BASES)]
+            for j in range(len(value_functions)):
+                for episode in tqdm(range(episodes)):
 
                     # gradient Monte Carlo algorithm
-                    gradient_monte_carlo(valueFunctions[j], alphas[j])
+                    gradient_monte_carlo(value_functions[j], alphas[j])
 
                     # get state values under current value function
-                    stateValues = [valueFunctions[j].value(state) for state in STATES]
+                    state_values = [value_functions[j].value(state) for state in STATES]
 
                     # get the root-mean-squared error
-                    errors[j, i, episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - stateValues, 2)))
+                    errors[j, i, episode] += np.sqrt(np.mean(np.power(true_value[1: -1] - state_values, 2)))
 
     # average over independent runs
     errors /= runs
 
-    plt.figure(5)
-    for i in range(0, len(alphas)):
-        for j in range(0, len(orders)):
-            plt.plot(errors[i, j, :], label=labels[i][j]+' order = ' + str(orders[j]))
+    for i in range(len(alphas)):
+        for j in range(len(orders)):
+            plt.plot(errors[i, j, :], label='%s order = %d' % (labels[i][j], orders[j]))
     plt.xlabel('Episodes')
     plt.ylabel('RMSVE')
     plt.legend()
+
+    plt.savefig('../images/figure_9_5.png')
+    plt.close()
 
 # Figure 9.10, it will take quite a while
 def figure9_10():
@@ -448,14 +449,10 @@ def figure9_10():
     plt.legend()
 
 if __name__ == '__main__':
-    # Ture value must be computed before any other figures
     true_value = compute_true_value()
 
-    figure_9_1(true_value)
-    figure_9_2(true_value)
+    # figure_9_1(true_value)
+    # figure_9_2(true_value)
+    figure_9_5(true_value)
 
-# figure9_1()
-# figure9_2()
-# figure9_5()
 # figure9_10()
-# plt.show()
