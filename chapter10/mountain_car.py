@@ -109,7 +109,7 @@ class ValueFunction:
     # It doesn't matter whether the indices have meaning, only if this map satisfy some property
     # View the following webpage for more information
     # http://incompleteideas.net/sutton/tiles/tiles3.html
-    # @maxSize: the maximum # of indices
+    # @max_size: the maximum # of indices
     def __init__(self, step_size, num_of_tilings=8, max_size=2048):
         self.max_size = max_size
         self.num_of_tilings = num_of_tilings
@@ -362,9 +362,9 @@ def figure_10_4():
     plt.close()
 
 if __name__ == '__main__':
-    # figure_10_1()
-    # figure_10_2()
-    # figure_10_3()
+    figure_10_1()
+    figure_10_2()
+    figure_10_3()
     figure_10_4()
 
 

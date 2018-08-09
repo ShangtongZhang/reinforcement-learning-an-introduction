@@ -103,7 +103,7 @@ class ValueFunction:
 
 # a wrapper class for tile coding value function
 class TilingsValueFunction:
-    # @numOfTilings: # of tilings
+    # @num_of_tilings: # of tilings
     # @tileWidth: each tiling has several tiles, this parameter specifies the width of each tile
     # @tilingOffset: specifies how tilings are put together
     def __init__(self, numOfTilings, tileWidth, tilingOffset):
