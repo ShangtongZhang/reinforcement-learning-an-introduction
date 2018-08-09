@@ -11,20 +11,36 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
+# 2 actions
 ACTIONS = [0, 1]
+
+# each transition has a probability to terminate with 0
 TERMINATION_PROB = 0.1
+
+# maximum expected updates
 MAX_STEPS = 20000
+
+# epsilon greedy for behavior policy
 EPSILON = 0.1
 
+# break tie randomly
 def argmax(value):
     max_q = np.max(value)
     return np.random.choice([a for a, q in enumerate(value) if q == max_q])
 
 class Task():
+    # @n_states: number of non-terminal states
+    # @b: branch
+    # Each episode starts with state 0, and state n_states is a terminal state
     def __init__(self, n_states, b):
         self.n_states = n_states
         self.b = b
+
+        # transition matrix, each state-action pair leads to b possible states
         self.transition = np.random.randint(n_states, size=(n_states, len(ACTIONS), b))
+
+        # it is not clear how to set the reward, I use a unit normal distribution here
+        # reward is determined by (s, a, s')
         self.reward = np.random.randn(n_states, len(ACTIONS), b)
 
     def step(self, state, action):
@@ -33,7 +49,10 @@ class Task():
         next = np.random.randint(self.b)
         return self.transition[state, action, next], self.reward[state, action, next]
 
+# Evaluate the value of the start state for the greedy policy
+# derived from @q under the MDP @task
 def evaluate_pi(q, task):
+    # use Monte Carlo method to estimate the state value
     runs = 1000
     returns = []
     for r in range(runs):
@@ -46,6 +65,8 @@ def evaluate_pi(q, task):
         returns.append(rewards)
     return np.mean(returns)
 
+# perform expected update from a uniform state-action distribution of the MDP @task
+# evaluate the learned q value every @eval_interval steps
 def uniform(task, eval_interval):
     performance = []
     q = np.zeros((task.n_states, 2))
@@ -60,8 +81,11 @@ def uniform(task, eval_interval):
         if step % eval_interval == 0:
             v_pi = evaluate_pi(q, task)
             performance.append([step, v_pi])
+
     return zip(*performance)
 
+# perform expected update from an on-policy distribution of the MDP @task
+# evaluate the learned q value every @eval_interval steps
 def on_policy(task, eval_interval):
     performance = []
     q = np.zeros((task.n_states, 2))
@@ -92,9 +116,14 @@ def figure_8_8():
     num_states = [1000, 10000]
     branch = [1, 3, 10]
     methods = [on_policy, uniform]
-    n_tasks =  1
+
+    # average accross 30 tasks
+    n_tasks =  30
+
+    # number of evaluation points
     x_ticks = 100
 
+    plt.figure(figsize=(10, 20))
     for i, n in enumerate(num_states):
         plt.subplot(2, 1, i+1)
         for b in branch:
