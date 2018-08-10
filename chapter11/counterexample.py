@@ -246,7 +246,7 @@ def figure_11_2():
     plt.close()
 
 # Figure 11.6(left), temporal difference with gradient correction
-def figure11_6_a():
+def figure_11_6_left():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
     theta[6] = 10
@@ -260,15 +260,12 @@ def figure11_6_a():
     RMSVE = np.zeros(steps)
     RMSPBE = np.zeros(steps)
     state = np.random.choice(STATES)
-    for step in range(steps):
+    for step in tqdm(range(steps)):
         state = TDC(state, theta, weight, alpha, beta)
         thetas[:, step] = theta
         RMSVE[step] = compute_RMSVE(theta)
         RMSPBE[step] = compute_RMSPBE(theta)
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(FEATURE_SIZE):
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.plot(RMSVE, label='RMSVE')
@@ -278,7 +275,7 @@ def figure11_6_a():
     plt.legend()
 
 # Figure 11.6(right), expected temporal difference with gradient correction
-def figure11_6_b():
+def figure_11_6_right():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
     theta[6] = 10
@@ -291,15 +288,12 @@ def figure11_6_b():
     thetas = np.zeros((FEATURE_SIZE, sweeps))
     RMSVE = np.zeros(sweeps)
     RMSPBE = np.zeros(sweeps)
-    for sweep in range(sweeps):
+    for sweep in tqdm(range(sweeps)):
         expected_TDC(theta, weight, alpha, beta)
         thetas[:, sweep] = theta
         RMSVE[sweep] = compute_RMSVE(theta)
         RMSPBE[sweep] = compute_RMSPBE(theta)
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(FEATURE_SIZE):
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.plot(RMSVE, label='RMSVE')
@@ -307,6 +301,16 @@ def figure11_6_b():
     plt.xlabel('Sweeps')
     plt.title('Expected TDC')
     plt.legend()
+
+def figure_11_6():
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    figure_11_6_left()
+    plt.subplot(2, 1, 2)
+    figure_11_6_right()
+
+    plt.savefig('../images/figure_11_6.png')
+    plt.close()
 
 # Figure 11.7, expected ETD
 def figure11_7():
@@ -336,4 +340,5 @@ def figure11_7():
     plt.legend()
 
 if __name__ == '__main__':
-    figure_11_2()
+    # figure_11_2()
+    figure_11_6()
