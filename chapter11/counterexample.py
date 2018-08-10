@@ -313,7 +313,7 @@ def figure_11_6():
     plt.close()
 
 # Figure 11.7, expected ETD
-def figure11_7():
+def figure_11_7():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
     theta[6] = 10
@@ -324,14 +324,11 @@ def figure11_7():
     thetas = np.zeros((FEATURE_SIZE, sweeps))
     RMSVE = np.zeros(sweeps)
     emphasis = 0.0
-    for sweep in range(sweeps):
+    for sweep in tqdm(range(sweeps)):
         emphasis = expected_emphatic_TD(theta, emphasis, alpha)
         thetas[:, sweep] = theta
         RMSVE[sweep] = compute_RMSVE(theta)
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(FEATURE_SIZE):
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.plot(RMSVE, label='RMSVE')
@@ -339,6 +336,10 @@ def figure11_7():
     plt.title('emphatic TD')
     plt.legend()
 
+    plt.savefig('../images/figure_11_7.png')
+    plt.close()
+
 if __name__ == '__main__':
-    # figure_11_2()
+    figure_11_2()
     figure_11_6()
+    figure_11_7()
