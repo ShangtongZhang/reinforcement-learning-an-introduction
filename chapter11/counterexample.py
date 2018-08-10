@@ -1,15 +1,17 @@
 #######################################################################
 # Copyright (C)                                                       #
-# 2016 - 2017 Shangtong Zhang(zhangshangtong.cpp@gmail.com)           #
+# 2016 - 2018 Shangtong Zhang(zhangshangtong.cpp@gmail.com)           #
 # 2016 Kenta Shimada(hyperkentakun@gmail.com)                         #
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
 
-from __future__ import print_function
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from tqdm import tqdm
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 # all states: state 0-5 are upper states
 STATES = np.arange(0, 7)
@@ -36,27 +38,27 @@ ACTIONS = [DASHED, SOLID]
 REWARD = 0
 
 # take @action at @state, return the new state
-def takeAction(state, action):
+def step(state, action):
     if action == SOLID:
         return LOWER_STATE
     return np.random.choice(STATES[: LOWER_STATE])
 
 # target policy
-def targetPolicy(state):
+def target_policy(state):
     return SOLID
 
 # state distribution for the behavior policy
-stateDistribution = np.ones(len(STATES)) / 7
-stateDistributionMat = np.matrix(np.diag(stateDistribution))
+STATE_DISTRIBUTION = np.ones(len(STATES)) / 7
+STATE_DISTRIBUTION_MAT = np.matrix(np.diag(STATE_DISTRIBUTION))
 # projection matrix for minimize MSVE
-projectionMatrix = np.matrix(FEATURES) * \
-                   np.linalg.pinv(np.matrix(FEATURES.T) * stateDistributionMat * np.matrix(FEATURES)) * \
-                   np.matrix(FEATURES.T) * \
-                   stateDistributionMat
+PROJECTION_MAT = np.matrix(FEATURES) * \
+                 np.linalg.pinv(np.matrix(FEATURES.T) * STATE_DISTRIBUTION_MAT * np.matrix(FEATURES)) * \
+                 np.matrix(FEATURES.T) * \
+                 STATE_DISTRIBUTION_MAT
 
 # behavior policy
 BEHAVIOR_SOLID_PROBABILITY = 1.0 / 7
-def behaviorPolicy(state):
+def behavior_policy(state):
     if np.random.binomial(1, BEHAVIOR_SOLID_PROBABILITY) == 1:
         return SOLID
     return DASHED
@@ -66,36 +68,36 @@ def behaviorPolicy(state):
 # @theta: weight for each component of the feature vector
 # @alpha: step size
 # @return: next state
-def semiGradientOffPolicyTD(state, theta, alpha):
-    action = behaviorPolicy(state)
-    nextState = takeAction(state, action)
+def semi_gradient_off_policy_TD(state, theta, alpha):
+    action = behavior_policy(state)
+    next_state = step(state, action)
     # get the importance ratio
     if action == DASHED:
         rho = 0.0
     else:
         rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
-    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
+    delta = REWARD + DISCOUNT * np.dot(FEATURES[next_state, :], theta) - \
             np.dot(FEATURES[state, :], theta)
     delta *= rho * alpha
     # derivatives happen to be the same matrix due to the linearity
     theta += FEATURES[state, :] * delta
-    return nextState
+    return next_state
 
 # Semi-gradient DP
 # @theta: weight for each component of the feature vector
 # @alpha: step size
-def semiGradientDP(theta, alpha):
+def semi_gradient_DP(theta, alpha):
     delta = 0.0
     # go through all the states
-    for currentState in STATES:
-        expectedReturn = 0.0
+    for state in STATES:
+        expected_return = 0.0
         # compute bellman error for each state
-        for nextState in STATES:
-            if nextState == LOWER_STATE:
-                expectedReturn += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :])
-        bellmanError = expectedReturn - np.dot(theta, FEATURES[currentState, :])
+        for next_state in STATES:
+            if next_state == LOWER_STATE:
+                expected_return += REWARD + DISCOUNT * np.dot(theta, FEATURES[next_state, :])
+        bellmanError = expected_return - np.dot(theta, FEATURES[state, :])
         # accumulate gradients
-        delta += bellmanError * FEATURES[currentState, :]
+        delta += bellmanError * FEATURES[state, :]
     # derivatives happen to be the same matrix due to the linearity
     theta += alpha / len(STATES) * delta
 
@@ -106,37 +108,37 @@ def semiGradientDP(theta, alpha):
 # @alpha: step size of @theta
 # @beta: step size of @weight
 def TDC(state, theta, weight, alpha, beta):
-    action = behaviorPolicy(state)
-    nextState = takeAction(state, action)
+    action = behavior_policy(state)
+    next_state = step(state, action)
     # get the importance ratio
     if action == DASHED:
         rho = 0.0
     else:
         rho = 1.0 / BEHAVIOR_SOLID_PROBABILITY
-    delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - \
+    delta = REWARD + DISCOUNT * np.dot(FEATURES[next_state, :], theta) - \
             np.dot(FEATURES[state, :], theta)
-    theta += alpha * rho * (delta * FEATURES[state, :] - DISCOUNT * FEATURES[nextState, :] * np.dot(FEATURES[state, :], weight))
+    theta += alpha * rho * (delta * FEATURES[state, :] - DISCOUNT * FEATURES[next_state, :] * np.dot(FEATURES[state, :], weight))
     weight += beta * rho * (delta - np.dot(FEATURES[state, :], weight)) * FEATURES[state, :]
-    return nextState
+    return next_state
 
 # expected temporal difference with gradient correction
 # @theta: weight of each component of the feature vector
 # @weight: auxiliary trace for gradient correction
 # @alpha: step size of @theta
 # @beta: step size of @weight
-def expectedTDC(theta, weight, alpha, beta):
-    for currentState in STATES:
+def expected_TDC(theta, weight, alpha, beta):
+    for state in STATES:
         # When computing expected update target, if next state is not lower state, importance ratio will be 0,
         # so we can safely ignore this case and assume next state is always lower state
-        delta = REWARD + DISCOUNT * np.dot(FEATURES[LOWER_STATE, :], theta) - np.dot(FEATURES[currentState, :], theta)
+        delta = REWARD + DISCOUNT * np.dot(FEATURES[LOWER_STATE, :], theta) - np.dot(FEATURES[state, :], theta)
         rho = 1 / BEHAVIOR_SOLID_PROBABILITY
         # Under behavior policy, state distribution is uniform, so the probability for each state is 1.0 / len(STATES)
-        expectedUpdateTheta = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
-            delta * FEATURES[currentState, :] - DISCOUNT * FEATURES[LOWER_STATE, :] * np.dot(weight, FEATURES[currentState, :]))
-        theta += alpha * expectedUpdateTheta
-        expectedUpdateWeight = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
-            delta - np.dot(weight, FEATURES[currentState, :])) * FEATURES[currentState, :]
-        weight += beta * expectedUpdateWeight
+        expected_update_theta = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
+            delta * FEATURES[state, :] - DISCOUNT * FEATURES[LOWER_STATE, :] * np.dot(weight, FEATURES[state, :]))
+        theta += alpha * expected_update_theta
+        expected_update_weight = 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * rho * (
+            delta - np.dot(weight, FEATURES[state, :])) * FEATURES[state, :]
+        weight += beta * expected_update_weight
 
     # if *accumulate* expected update and actually apply update here, then it's synchronous
     # theta += alpha * expectedUpdateTheta
@@ -150,10 +152,10 @@ INTEREST = 1
 # @emphasis: current emphasis
 # @alpha: step size of @theta
 # @return: expected next emphasis
-def expectedEmphaticTD(theta, emphasis, alpha):
+def expected_emphatic_TD(theta, emphasis, alpha):
     # we perform synchronous update for both theta and emphasis
-    expectedUpdate = 0
-    expectedNextEmphasis = 0.0
+    expected_update = 0
+    expected_next_emphasis = 0.0
     # go through all the states
     for state in STATES:
         # compute rho(t-1)
@@ -162,36 +164,36 @@ def expectedEmphaticTD(theta, emphasis, alpha):
         else:
             rho = 0
         # update emphasis
-        nextEmphasis = DISCOUNT * rho * emphasis + INTEREST
-        expectedNextEmphasis += nextEmphasis
+        next_emphasis = DISCOUNT * rho * emphasis + INTEREST
+        expected_next_emphasis += next_emphasis
         # When computing expected update target, if next state is not lower state, importance ratio will be 0,
         # so we can safely ignore this case and assume next state is always lower state
-        nextState = LOWER_STATE
-        delta = REWARD + DISCOUNT * np.dot(FEATURES[nextState, :], theta) - np.dot(FEATURES[state, :], theta)
-        expectedUpdate += 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * nextEmphasis * 1 / BEHAVIOR_SOLID_PROBABILITY * delta * FEATURES[state, :]
-    theta += alpha * expectedUpdate
-    return expectedNextEmphasis / len(STATES)
+        next_state = LOWER_STATE
+        delta = REWARD + DISCOUNT * np.dot(FEATURES[next_state, :], theta) - np.dot(FEATURES[state, :], theta)
+        expected_update += 1.0 / len(STATES) * BEHAVIOR_SOLID_PROBABILITY * next_emphasis * 1 / BEHAVIOR_SOLID_PROBABILITY * delta * FEATURES[state, :]
+    theta += alpha * expected_update
+    return expected_next_emphasis / len(STATES)
 
 # compute RMSVE for a value function parameterized by @theta
 # true value function is always 0 in this example
-def computeRMSVE(theta):
-    return np.sqrt(np.dot(np.power(np.dot(FEATURES, theta), 2), stateDistribution))
+def compute_RMSVE(theta):
+    return np.sqrt(np.dot(np.power(np.dot(FEATURES, theta), 2), STATE_DISTRIBUTION))
 
 # compute RMSPBE for a value function parameterized by @theta
 # true value function is always 0 in this example
-def computeRMSPBE(theta):
-    bellmanError = np.zeros(len(STATES))
+def compute_RMSPBE(theta):
+    bellman_error = np.zeros(len(STATES))
     for state in STATES:
-        for nextState in STATES:
-            if nextState == LOWER_STATE:
-                bellmanError[state] += REWARD + DISCOUNT * np.dot(theta, FEATURES[nextState, :]) - np.dot(theta, FEATURES[state, :])
-    bellmanError = np.dot(np.asarray(projectionMatrix), bellmanError)
-    return np.sqrt(np.dot(np.power(bellmanError, 2), stateDistribution))
+        for next_state in STATES:
+            if next_state == LOWER_STATE:
+                bellman_error[state] += REWARD + DISCOUNT * np.dot(theta, FEATURES[next_state, :]) - np.dot(theta, FEATURES[state, :])
+    bellman_error = np.dot(np.asarray(PROJECTION_MAT), bellman_error)
+    return np.sqrt(np.dot(np.power(bellman_error, 2), STATE_DISTRIBUTION))
 
 figureIndex = 0
 
 # Figure 11.2(left), semi-gradient off-policy TD
-def figure11_2_a():
+def figure_11_2_left():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
     theta[6] = 10
@@ -201,13 +203,10 @@ def figure11_2_a():
     steps = 1000
     thetas = np.zeros((FEATURE_SIZE, steps))
     state = np.random.choice(STATES)
-    for step in range(steps):
-        state = semiGradientOffPolicyTD(state, theta, alpha)
+    for step in tqdm(range(steps)):
+        state = semi_gradient_off_policy_TD(state, theta, alpha)
         thetas[:, step] = theta
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(FEATURE_SIZE):
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.xlabel('Steps')
@@ -216,7 +215,7 @@ def figure11_2_a():
     plt.legend()
 
 # Figure 11.2(right), semi-gradient DP
-def figure11_2_b():
+def figure_11_2_right():
     # Initialize the theta
     theta = np.ones(FEATURE_SIZE)
     theta[6] = 10
@@ -225,19 +224,26 @@ def figure11_2_b():
 
     sweeps = 1000
     thetas = np.zeros((FEATURE_SIZE, sweeps))
-    for sweep in range(sweeps):
-        semiGradientDP(theta, alpha)
+    for sweep in tqdm(range(sweeps)):
+        semi_gradient_DP(theta, alpha)
         thetas[:, sweep] = theta
 
-    global figureIndex
-    plt.figure(figureIndex)
-    figureIndex += 1
     for i in range(FEATURE_SIZE):
         plt.plot(thetas[i, :], label='theta' + str(i + 1))
     plt.xlabel('Sweeps')
     plt.ylabel('Theta value')
     plt.title('semi-gradient DP')
     plt.legend()
+
+def figure_11_2():
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    figure_11_2_left()
+    plt.subplot(2, 1, 2)
+    figure_11_2_right()
+
+    plt.savefig('../images/figure_11_2.png')
+    plt.close()
 
 # Figure 11.6(left), temporal difference with gradient correction
 def figure11_6_a():
@@ -257,8 +263,8 @@ def figure11_6_a():
     for step in range(steps):
         state = TDC(state, theta, weight, alpha, beta)
         thetas[:, step] = theta
-        RMSVE[step] = computeRMSVE(theta)
-        RMSPBE[step] = computeRMSPBE(theta)
+        RMSVE[step] = compute_RMSVE(theta)
+        RMSPBE[step] = compute_RMSPBE(theta)
 
     global figureIndex
     plt.figure(figureIndex)
@@ -286,10 +292,10 @@ def figure11_6_b():
     RMSVE = np.zeros(sweeps)
     RMSPBE = np.zeros(sweeps)
     for sweep in range(sweeps):
-        expectedTDC(theta, weight, alpha, beta)
+        expected_TDC(theta, weight, alpha, beta)
         thetas[:, sweep] = theta
-        RMSVE[sweep] = computeRMSVE(theta)
-        RMSPBE[sweep] = computeRMSPBE(theta)
+        RMSVE[sweep] = compute_RMSVE(theta)
+        RMSPBE[sweep] = compute_RMSPBE(theta)
 
     global figureIndex
     plt.figure(figureIndex)
@@ -315,9 +321,9 @@ def figure11_7():
     RMSVE = np.zeros(sweeps)
     emphasis = 0.0
     for sweep in range(sweeps):
-        emphasis = expectedEmphaticTD(theta, emphasis, alpha)
+        emphasis = expected_emphatic_TD(theta, emphasis, alpha)
         thetas[:, sweep] = theta
-        RMSVE[sweep] = computeRMSVE(theta)
+        RMSVE[sweep] = compute_RMSVE(theta)
 
     global figureIndex
     plt.figure(figureIndex)
@@ -330,9 +336,4 @@ def figure11_7():
     plt.legend()
 
 if __name__ == '__main__':
-    figure11_2_a()
-    figure11_2_b()
-    figure11_6_a()
-    figure11_6_b()
-    figure11_7()
-    plt.show()
+    figure_11_2()
