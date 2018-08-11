@@ -8,11 +8,11 @@
 
 import numpy as np
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def f(p):
+def true_value(p):
     """ True value of the first state
     Args:
         p (float): probability of the action 'right'.
@@ -136,8 +136,7 @@ def trial(num_episodes, alpha, gamma):
     env = ShortCorridor()
     agent = Agent(alpha=alpha, gamma=gamma)
 
-    g1 = np.zeros(num_episodes)
-    p_right = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
 
     for episode_idx in range(num_episodes):
         rewards_sum = 0
@@ -153,11 +152,9 @@ def trial(num_episodes, alpha, gamma):
                 agent.episode_end(reward)
                 break
 
-        g1[episode_idx] = rewards_sum
-        p_right[episode_idx] = agent.get_p_right()
+        rewards[episode_idx] = rewards_sum
 
-
-    return g1
+    return rewards
 
 def example_13_1():
     epsilon = 0.05
@@ -165,7 +162,7 @@ def example_13_1():
 
     # Plot a graph
     p = np.linspace(0.01, 0.99, 100)
-    y = f(p)
+    y = true_value(p)
     ax.plot(p, y, color='red')
 
     # Find a maximum point, can also be done analytically by taking a derivative
@@ -175,8 +172,8 @@ def example_13_1():
     ax.plot(pmax, ymax, color='green', marker="*", label="optimal point: f({0:.2f}) = {1:.2f}".format(pmax, ymax))
 
     # Plot points of two epsilon-greedy policies
-    ax.plot(epsilon, f(epsilon), color='magenta', marker="o", label="epsilon-greedy left")
-    ax.plot(1 - epsilon, f(1 - epsilon), color='blue', marker="o", label="epsilon-greedy right")
+    ax.plot(epsilon, true_value(epsilon), color='magenta', marker="o", label="epsilon-greedy left")
+    ax.plot(1 - epsilon, true_value(1 - epsilon), color='blue', marker="o", label="epsilon-greedy right")
 
     ax.set_ylabel("Value of the first state")
     ax.set_xlabel("Probability of the action 'right'")
@@ -199,11 +196,14 @@ def figure_13_1():
         reward = trial(num_episodes, alpha, gamma)
         rewards[i, :] = reward
 
-    plt.plot(np.arange(num_episodes) + 1, rewards.mean(axis=0), color="blue")
+    plt.plot(np.arange(num_episodes) + 1, -11.6 * np.ones(num_episodes), ls='dashed', color='red', label='-11.6')
+    plt.plot(np.arange(num_episodes) + 1, rewards.mean(axis=0), color='blue')
     plt.ylabel('total reward on episode')
     plt.xlabel('episode')
+    plt.legend(loc='lower right')
 
-    plt.show()
+    plt.savefig('../images/figure_13_1.png')
+    plt.close()
 
 if __name__ == '__main__':
     # example_13_1()
