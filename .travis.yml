@@ -2,6 +2,6 @@ language: python
 python:
   - "3.6"
 install:
-  - pip install tox tox-travis
+  - pip install -r requirements.txt
 script:
-  - tox
+  - ls chapter*/*.py | xargs -n 1 -P 1 python
