@@ -61,9 +61,9 @@ def softmax(x):
     t = np.exp(x - np.max(x))
     return t / np.sum(t)
 
-class Agent:
+class ReinforceAgent:
     """
-    Agent that follows algorithm
+    ReinforceAgent that follows algorithm
     'REINFORNCE Monte-Carlo Policy-Gradient Control (episodic)'
     """
     def __init__(self, alpha, gamma):
@@ -118,26 +118,54 @@ class Agent:
         gamma_pow = 1
 
         for i in range(len(G)):
-            if self.actions[i]:
-                j = 1
-            else:
-                j = 0
-
+            j = 1 if self.actions[i] else 0
             pmf = self.get_pi()
-            grad_lnpi = self.x[:, j] - np.dot(self.x, pmf)
-            update = self.alpha * gamma_pow * G[i] * grad_lnpi
+            grad_ln_pi = self.x[:, j] - np.dot(self.x, pmf)
+            update = self.alpha * gamma_pow * G[i] * grad_ln_pi
+
             self.theta += update
             gamma_pow *= self.gamma
 
         self.rewards = []
         self.actions = []
 
-def trial(num_episodes, alpha, gamma):
+class ReinforceBaselineAgent(ReinforceAgent):
+    def __init__(self, alpha, gamma, alpha_w):
+        super(ReinforceBaselineAgent, self).__init__(alpha, gamma)
+        self.alpha_w = alpha_w
+        self.w = 0
+
+    def episode_end(self, last_reward):
+        self.rewards.append(last_reward)
+
+        # learn theta
+        G = np.zeros(len(self.rewards))
+        G[-1] = self.rewards[-1]
+
+        for i in range(2, len(G) + 1):
+            G[-i] = self.gamma * G[-i + 1] + self.rewards[-i]
+
+        gamma_pow = 1
+
+        for i in range(len(G)):
+            self.w += self.alpha_w * gamma_pow * (G[i] - self.w)
+
+            j = 1 if self.actions[i] else 0
+            pmf = self.get_pi()
+            grad_ln_pi = self.x[:, j] - np.dot(self.x, pmf)
+            update = self.alpha * gamma_pow * (G[i] - self.w) * grad_ln_pi
+
+            self.theta += update
+            gamma_pow *= self.gamma
+
+        self.rewards = []
+        self.actions = []
+
+def trial(num_episodes, agent_generator):
     env = ShortCorridor()
-    agent = Agent(alpha=alpha, gamma=gamma)
+    agent = agent_generator()
 
     rewards = np.zeros(num_episodes)
-
     for episode_idx in range(num_episodes):
         rewards_sum = 0
         reward = None
@@ -191,9 +219,10 @@ def figure_13_1():
     gamma = 1
 
     rewards = np.zeros((num_trials, num_episodes))
+    agent_generator = lambda : ReinforceAgent(alpha=alpha, gamma=gamma)
 
     for i in tqdm(range(num_trials)):
-        reward = trial(num_episodes, alpha, gamma)
+        reward = trial(num_episodes, agent_generator)
         rewards[i, :] = reward
 
     plt.plot(np.arange(num_episodes) + 1, -11.6 * np.ones(num_episodes), ls='dashed', color='red', label='-11.6')
@@ -205,6 +234,34 @@ def figure_13_1():
     plt.savefig('../images/figure_13_1.png')
     plt.close()
 
+def figure_13_2():
+    num_trials = 30
+    num_episodes = 1000
+    alpha = 2e-4
+    gamma = 1
+    agent_generators = [lambda : ReinforceAgent(alpha=alpha, gamma=gamma),
+                        lambda : ReinforceBaselineAgent(alpha=alpha, gamma=gamma, alpha_w=alpha*100)]
+    labels = ['Reinforce with baseline',
+              'Reinforce without baseline']
+
+    rewards = np.zeros((len(agent_generators), num_trials, num_episodes))
+
+    for agent_index, agent_generator in enumerate(agent_generators):
+        for i in tqdm(range(num_trials)):
+            reward = trial(num_episodes, agent_generator)
+            rewards[agent_index, i, :] = reward
+
+    plt.plot(np.arange(num_episodes) + 1, -11.6 * np.ones(num_episodes), ls='dashed', color='red', label='-11.6')
+    for i, label in enumerate(labels):
+        plt.plot(np.arange(num_episodes) + 1, rewards[i].mean(axis=0), label=label)
+    plt.ylabel('total reward on episode')
+    plt.xlabel('episode')
+    plt.legend(loc='lower right')
+
+    plt.savefig('../images/figure_13_2.png')
+    plt.close()
+
 if __name__ == '__main__':
     # example_13_1()
-    figure_13_1()
+    # figure_13_1()
+    figure_13_2()
