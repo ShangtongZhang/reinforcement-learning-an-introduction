@@ -101,7 +101,7 @@ python any_file_you_want.py
 ```
 
 # Contribution
-If you want to contribute some exercises of the book or some missing examples, fix some bugs in existing code, provide sample outputs with higher quality, add some new interesting experiments related to RL, feel free to open an issue or make a pull request. I will appreciate it very much. 
+If you want to contribute some missing examples or fix some bugs, feel free to open an issue or make a pull request. 
 
 Following are missing figures/examples:
 
