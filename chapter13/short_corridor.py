@@ -262,6 +262,6 @@ def figure_13_2():
     plt.close()
 
 if __name__ == '__main__':
-    # example_13_1()
-    # figure_13_1()
+    example_13_1()
+    figure_13_1()
     figure_13_2()

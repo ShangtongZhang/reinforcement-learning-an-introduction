@@ -50,7 +50,7 @@ def setup_package():
         classifiers=[],
         test_suite='',
         packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
-        install_requires=['numpy', 'matplotlib', 'six', 'seaborn'],
+        install_requires=['numpy', 'matplotlib', 'tqdm', 'seaborn'],
         setup_requires=[],
         cmdclass=cmdclass,
         tests_require=['pytest'],
