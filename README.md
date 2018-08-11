@@ -8,8 +8,6 @@ Python code for Sutton & Barto's book [*Reinforcement Learning: An Introduction 
 
 # Contents 
 
-> Click to view the sample output
-
 ### Chapter 1
 1. Tic-Tac-Toe
 
@@ -105,11 +103,4 @@ If you want to contribute some missing examples or fix some bugs, feel free to o
 
 Following are missing figures/examples:
 
-* Example 3.4: Pole-Balancing
-* Example 3.6: Draw Poker
-* Example 5.2: Soap Bubble
-* Example 8.5: Rod Maneuvering
 * Figure 12.14: The effect of λ 
-* Chapter 14 & 15 are about psychology and neuroscience
-* Chapter 16: Backgammon, The Acrobot, Go
-
