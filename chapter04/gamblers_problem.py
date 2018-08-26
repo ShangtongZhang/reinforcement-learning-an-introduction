@@ -50,8 +50,10 @@ def figure_4_3():
         for action in actions:
             action_returns.append(
                 HEAD_PROB * state_value[state + action] + (1 - HEAD_PROB) * state_value[state - action])
-        # due to tie, can't reproduce the optimal policy in book
-        policy[state] = actions[np.argmax(action_returns)]
+
+        # round to resemble the figure in the book, see
+        # https://github.com/ShangtongZhang/reinforcement-learning-an-introduction/issues/83
+        policy[state] = actions[np.argmax(np.round(action_returns[1:], 5))]
 
     plt.figure(figsize=(10, 20))
 
