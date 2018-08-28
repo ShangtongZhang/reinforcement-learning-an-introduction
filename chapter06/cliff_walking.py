@@ -123,7 +123,6 @@ def sarsa(q_value, expected=False, step_size=ALPHA):
 
 # an episode with Q-Learning
 # @q_value: values for state action pair, will be updated
-# @expected: if True, will use expected Sarsa algorithm
 # @step_size: step size for updating
 # @return: total rewards within this episode
 def q_learning(q_value, step_size=ALPHA):
