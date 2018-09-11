@@ -1,0 +1,2 @@
+FROM continuumio/anaconda3
+
