@@ -90,7 +90,7 @@ def q_learning(q1, q2=None):
             else:
                 active_q = q2
                 target_q = q1
-            best_action = np.argmax(active_q[next_state])
+            best_action = np.random.choice([action_ for action_, value_ in enumerate(active_q[next_state]) if value_ == np.max(active_q[next_state])])
             target = target_q[next_state][best_action]
 
         # Q-Learning update
@@ -113,8 +113,8 @@ def figure_6_7():
         for ep in range(0, episodes):
             left_counts_q[run, ep] = q_learning(q)
             left_counts_double_q[run, ep] = q_learning(q1, q2)
-    left_counts_q = np.add.accumulate(left_counts_q, axis=1).mean(axis=0) / np.arange(1, episodes + 1)
-    left_counts_double_q = np.add.accumulate(left_counts_double_q, axis=1).mean(axis=0) / np.arange(1, episodes + 1)
+    left_counts_q = left_counts_q.mean(axis=0)
+    left_counts_double_q = left_counts_double_q.mean(axis=0)
 
     plt.plot(left_counts_q, label='Q-Learning')
     plt.plot(left_counts_double_q, label='Double Q-Learning')
