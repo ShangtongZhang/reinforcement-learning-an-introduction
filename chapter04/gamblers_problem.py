@@ -53,7 +53,7 @@ def figure_4_3():
 
         # round to resemble the figure in the book, see
         # https://github.com/ShangtongZhang/reinforcement-learning-an-introduction/issues/83
-        policy[state] = actions[np.argmax(np.round(action_returns[1:], 5))]
+        policy[state] = actions[np.argmax(np.round(action_returns[1:], 5)) + 1]
 
     plt.figure(figsize=(10, 20))
 
