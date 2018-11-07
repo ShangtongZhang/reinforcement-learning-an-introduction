@@ -138,9 +138,8 @@ def play(policy_player, initial_state=None, initial_action=None):
         if card == 1:
             ace_count += 1
         player_sum += card_value(card)
-
         # If the player has a usable ace, use it as 1 to avoid busting and continue.
-        if player_sum > 21 and ace_count:
+        while player_sum > 21 and ace_count:
                 player_sum -= 10
                 ace_count -= 1
         # player busts
@@ -161,15 +160,13 @@ def play(policy_player, initial_state=None, initial_action=None):
         if new_card == 1:
             ace_count += 1
         dealer_sum += card_value(new_card)
-        # dealer busts
-        if dealer_sum > 21:
-            if ace_count:
-            # if dealer has a usable Ace, use it as 1 to avoid busting and continue
+        # If the dealer has a usable ace, use it as 1 to avoid busting and continue.
+        while dealer_sum > 21 and ace_count:
                 dealer_sum -= 10
                 ace_count -= 1
-            else:
-            # otherwise dealer loses
-                return state, 1, player_trajectory
+        # dealer busts
+        if dealer_sum > 21:
+            return state, 1, player_trajectory
         usable_ace_dealer = (ace_count == 1)
 
     # compare the sum between player and dealer
