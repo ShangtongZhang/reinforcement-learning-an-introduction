@@ -301,7 +301,7 @@ def figure_5_1():
     plt.close()
 
 def figure_5_2():
-    state_action_values = monte_carlo_es(5000000)
+    state_action_values = monte_carlo_es(500000)
 
     state_value_no_usable_ace = np.max(state_action_values[:, :, 0, :], axis=-1)
     state_value_usable_ace = np.max(state_action_values[:, :, 1, :], axis=-1)
@@ -360,7 +360,7 @@ def figure_5_3():
 
 
 if __name__ == '__main__':
-    #figure_5_1()
+    figure_5_1()
     figure_5_2()
-    #figure_5_3()
+    figure_5_3()
 
