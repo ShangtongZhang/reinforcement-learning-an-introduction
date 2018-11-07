@@ -49,6 +49,10 @@ def get_card():
     card = min(card, 10)
     return card
 
+# get the value of a card (11 for ace).
+def card_value(card_id):
+    return 11 if card_id == 1 else card_id
+
 # play a game
 # @policy_player: specify policy for player
 # @initial_state: [whether player has a usable Ace, sum of player's cards, one card of dealer]
@@ -73,28 +77,19 @@ def play(policy_player, initial_state=None, initial_action=None):
     if initial_state is None:
         # generate a random initial state
 
-        num_of_ace = 0
-
         # initialize cards of player
         while player_sum < 12:
             # if sum of player is less than 12, always hit
             card = get_card()
+            player_sum += card_value(card)
+            usable_ace_player = (card == 1)
 
-            # if get an Ace, use it as 11
-            if card == 1:
-                num_of_ace += 1
-                card = 11
-                usable_ace_player = True
-            player_sum += card
-
-        # if player's sum is larger than 21, he must hold at least one Ace, two Aces are possible
+        # Always use an ace as 11, unless there are two.
+        # If the player's sum is larger than 21, he must hold two aces.
         if player_sum > 21:
-            # use the Ace as 1 rather than 11
+            assert player_sum == 22
+            # use one Ace as 1 rather than 11
             player_sum -= 10
-
-            # if the player only has one Ace, then he doesn't have usable Ace any more
-            if num_of_ace == 1:
-                usable_ace_player = False
 
         # initialize cards of dealer, suppose dealer will show the first card he gets
         dealer_card1 = get_card()
@@ -109,18 +104,15 @@ def play(policy_player, initial_state=None, initial_action=None):
     state = [usable_ace_player, player_sum, dealer_card1]
 
     # initialize dealer's sum
-    dealer_sum = 0
-    if dealer_card1 == 1 and dealer_card2 != 1:
-        dealer_sum += 11 + dealer_card2
-        usable_ace_dealer = True
-    elif dealer_card1 != 1 and dealer_card2 == 1:
-        dealer_sum += dealer_card1 + 11
-        usable_ace_dealer = True
-    elif dealer_card1 == 1 and dealer_card2 == 1:
-        dealer_sum += 1 + 11
-        usable_ace_dealer = True
-    else:
-        dealer_sum += dealer_card1 + dealer_card2
+    dealer_sum = card_value(dealer_card1) + card_value(dealer_card2)
+    usable_ace_dealer = 1 in (dealer_card1, dealer_card2)
+    # if the dealer's sum is larger than 21, he must hold two aces.
+    if dealer_sum > 21:
+        assert dealer_sum == 22
+        # use one Ace as 1 rather than 11
+        dealer_sum -= 10
+    assert dealer_sum <= 21
+    assert player_sum <= 21
 
     # game starts!
 
@@ -139,17 +131,22 @@ def play(policy_player, initial_state=None, initial_action=None):
         if action == ACTION_STAND:
             break
         # if hit, get new card
-        player_sum += get_card()
-
+        card = get_card()
+        # Keep track of the ace count. the usable_ace_player flag is insufficient alone as it cannot
+        # distinguish between having one ace or two.
+        ace_count = int(usable_ace_player)
+        if card == 1:
+            ace_count += 1
+        player_sum += card_value(card)
+        # If the player has a usable ace, use it as 1 to avoid busting and continue.
+        while player_sum > 21 and ace_count:
+                player_sum -= 10
+                ace_count -= 1
         # player busts
         if player_sum > 21:
-            # if player has a usable Ace, use it as 1 to avoid busting and continue
-            if usable_ace_player == True:
-                player_sum -= 10
-                usable_ace_player = False
-            else:
-                # otherwise player loses
-                return state, -1, player_trajectory
+            return state, -1, player_trajectory
+        assert player_sum <= 21
+        usable_ace_player = (ace_count == 1)
 
     # dealer's turn
     while True:
@@ -159,22 +156,21 @@ def play(policy_player, initial_state=None, initial_action=None):
             break
         # if hit, get a new card
         new_card = get_card()
-        if new_card == 1 and dealer_sum + 11 < 21:
-            dealer_sum += 11
-            usable_ace_dealer = True
-        else:
-            dealer_sum += new_card
+        ace_count = int(usable_ace_dealer)
+        if new_card == 1:
+            ace_count += 1
+        dealer_sum += card_value(new_card)
+        # If the dealer has a usable ace, use it as 1 to avoid busting and continue.
+        while dealer_sum > 21 and ace_count:
+                dealer_sum -= 10
+                ace_count -= 1
         # dealer busts
         if dealer_sum > 21:
-            if usable_ace_dealer == True:
-            # if dealer has a usable Ace, use it as 1 to avoid busting and continue
-                dealer_sum -= 10
-                usable_ace_dealer = False
-            else:
-            # otherwise dealer loses
-                return state, 1, player_trajectory
+            return state, 1, player_trajectory
+        usable_ace_dealer = (ace_count == 1)
 
     # compare the sum between player and dealer
+    assert player_sum <= 21 and dealer_sum <= 21
     if player_sum > dealer_sum:
         return state, 1, player_trajectory
     elif player_sum == dealer_sum:
