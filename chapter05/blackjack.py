@@ -132,8 +132,8 @@ def play(policy_player, initial_state=None, initial_action=None):
             break
         # if hit, get new card
         card = get_card()
-        # Keep track of the ace count. the usable_ace_player flag is insufficient alone as it is
-        # cannot distinguish between having one ace or two.
+        # Keep track of the ace count. the usable_ace_player flag is insufficient alone as it cannot
+        # distinguish between having one ace or two.
         ace_count = int(usable_ace_player)
         if card == 1:
             ace_count += 1
@@ -304,7 +304,7 @@ def figure_5_1():
     plt.close()
 
 def figure_5_2():
-    state_action_values = monte_carlo_es(500000)
+    state_action_values = monte_carlo_es(5000000)
 
     state_value_no_usable_ace = np.max(state_action_values[:, :, 0, :], axis=-1)
     state_value_usable_ace = np.max(state_action_values[:, :, 1, :], axis=-1)
@@ -363,7 +363,7 @@ def figure_5_3():
 
 
 if __name__ == '__main__':
-    figure_5_1()
+    #figure_5_1()
     figure_5_2()
-    figure_5_3()
+    #figure_5_3()
 
