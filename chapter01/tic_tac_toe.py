@@ -235,6 +235,7 @@ class Player:
         values = []
         for hash, pos in zip(next_states, next_positions):
             values.append((self.estimations[hash], pos))
+        # to select one of the actions of equal value at random
         np.random.shuffle(values)
         values.sort(key=lambda x: x[0], reverse=True)
         action = values[0][1]
@@ -282,7 +283,7 @@ class HumanPlayer:
         j = data % BOARD_COLS
         return (i, j, self.symbol)
 
-def train(epochs):
+def train(epochs, print_every_n=500):
     player1 = Player(epsilon=0.01)
     player2 = Player(epsilon=0.01)
     judger = Judger(player1, player2)
@@ -294,7 +295,8 @@ def train(epochs):
             player1_win += 1
         if winner == -1:
             player2_win += 1
-        print('Epoch %d, player 1 win %.02f, player 2 win %.02f' % (i, player1_win / i, player2_win / i))
+        if i % print_every_n == 0:
+            print('Epoch %d, player 1 winrate: %.02f, player 2 winrate: %.02f' % (i, player1_win / i, player2_win / i))
         player1.backup()
         player2.backup()
         judger.reset()
@@ -309,7 +311,7 @@ def compete(turns):
     player2.load_policy()
     player1_win = 0.0
     player2_win = 0.0
-    for i in range(0, turns):
+    for _ in range(0, turns):
         winner = judger.play()
         if winner == 1:
             player1_win += 1
