@@ -86,7 +86,7 @@ class State:
         return new_state
 
     # print the board
-    def print(self):
+    def print_state(self):
         for i in range(0, BOARD_ROWS):
             print('-------------')
             out = '| '
@@ -127,7 +127,6 @@ all_states = get_all_states()
 class Judger:
     # @player1: the player who will move first, its chessman will be 1
     # @player2: another player with a chessman -1
-    # @feedback: if True, both players will receive rewards when game is end
     def __init__(self, player1, player2):
         self.p1 = player1
         self.p2 = player2
@@ -147,8 +146,8 @@ class Judger:
             yield self.p1
             yield self.p2
 
-    # @print: if True, print each board during the game
-    def play(self, print=False):
+    # @print_state: if True, print each board during the game
+    def play(self, print_state=False):
         alternator = self.alternate()
         self.reset()
         current_state = State()
@@ -156,16 +155,16 @@ class Judger:
         self.p2.set_state(current_state)
         while True:
             player = next(alternator)
-            if print:
-                current_state.print()
+            if print_state:
+                current_state.print_state()
             [i, j, symbol] = player.act()
             next_state_hash = current_state.next_state(i, j, symbol).hash()
             current_state, is_end = all_states[next_state_hash]
             self.p1.set_state(current_state)
             self.p2.set_state(current_state)
             if is_end:
-                if print:
-                    current_state.print()
+                if print_state:
+                    current_state.print_state()
                 return current_state.winner
 
 # AI player
@@ -207,7 +206,7 @@ class Player:
         # for debug
         # print('player trajectory')
         # for state in self.states:
-        #     state.print()
+        #     state.print_state()
 
         self.states = [state.hash() for state in self.states]
 
@@ -276,7 +275,7 @@ class HumanPlayer:
         return
 
     def act(self):
-        self.state.print()
+        self.state.print_state()
         key = input("Input your position:")
         data = self.keys.index(key)
         i = data // int(BOARD_COLS)
@@ -290,7 +289,7 @@ def train(epochs):
     player1_win = 0.0
     player2_win = 0.0
     for i in range(1, epochs + 1):
-        winner = judger.play(print=False)
+        winner = judger.play(print_state=False)
         if winner == 1:
             player1_win += 1
         if winner == -1:
