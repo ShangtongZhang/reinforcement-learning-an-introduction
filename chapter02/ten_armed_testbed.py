@@ -48,7 +48,7 @@ class Bandit:
         # # of chosen times for each action
         self.action_count = np.zeros(self.k)
 
-        self.best_action = np.argmax(self.q_true)
+        self.best_action = np.argmax(self.q_true) 
 
     # get an action for this bandit
     def act(self):
@@ -66,7 +66,8 @@ class Bandit:
             self.action_prob = exp_est / np.sum(exp_est)
             return np.random.choice(self.indices, p=self.action_prob)
 
-        return np.argmax(self.q_estimation)
+        q_best = np.max(self.q_estimation)
+        return np.random.choice([action for action, q in enumerate(self.q_estimation) if q == q_best])
 
     # take an action, update estimation for this action
     def step(self, action):
