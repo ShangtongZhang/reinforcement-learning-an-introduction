@@ -19,6 +19,8 @@ import itertools
 MAX_CARS = 20
 MAX_MOVE = 5
 MOVE_COST = -2
+ADDITIONAL_PARK_COST = -4
+
 RENT_REWARD = 10
 # expectation for rental requests in first location
 RENTAL_REQUEST_FIRST_LOC = 3
@@ -40,7 +42,7 @@ def poisson(n, lam):
 
 
 class PolicyIteration:
-    def __init__(self,truncate,parallel_processes,delta=1e-2,gamma=0.9):
+    def __init__(self,truncate,parallel_processes,delta=1e-2,gamma=0.9,solve_4_5=False):
         self.TRUNCATE = truncate
         self.NR_PARALLEL_PROCESSES = parallel_processes
         self.actions = np.arange(-MAX_MOVE,MAX_MOVE+1)
@@ -49,6 +51,7 @@ class PolicyIteration:
         self.policy = np.zeros(self.values.shape,dtype=np.int)
         self.delta = delta  
         self.gamma = gamma
+        self.solve_extension = solve_4_5
 
     def solve(self):
         iterations = 0
@@ -118,7 +121,15 @@ class PolicyIteration:
     #O(n^4) computation for all possible requests and returns
     def bellman(self,values,action,state):
         expected_return = 0
-        expected_return += MOVE_COST * abs(action)
+        if self.solve_extension:
+            if action>0:
+                #Free shuttle to the second location
+                expected_return += MOVE_COST * (action-1)
+            else:
+                expected_return += MOVE_COST * abs(action)
+        else:
+            expected_return += MOVE_COST * abs(action)
+
         for req1 in range(0, TRUNCATE):
             for req2 in range(0, TRUNCATE):
                 # moving cars
@@ -131,6 +142,13 @@ class PolicyIteration:
                 
                 # get credits for renting
                 reward = (real_rental_first_loc + real_rental_second_loc) * RENT_REWARD
+                
+                if self.solve_extension:
+                    if num_of_cars_first_loc >= 10:
+                        reward += ADDITIONAL_PARK_COST
+                    if num_of_cars_second_loc >= 10:
+                        reward += ADDITIONAL_PARK_COST
+                        
                 num_of_cars_first_loc -= real_rental_first_loc
                 num_of_cars_second_loc -= real_rental_second_loc
 
@@ -177,6 +195,6 @@ class PolicyIteration:
 
 if __name__ == '__main__':
     TRUNCATE = 9
-    solver = PolicyIteration(TRUNCATE,parallel_processes=4,delta=1e-1,gamma=0.9)
+    solver = PolicyIteration(TRUNCATE,parallel_processes=4,delta=1e-1,gamma=0.9,solve_4_5=True)
     solver.solve()
     solver.plot()
