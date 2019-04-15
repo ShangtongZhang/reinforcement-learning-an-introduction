@@ -387,7 +387,8 @@ def figure_9_5(true_value):
         for j in range(len(orders)):
             plt.plot(errors[i, j, :], label='%s order = %d' % (labels[i][j], orders[j]))
     plt.xlabel('Episodes')
-    plt.ylabel('RMSVE')
+    # The book plots RMSVE, which is RMSE weighted by a state distribution
+    plt.ylabel('RMSE')
     plt.legend()
 
     plt.savefig('../images/figure_9_5.png')
@@ -442,7 +443,8 @@ def figure_9_10(true_value):
     for i in range(0, len(labels)):
         plt.plot(errors[i], label=labels[i])
     plt.xlabel('Episodes')
-    plt.ylabel('RMSVE')
+    # The book plots RMSVE, which is RMSE weighted by a state distribution
+    plt.ylabel('RMSE')
     plt.legend()
 
     plt.savefig('../images/figure_9_10.png')
