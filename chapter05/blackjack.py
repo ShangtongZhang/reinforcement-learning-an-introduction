@@ -78,11 +78,13 @@ def play(policy_player, initial_state=None, initial_action=None):
         # generate a random initial state
 
         # initialize cards of player
+        cards = []
         while player_sum < 12:
             # if sum of player is less than 12, always hit
             card = get_card()
+            cards.append(card)
             player_sum += card_value(card)
-            usable_ace_player = (card == 1)
+        usable_ace_player = (1 in cards)
 
         # Always use an ace as 11, unless there are two.
         # If the player's sum is larger than 21, he must hold two aces.
