@@ -31,11 +31,9 @@ class State:
     def hash(self):
         if self.hash_val is None:
             self.hash_val = 0
-            for i in self.data.reshape(BOARD_ROWS * BOARD_COLS):
-                if i == -1:
-                    i = 2
-                self.hash_val = self.hash_val * 3 + i
-        return int(self.hash_val)
+            for i in np.nditer(self.data):
+                self.hash_val = self.hash_val * 3 + i + 1
+        return self.hash_val
 
     # check whether a player has won the game, or it's a tie
     def is_end(self):
@@ -43,19 +41,20 @@ class State:
             return self.end
         results = []
         # check row
-        for i in range(0, BOARD_ROWS):
+        for i in range(BOARD_ROWS):
             results.append(np.sum(self.data[i, :]))
         # check columns
-        for i in range(0, BOARD_COLS):
+        for i in range(BOARD_COLS):
             results.append(np.sum(self.data[:, i]))
 
         # check diagonals
-        results.append(0)
-        for i in range(0, BOARD_ROWS):
-            results[-1] += self.data[i, i]
-        results.append(0)
-        for i in range(0, BOARD_ROWS):
-            results[-1] += self.data[i, BOARD_ROWS - 1 - i]
+        trace = 0
+        reverse_trace = 0
+        for i in range(BOARD_ROWS):
+            trace += self.data[i, i]
+            reverse_trace += self.data[i, BOARD_ROWS - 1 - i]
+        results.append(trace)
+        results.append(reverse_trace)
 
         for result in results:
             if result == 3:
@@ -69,7 +68,7 @@ class State:
 
         # whether it's a tie
         sum_values = np.sum(np.abs(self.data))
-        if sum_values == BOARD_ROWS * BOARD_COLS:
+        if sum_values == BOARD_SIZE:
             self.winner = 0
             self.end = True
             return self.end
@@ -88,28 +87,28 @@ class State:
 
     # print the board
     def print_state(self):
-        for i in range(0, BOARD_ROWS):
+        for i in range(BOARD_ROWS):
             print('-------------')
             out = '| '
-            for j in range(0, BOARD_COLS):
+            for j in range(BOARD_COLS):
                 if self.data[i, j] == 1:
                     token = '*'
-                if self.data[i, j] == 0:
-                    token = '0'
-                if self.data[i, j] == -1:
+                elif self.data[i, j] == -1:
                     token = 'x'
+                else:
+                    token = '0'
                 out += token + ' | '
             print(out)
         print('-------------')
 
 
 def get_all_states_impl(current_state, current_symbol, all_states):
-    for i in range(0, BOARD_ROWS):
-        for j in range(0, BOARD_COLS):
+    for i in range(BOARD_ROWS):
+        for j in range(BOARD_COLS):
             if current_state.data[i][j] == 0:
                 new_state = current_state.next_state(i, j, current_symbol)
                 new_hash = new_state.hash()
-                if new_hash not in all_states.keys():
+                if new_hash not in all_states:
                     is_end = new_state.is_end()
                     all_states[new_hash] = (new_state, is_end)
                     if not is_end:
@@ -158,18 +157,18 @@ class Judger:
         current_state = State()
         self.p1.set_state(current_state)
         self.p2.set_state(current_state)
+        if print_state:
+            current_state.print_state()
         while True:
             player = next(alternator)
-            if print_state:
-                current_state.print_state()
-            [i, j, symbol] = player.act()
+            i, j, symbol = player.act()
             next_state_hash = current_state.next_state(i, j, symbol).hash()
             current_state, is_end = all_states[next_state_hash]
             self.p1.set_state(current_state)
             self.p2.set_state(current_state)
+            if print_state:
+                current_state.print_state()
             if is_end:
-                if print_state:
-                    current_state.print_state()
                 return current_state.winner
 
 
@@ -195,8 +194,8 @@ class Player:
 
     def set_symbol(self, symbol):
         self.symbol = symbol
-        for hash_val in all_states.keys():
-            (state, is_end) = all_states[hash_val]
+        for hash_val in all_states:
+            state, is_end = all_states[hash_val]
             if is_end:
                 if state.winner == self.symbol:
                     self.estimations[hash_val] = 1.0
@@ -210,16 +209,13 @@ class Player:
 
     # update value estimation
     def backup(self):
-        # for debug
-        # print('player trajectory')
-        # for state in self.states:
-        #     state.print_state()
+        states = [state.hash() for state in self.states]
 
-        self.states = [state.hash() for state in self.states]
-
-        for i in reversed(range(len(self.states) - 1)):
-            state = self.states[i]
-            td_error = self.greedy[i] * (self.estimations[self.states[i + 1]] - self.estimations[state])
+        for i in reversed(range(len(states) - 1)):
+            state = states[i]
+            td_error = self.greedy[i] * (
+                self.estimations[states[i + 1]] - self.estimations[state]
+            )
             self.estimations[state] += self.step_size * td_error
 
     # choose an action based on the state
@@ -231,7 +227,8 @@ class Player:
             for j in range(BOARD_COLS):
                 if state.data[i, j] == 0:
                     next_positions.append([i, j])
-                    next_states.append(state.next_state(i, j, self.symbol).hash())
+                    next_states.append(state.next_state(
+                        i, j, self.symbol).hash())
 
         if np.random.rand() < self.epsilon:
             action = next_positions[np.random.randint(len(next_positions))]
@@ -240,9 +237,9 @@ class Player:
             return action
 
         values = []
-        for hash, pos in zip(next_states, next_positions):
-            values.append((self.estimations[hash], pos))
-        # to select one of the actions of equal value at random
+        for hash_val, pos in zip(next_states, next_positions):
+            values.append((self.estimations[hash_val], pos))
+        # to select one of the actions of equal value at random due to Python's sort is stable
         np.random.shuffle(values)
         values.sort(key=lambda x: x[0], reverse=True)
         action = values[0][1]
@@ -268,26 +265,21 @@ class HumanPlayer:
         self.symbol = None
         self.keys = ['q', 'w', 'e', 'a', 's', 'd', 'z', 'x', 'c']
         self.state = None
-        return
 
     def reset(self):
-        return
+        pass
 
     def set_state(self, state):
         self.state = state
 
     def set_symbol(self, symbol):
         self.symbol = symbol
-        return
-
-    def backup(self, _):
-        return
 
     def act(self):
         self.state.print_state()
         key = input("Input your position:")
         data = self.keys.index(key)
-        i = data // int(BOARD_COLS)
+        i = data // BOARD_COLS
         j = data % BOARD_COLS
         return i, j, self.symbol
 
@@ -321,7 +313,7 @@ def compete(turns):
     player2.load_policy()
     player1_win = 0.0
     player2_win = 0.0
-    for _ in range(0, turns):
+    for _ in range(turns):
         winner = judger.play()
         if winner == 1:
             player1_win += 1
