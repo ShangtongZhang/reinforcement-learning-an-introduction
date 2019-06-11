@@ -9,10 +9,12 @@
 #######################################################################
 
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm import tqdm
+from tqdm import trange
+
+matplotlib.use('Agg')
+
 
 class Bandit:
     # @k_arm: # of arms
@@ -48,7 +50,7 @@ class Bandit:
         # # of chosen times for each action
         self.action_count = np.zeros(self.k)
 
-        self.best_action = np.argmax(self.q_true) 
+        self.best_action = np.argmax(self.q_true)
 
     # get an action for this bandit
     def act(self):
@@ -57,7 +59,7 @@ class Bandit:
 
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
-                     self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
+                self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
             return np.random.choice([action for action, q in enumerate(UCB_estimation) if q == q_best])
 
@@ -74,12 +76,12 @@ class Bandit:
         # generate the reward under N(real reward, 1)
         reward = np.random.randn() + self.q_true[action]
         self.time += 1
-        self.average_reward = (self.time - 1.0) / self.time * self.average_reward + reward / self.time
         self.action_count[action] += 1
+        self.average_reward += (reward - self.average_reward) / self.time
 
         if self.sample_averages:
             # update estimation using sample averages
-            self.q_estimation[action] += 1.0 / self.action_count[action] * (reward - self.q_estimation[action])
+            self.q_estimation[action] += (reward - self.q_estimation[action]) / self.action_count[action]
         elif self.gradient:
             one_hot = np.zeros(self.k)
             one_hot[action] = 1
@@ -87,17 +89,18 @@ class Bandit:
                 baseline = self.average_reward
             else:
                 baseline = 0
-            self.q_estimation = self.q_estimation + self.step_size * (reward - baseline) * (one_hot - self.action_prob)
+            self.q_estimation += self.step_size * (reward - baseline) * (one_hot - self.action_prob)
         else:
             # update estimation with constant step size
             self.q_estimation[action] += self.step_size * (reward - self.q_estimation[action])
         return reward
 
+
 def simulate(runs, time, bandits):
     best_action_counts = np.zeros((len(bandits), runs, time))
     rewards = np.zeros(best_action_counts.shape)
     for i, bandit in enumerate(bandits):
-        for r in tqdm(range(runs)):
+        for r in trange(runs):
             bandit.reset()
             for t in range(time):
                 action = bandit.act()
@@ -105,16 +108,18 @@ def simulate(runs, time, bandits):
                 rewards[i, r, t] = reward
                 if action == bandit.best_action:
                     best_action_counts[i, r, t] = 1
-    best_action_counts = best_action_counts.mean(axis=1)
-    rewards = rewards.mean(axis=1)
-    return best_action_counts, rewards
+    mean_best_action_counts = best_action_counts.mean(axis=1)
+    mean_rewards = rewards.mean(axis=1)
+    return mean_best_action_counts, mean_rewards
+
 
 def figure_2_1():
-    plt.violinplot(dataset=np.random.randn(200,10) + np.random.randn(10))
+    plt.violinplot(dataset=np.random.randn(200, 10) + np.random.randn(10))
     plt.xlabel("Action")
     plt.ylabel("Reward distribution")
     plt.savefig('../images/figure_2_1.png')
     plt.close()
+
 
 def figure_2_2(runs=2000, time=1000):
     epsilons = [0, 0.1, 0.01]
@@ -140,6 +145,7 @@ def figure_2_2(runs=2000, time=1000):
     plt.savefig('../images/figure_2_2.png')
     plt.close()
 
+
 def figure_2_3(runs=2000, time=1000):
     bandits = []
     bandits.append(Bandit(epsilon=0, initial=5, step_size=0.1))
@@ -154,6 +160,7 @@ def figure_2_3(runs=2000, time=1000):
 
     plt.savefig('../images/figure_2_3.png')
     plt.close()
+
 
 def figure_2_4(runs=2000, time=1000):
     bandits = []
@@ -170,6 +177,7 @@ def figure_2_4(runs=2000, time=1000):
     plt.savefig('../images/figure_2_4.png')
     plt.close()
 
+
 def figure_2_5(runs=2000, time=1000):
     bandits = []
     bandits.append(Bandit(gradient=True, step_size=0.1, gradient_baseline=True, true_reward=4))
@@ -182,7 +190,7 @@ def figure_2_5(runs=2000, time=1000):
               'alpha = 0.4, with baseline',
               'alpha = 0.4, without baseline']
 
-    for i in range(0, len(bandits)):
+    for i in range(len(bandits)):
         plt.plot(best_action_counts[i], label=labels[i])
     plt.xlabel('Steps')
     plt.ylabel('% Optimal action')
@@ -190,6 +198,7 @@ def figure_2_5(runs=2000, time=1000):
 
     plt.savefig('../images/figure_2_5.png')
     plt.close()
+
 
 def figure_2_6(runs=2000, time=1000):
     labels = ['epsilon-greedy', 'gradient bandit',
@@ -222,6 +231,7 @@ def figure_2_6(runs=2000, time=1000):
 
     plt.savefig('../images/figure_2_6.png')
     plt.close()
+
 
 if __name__ == '__main__':
     figure_2_1()
