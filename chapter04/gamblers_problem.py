@@ -6,10 +6,11 @@
 # declaration at the top                                              #
 #######################################################################
 
-import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
+
+matplotlib.use('Agg')
 
 # goal
 GOAL = 100
@@ -20,14 +21,19 @@ STATES = np.arange(GOAL + 1)
 # probability of head
 HEAD_PROB = 0.4
 
+
 def figure_4_3():
     # state value
     state_value = np.zeros(GOAL + 1)
     state_value[GOAL] = 1.0
 
+    sweeps_history = []
+
     # value iteration
     while True:
-        delta = 0.0
+        old_state_value = state_value.copy()
+        sweeps_history.append(old_state_value)
+
         for state in STATES[1:GOAL]:
             # get possilbe actions for current state
             actions = np.arange(min(state, GOAL - state) + 1)
@@ -36,10 +42,10 @@ def figure_4_3():
                 action_returns.append(
                     HEAD_PROB * state_value[state + action] + (1 - HEAD_PROB) * state_value[state - action])
             new_value = np.max(action_returns)
-            delta += np.abs(state_value[state] - new_value)
-            # update state value
             state_value[state] = new_value
+        delta = abs(state_value - old_state_value).max()
         if delta < 1e-9:
+            sweeps_history.append(state_value)
             break
 
     # compute the optimal policy
@@ -58,9 +64,11 @@ def figure_4_3():
     plt.figure(figsize=(10, 20))
 
     plt.subplot(2, 1, 1)
-    plt.plot(state_value)
+    for sweep, state_value in enumerate(sweeps_history):
+        plt.plot(state_value, label='sweep {}'.format(sweep))
     plt.xlabel('Capital')
     plt.ylabel('Value estimates')
+    plt.legend(loc='best')
 
     plt.subplot(2, 1, 2)
     plt.scatter(STATES, policy)
@@ -69,6 +77,7 @@ def figure_4_3():
 
     plt.savefig('../images/figure_4_3.png')
     plt.close()
+
 
 if __name__ == '__main__':
     figure_4_3()
