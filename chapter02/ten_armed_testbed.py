@@ -98,7 +98,7 @@ class Bandit:
 
 def simulate(runs, time, bandits):
 	rewards = np.zeros((len(bandits), runs, time))
-    best_action_counts = np.zeros(rewards.shape)
+	best_action_counts = np.zeros(rewards.shape)
     for i, bandit in enumerate(bandits):
         for r in trange(runs):
             bandit.reset()
