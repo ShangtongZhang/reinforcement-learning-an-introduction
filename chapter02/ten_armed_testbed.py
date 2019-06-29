@@ -61,7 +61,7 @@ class Bandit:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
-            return np.random.choice(np.where(UCB_estimation==q_best)[0])
+            return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
@@ -69,7 +69,7 @@ class Bandit:
             return np.random.choice(self.indices, p=self.action_prob)
 
         q_best = np.max(self.q_estimation)
-        return np.random.choice(np.where(self.q_estimation==q_best)[0])
+        return np.random.choice(np.where(self.q_estimation == q_best)[0])
 
     # take an action, update estimation for this action
     def step(self, action):
@@ -97,8 +97,8 @@ class Bandit:
 
 
 def simulate(runs, time, bandits):
-	rewards = np.zeros((len(bandits), runs, time))
-	best_action_counts = np.zeros(rewards.shape)
+    rewards = np.zeros((len(bandits), runs, time))
+    best_action_counts = np.zeros(rewards.shape)
     for i, bandit in enumerate(bandits):
         for r in trange(runs):
             bandit.reset()
