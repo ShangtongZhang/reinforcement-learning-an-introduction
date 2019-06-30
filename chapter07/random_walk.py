@@ -111,8 +111,8 @@ def figure7_2():
     # track the errors for each (step, alpha) combination
     errors = np.zeros((len(steps), len(alphas)))
     for run in tqdm(range(0, runs)):
-        for step_ind, step in zip(range(len(steps)), steps):
-            for alpha_ind, alpha in zip(range(len(alphas)), alphas):
+        for step_ind, step in enumerate(steps):
+            for alpha_ind, alpha in enumerate(alphas):
                 # print('run:', run, 'step:', step, 'alpha:', alpha)
                 value = np.zeros(N_STATES + 2)
                 for ep in range(0, episodes):

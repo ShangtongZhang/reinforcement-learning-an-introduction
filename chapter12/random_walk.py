@@ -185,8 +185,8 @@ def parameter_sweep(value_function_generator, runs, lambdas, alphas):
     # track the rms errors
     errors = [np.zeros(len(alphas_)) for alphas_ in alphas]
     for run in tqdm(range(runs)):
-        for lambdaIndex, rate in zip(range(len(lambdas)), lambdas):
-            for alphaIndex, alpha in zip(range(len(alphas[lambdaIndex])), alphas[lambdaIndex]):
+        for lambdaIndex, rate in enumerate(lambdas):
+            for alphaIndex, alpha in enumerate(alphas[lambdaIndex]):
                 valueFunction = value_function_generator(rate, alpha)
                 for episode in range(episodes):
                     random_walk(valueFunction)
