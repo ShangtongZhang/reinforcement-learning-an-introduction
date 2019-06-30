@@ -406,7 +406,7 @@ def figure_8_2():
     steps = np.zeros((len(planning_steps), episodes))
 
     for run in tqdm(range(runs)):
-        for index, planning_step in zip(range(len(planning_steps)), planning_steps):
+        for i, planning_step in enumerate(planning_steps):
             dyna_params.planning_steps = planning_step
             q_value = np.zeros(dyna_maze.q_size)
 
@@ -414,7 +414,7 @@ def figure_8_2():
             model = TrivialModel()
             for ep in range(episodes):
                 # print('run:', run, 'planning step:', planning_step, 'episode:', ep)
-                steps[index, ep] += dyna_q(q_value, model, dyna_maze, dyna_params)
+                steps[i, ep] += dyna_q(q_value, model, dyna_maze, dyna_params)
 
     # averaging over runs
     steps /= runs
