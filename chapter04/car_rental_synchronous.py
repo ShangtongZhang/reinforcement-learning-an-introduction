@@ -137,8 +137,8 @@ class PolicyIteration:
         else:
             expected_return += MOVE_COST * abs(action)
 
-        for req1 in range(0, TRUNCATE):
-            for req2 in range(0, TRUNCATE):
+        for req1 in range(0, self.TRUNCATE):
+            for req2 in range(0, self.TRUNCATE):
                 # moving cars
                 num_of_cars_first_loc = int(min(state[0] - action, MAX_CARS))
                 num_of_cars_second_loc = int(min(state[1] + action, MAX_CARS))
@@ -162,8 +162,8 @@ class PolicyIteration:
                 # probability for current combination of rental requests
                 prob = poisson(req1, RENTAL_REQUEST_FIRST_LOC) * \
                        poisson(req2, RENTAL_REQUEST_SECOND_LOC)
-                for ret1 in range(0, TRUNCATE):
-                    for ret2 in range(0, TRUNCATE):
+                for ret1 in range(0, self.TRUNCATE):
+                    for ret2 in range(0, self.TRUNCATE):
                         num_of_cars_first_loc_ = min(num_of_cars_first_loc + ret1, MAX_CARS)
                         num_of_cars_second_loc_ = min(num_of_cars_second_loc + ret2, MAX_CARS)
                         prob_ = poisson(ret1, RETURNS_FIRST_LOC) * \
