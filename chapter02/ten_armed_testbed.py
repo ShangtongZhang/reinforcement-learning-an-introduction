@@ -52,6 +52,8 @@ class Bandit:
 
         self.best_action = np.argmax(self.q_true)
 
+        self.time = 0
+
     # get an action for this bandit
     def act(self):
         if np.random.rand() < self.epsilon:
