@@ -18,7 +18,7 @@ def true_value(p):
         p (float): probability of the action 'right'.
     Returns:
         True value of the first state.
-        The expression is obtained by manually solving the easy linear system 
+        The expression is obtained by manually solving the easy linear system
         of Bellman equations using known dynamics.
     """
     return (2 * p - 4) / (p * (1 - p))
@@ -213,20 +213,26 @@ def example_13_1():
     plt.close()
 
 def figure_13_1():
-    num_trials = 30
+    num_trials = 100
     num_episodes = 1000
-    alpha = 2e-4
     gamma = 1
+    agent_generators = [lambda : ReinforceAgent(alpha=2e-4, gamma=gamma),
+                        lambda : ReinforceAgent(alpha=2e-5, gamma=gamma),
+                        lambda : ReinforceAgent(alpha=2e-3, gamma=gamma)]
+    labels = ['alpha = 2e-4',
+              'alpha = 2e-5',
+              'alpha = 2e-3']
 
-    rewards = np.zeros((num_trials, num_episodes))
-    agent_generator = lambda : ReinforceAgent(alpha=alpha, gamma=gamma)
+    rewards = np.zeros((len(agent_generators), num_trials, num_episodes))
 
-    for i in tqdm(range(num_trials)):
-        reward = trial(num_episodes, agent_generator)
-        rewards[i, :] = reward
+    for agent_index, agent_generator in enumerate(agent_generators):
+        for i in tqdm(range(num_trials)):
+            reward = trial(num_episodes, agent_generator)
+            rewards[agent_index, i, :] = reward
 
     plt.plot(np.arange(num_episodes) + 1, -11.6 * np.ones(num_episodes), ls='dashed', color='red', label='-11.6')
-    plt.plot(np.arange(num_episodes) + 1, rewards.mean(axis=0), color='blue')
+    for i, label in enumerate(labels):
+        plt.plot(np.arange(num_episodes) + 1, rewards[i].mean(axis=0), label=label)
     plt.ylabel('total reward on episode')
     plt.xlabel('episode')
     plt.legend(loc='lower right')
@@ -235,14 +241,14 @@ def figure_13_1():
     plt.close()
 
 def figure_13_2():
-    num_trials = 30
+    num_trials = 100
     num_episodes = 1000
     alpha = 2e-4
     gamma = 1
     agent_generators = [lambda : ReinforceAgent(alpha=alpha, gamma=gamma),
-                        lambda : ReinforceBaselineAgent(alpha=alpha, gamma=gamma, alpha_w=alpha*100)]
-    labels = ['Reinforce with baseline',
-              'Reinforce without baseline']
+                        lambda : ReinforceBaselineAgent(alpha=alpha*10, gamma=gamma, alpha_w=alpha*100)]
+    labels = ['Reinforce without baseline',
+              'Reinforce with baseline']
 
     rewards = np.zeros((len(agent_generators), num_trials, num_episodes))
 
