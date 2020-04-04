@@ -195,7 +195,7 @@ class PolicyIteration:
         plt.figure()
         plt.xlim(0, MAX_CARS + 1)
         plt.ylim(0, MAX_CARS + 1)
-        plt.table(cellText=self.policy, loc=(0, 0), cellLoc='center')
+        plt.table(cellText=np.flipud(self.policy), loc=(0, 0), cellLoc='center')
         plt.show()
 
 
