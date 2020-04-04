@@ -224,10 +224,15 @@ def monte_carlo_es(episodes):
         initial_action = np.random.choice(ACTIONS)
         current_policy = behavior_policy if episode else target_policy_player
         _, reward, trajectory = play(current_policy, initial_state, initial_action)
+        first_visit_check = set()
         for (usable_ace, player_sum, dealer_card), action in trajectory:
             usable_ace = int(usable_ace)
             player_sum -= 12
             dealer_card -= 1
+            state_action = (usable_ace, player_sum, dealer_card, action)
+            if state_action in first_visit_check:
+                continue
+            first_visit_check.add(state_action)
             # update values of state-action pairs
             state_action_values[player_sum, dealer_card, usable_ace, action] += reward
             state_action_pair_count[player_sum, dealer_card, usable_ace, action] += 1
@@ -359,7 +364,7 @@ def figure_5_3():
 
 
 if __name__ == '__main__':
-    figure_5_1()
+    # figure_5_1()
     figure_5_2()
-    figure_5_3()
+    # figure_5_3()
 
