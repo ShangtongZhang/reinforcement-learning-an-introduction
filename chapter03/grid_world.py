@@ -85,6 +85,28 @@ def figure_3_2():
             break
         value = new_value
 
+def figure_3_2_linear_system():
+    '''
+    Here we solve the linear system of equations to find the exact solution.
+    We do this by filling the coefficients for each of the states with their respective right side constant.
+    '''
+    A = -1 * np.eye(WORLD_SIZE * WORLD_SIZE)
+    b = np.zeros(WORLD_SIZE * WORLD_SIZE)
+    for i in range(WORLD_SIZE):
+        for j in range(WORLD_SIZE):
+            s = [i, j]  # current state
+            index_s = np.ravel_multi_index(s, (WORLD_SIZE, WORLD_SIZE))
+            for a in ACTIONS:
+                s_, r = step(s, a)
+                index_s_ = np.ravel_multi_index(s_, (WORLD_SIZE, WORLD_SIZE))
+
+                A[index_s, index_s_] += ACTION_PROB * DISCOUNT
+                b[index_s] -= ACTION_PROB * r
+
+    x = np.linalg.solve(A, b)
+    draw_image(np.round(x.reshape(WORLD_SIZE, WORLD_SIZE), decimals=2))
+    plt.savefig('../images/figure_3_2_linear_system.png')
+    plt.close()
 
 def figure_3_5():
     value = np.zeros((WORLD_SIZE, WORLD_SIZE))
@@ -108,5 +130,6 @@ def figure_3_5():
 
 
 if __name__ == '__main__':
+    figure_3_2_linear_system()
     figure_3_2()
     figure_3_5()
