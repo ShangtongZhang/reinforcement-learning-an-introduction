@@ -57,8 +57,20 @@ def draw_image(image):
 
     # Add cells
     for (i, j), val in np.ndenumerate(image):
+
+        # add state labels
+        if [i, j] == A_POS:
+            val = str(val) + " (A)"
+        if [i, j] == A_PRIME_POS:
+            val = str(val) + " (A')"
+        if [i, j] == B_POS:
+            val = str(val) + " (B)"
+        if [i, j] == B_PRIME_POS:
+            val = str(val) + " (B')"
+        
         tb.add_cell(i, j, width, height, text=val,
                     loc='center', facecolor='white')
+        
 
     # Row and column labels...
     for i in range(len(image)):
@@ -88,6 +100,17 @@ def draw_policy(optimal_values):
         val=''
         for ba in best_actions:
             val+=ACTIONS_FIGS[ba]
+        
+        # add state labels
+        if [i, j] == A_POS:
+            val = str(val) + " (A)"
+        if [i, j] == A_PRIME_POS:
+            val = str(val) + " (A')"
+        if [i, j] == B_POS:
+            val = str(val) + " (B)"
+        if [i, j] == B_PRIME_POS:
+            val = str(val) + " (B')"
+        
         tb.add_cell(i, j, width, height, text=val,
                 loc='center', facecolor='white')
 
