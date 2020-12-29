@@ -7,9 +7,10 @@
 
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+
+matplotlib.use('Agg')
 
 # 2 actions
 ACTIONS = [0, 1]
@@ -23,12 +24,14 @@ MAX_STEPS = 20000
 # epsilon greedy for behavior policy
 EPSILON = 0.1
 
+
 # break tie randomly
 def argmax(value):
     max_q = np.max(value)
     return np.random.choice([a for a, q in enumerate(value) if q == max_q])
 
-class Task():
+
+class Task:
     # @n_states: number of non-terminal states
     # @b: branch
     # Each episode starts with state 0, and state n_states is a terminal state
@@ -46,8 +49,9 @@ class Task():
     def step(self, state, action):
         if np.random.rand() < TERMINATION_PROB:
             return self.n_states, 0
-        next = np.random.randint(self.b)
-        return self.transition[state, action, next], self.reward[state, action, next]
+        next_ = np.random.randint(self.b)
+        return self.transition[state, action, next_], self.reward[state, action, next_]
+
 
 # Evaluate the value of the start state for the greedy policy
 # derived from @q under the MDP @task
@@ -64,6 +68,7 @@ def evaluate_pi(q, task):
             rewards += r
         returns.append(rewards)
     return np.mean(returns)
+
 
 # perform expected update from a uniform state-action distribution of the MDP @task
 # evaluate the learned q value every @eval_interval steps
@@ -83,6 +88,7 @@ def uniform(task, eval_interval):
             performance.append([step, v_pi])
 
     return zip(*performance)
+
 
 # perform expected update from an on-policy distribution of the MDP @task
 # evaluate the learned q value every @eval_interval steps
@@ -112,13 +118,14 @@ def on_policy(task, eval_interval):
 
     return zip(*performance)
 
+
 def figure_8_8():
     num_states = [1000, 10000]
     branch = [1, 3, 10]
     methods = [on_policy, uniform]
 
-    # average accross 30 tasks
-    n_tasks =  30
+    # average across 30 tasks
+    n_tasks = 30
 
     # number of evaluation points
     x_ticks = 100
@@ -129,13 +136,14 @@ def figure_8_8():
         for b in branch:
             tasks = [Task(n, b) for _ in range(n_tasks)]
             for method in methods:
+                steps = None
                 value = []
                 for task in tasks:
                     steps, v = method(task, MAX_STEPS / x_ticks)
                     value.append(v)
                 value = np.mean(np.asarray(value), axis=0)
-                plt.plot(steps, value, label='b = %d, %s' % (b, method.__name__))
-        plt.title('%d states' % (n))
+                plt.plot(steps, value, label=f'b = {b}, {method.__name__}')
+        plt.title(f'{n} states')
 
         plt.ylabel('value of start state')
         plt.legend()
@@ -145,6 +153,7 @@ def figure_8_8():
 
     plt.savefig('../images/figure_8_8.png')
     plt.close()
+
 
 if __name__ == '__main__':
     figure_8_8()
