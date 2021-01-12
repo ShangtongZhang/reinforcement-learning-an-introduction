@@ -89,7 +89,7 @@ class Maze:
         self.resolution = 1
 
     # extend a state to a higher resolution maze
-    # @state: state in lower resoultion maze
+    # @state: state in lower resolution maze
     # @factor: extension factor, one state will become factor^2 states after extension
     def extend_state(self, state, factor):
         new_state = [state[0] * factor, state[1] * factor]
