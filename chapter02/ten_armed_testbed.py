@@ -132,14 +132,14 @@ def figure_2_2(runs=2000, time=1000):
 
     plt.subplot(2, 1, 1)
     for eps, rewards in zip(epsilons, rewards):
-        plt.plot(rewards, label='epsilon = %.02f' % (eps))
+        plt.plot(rewards, label='$\epsilon = %.02f$' % (eps))
     plt.xlabel('steps')
     plt.ylabel('average reward')
     plt.legend()
 
     plt.subplot(2, 1, 2)
     for eps, counts in zip(epsilons, best_action_counts):
-        plt.plot(counts, label='epsilon = %.02f' % (eps))
+        plt.plot(counts, label='$\epsilon = %.02f$' % (eps))
     plt.xlabel('steps')
     plt.ylabel('% optimal action')
     plt.legend()
@@ -154,8 +154,8 @@ def figure_2_3(runs=2000, time=1000):
     bandits.append(Bandit(epsilon=0.1, initial=0, step_size=0.1))
     best_action_counts, _ = simulate(runs, time, bandits)
 
-    plt.plot(best_action_counts[0], label='epsilon = 0, q = 5')
-    plt.plot(best_action_counts[1], label='epsilon = 0.1, q = 0')
+    plt.plot(best_action_counts[0], label='$\epsilon = 0, q = 5$')
+    plt.plot(best_action_counts[1], label='$\epsilon = 0.1, q = 0$')
     plt.xlabel('Steps')
     plt.ylabel('% optimal action')
     plt.legend()
@@ -170,8 +170,8 @@ def figure_2_4(runs=2000, time=1000):
     bandits.append(Bandit(epsilon=0.1, sample_averages=True))
     _, average_rewards = simulate(runs, time, bandits)
 
-    plt.plot(average_rewards[0], label='UCB c = 2')
-    plt.plot(average_rewards[1], label='epsilon greedy epsilon = 0.1')
+    plt.plot(average_rewards[0], label='UCB $c = 2$')
+    plt.plot(average_rewards[1], label='epsilon greedy $\epsilon = 0.1$')
     plt.xlabel('Steps')
     plt.ylabel('Average reward')
     plt.legend()
@@ -187,10 +187,10 @@ def figure_2_5(runs=2000, time=1000):
     bandits.append(Bandit(gradient=True, step_size=0.4, gradient_baseline=True, true_reward=4))
     bandits.append(Bandit(gradient=True, step_size=0.4, gradient_baseline=False, true_reward=4))
     best_action_counts, _ = simulate(runs, time, bandits)
-    labels = ['alpha = 0.1, with baseline',
-              'alpha = 0.1, without baseline',
-              'alpha = 0.4, with baseline',
-              'alpha = 0.4, without baseline']
+    labels = [r'$\alpha = 0.1$, with baseline',
+              r'$\alpha = 0.1$, without baseline',
+              r'$\alpha = 0.4$, with baseline',
+              r'$\alpha = 0.4$, without baseline']
 
     for i in range(len(bandits)):
         plt.plot(best_action_counts[i], label=labels[i])
@@ -227,7 +227,7 @@ def figure_2_6(runs=2000, time=1000):
         l = len(parameter)
         plt.plot(parameter, rewards[i:i+l], label=label)
         i += l
-    plt.xlabel('Parameter(2^x)')
+    plt.xlabel('Parameter($2^x$)')
     plt.ylabel('Average reward')
     plt.legend()
 
