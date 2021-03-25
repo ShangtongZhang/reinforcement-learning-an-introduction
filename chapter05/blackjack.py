@@ -352,8 +352,9 @@ def figure_5_3():
     error_ordinary /= runs
     error_weighted /= runs
 
-    plt.plot(error_ordinary, label='Ordinary Importance Sampling')
-    plt.plot(error_weighted, label='Weighted Importance Sampling')
+    plt.plot(np.arange(1, episodes + 1), error_ordinary, label='Ordinary Importance Sampling')
+    plt.plot(np.arange(1, episodes + 1), error_weighted, label='Weighted Importance Sampling')
+    plt.ylim(0, 5)
     plt.xlabel('Episodes (log scale)')
     plt.ylabel('Mean square error')
     plt.xscale('log')
@@ -364,7 +365,6 @@ def figure_5_3():
 
 
 if __name__ == '__main__':
-    # figure_5_1()
+    figure_5_1()
     figure_5_2()
-    # figure_5_3()
-
+    figure_5_3()
