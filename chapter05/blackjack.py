@@ -352,10 +352,11 @@ def figure_5_3():
     error_ordinary /= runs
     error_weighted /= runs
 
-    plt.plot(error_ordinary, label='Ordinary Importance Sampling')
-    plt.plot(error_weighted, label='Weighted Importance Sampling')
+    plt.plot(np.arange(1, episodes + 1), error_ordinary, color='green', label='Ordinary Importance Sampling')
+    plt.plot(np.arange(1, episodes + 1), error_weighted, color='red', label='Weighted Importance Sampling')
+    plt.ylim(-0.1, 5)
     plt.xlabel('Episodes (log scale)')
-    plt.ylabel('Mean square error')
+    plt.ylabel(f'Mean square error\n(average over {runs} runs)')
     plt.xscale('log')
     plt.legend()
 
@@ -364,7 +365,6 @@ def figure_5_3():
 
 
 if __name__ == '__main__':
-    # figure_5_1()
+    figure_5_1()
     figure_5_2()
-    # figure_5_3()
-
+    figure_5_3()
