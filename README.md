@@ -100,7 +100,3 @@ python any_file_you_want.py
 
 # Contribution
 If you want to contribute some missing examples or fix some bugs, feel free to open an issue or make a pull request. 
-
-Following are missing figures/examples:
-
-* Figure 12.14: The effect of λ 
