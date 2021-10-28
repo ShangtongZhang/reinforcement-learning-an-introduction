@@ -194,17 +194,17 @@ def semi_gradient_n_step_sarsa(value_function, n=1):
 
         if time < T:
             # take current action and go to the new state
-            new_postion, new_velocity, reward = step(current_position, current_velocity, current_action)
+            new_position, new_velocity, reward = step(current_position, current_velocity, current_action)
             # choose new action
-            new_action = get_action(new_postion, new_velocity, value_function)
+            new_action = get_action(new_position, new_velocity, value_function)
 
             # track new state and action
-            positions.append(new_postion)
+            positions.append(new_position)
             velocities.append(new_velocity)
             actions.append(new_action)
             rewards.append(reward)
 
-            if new_postion == POSITION_MAX:
+            if new_position == POSITION_MAX:
                 T = time
 
         # get the time of the state to update
@@ -224,7 +224,7 @@ def semi_gradient_n_step_sarsa(value_function, n=1):
                 value_function.learn(positions[update_time], velocities[update_time], actions[update_time], returns)
         if update_time == T - 1:
             break
-        current_position = new_postion
+        current_position = new_position
         current_velocity = new_velocity
         current_action = new_action
 
@@ -366,7 +366,3 @@ if __name__ == '__main__':
     figure_10_2()
     figure_10_3()
     figure_10_4()
-
-
-
-
