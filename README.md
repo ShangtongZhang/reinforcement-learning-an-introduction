@@ -1,5 +1,10 @@
 # Reinforcement Learning: An Introduction
 
+```diff
+@@ I am looking for self-motivated students interested in RL at different levels! @@
+@@ Visit https://shangtongzhang.github.io/people/ for more details. @@
+```
+
 [![Build Status](https://travis-ci.org/ShangtongZhang/reinforcement-learning-an-introduction.svg?branch=master)](https://travis-ci.org/ShangtongZhang/reinforcement-learning-an-introduction)
 
 Python replication for Sutton & Barto's book [*Reinforcement Learning: An Introduction (2nd Edition)*](http://incompleteideas.net/book/the-book-2nd.html)
