@@ -52,7 +52,7 @@ def step(state, action):
         assert False
 
     reward = -1
-    if (action == ACTION_DOWN and i == 2 and 1 <= j <= 10) or (
+    if (action == ACTION_DOWN and i == 2 and 1 <= j <= WORLD_WIDTH-2) or (
         action == ACTION_RIGHT and state == START):
         reward = -100
         next_state = START
