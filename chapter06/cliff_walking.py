@@ -35,8 +35,8 @@ ACTION_RIGHT = 3
 ACTIONS = [ACTION_UP, ACTION_DOWN, ACTION_LEFT, ACTION_RIGHT]
 
 # initial state action pair values
-START = [3, 0]
-GOAL = [3, 11]
+START = [WORLD_HEIGHT-1, 0]
+GOAL = [WORLD_HEIGHT-1, WORLD_WIDTH-1]
 
 def step(state, action):
     i, j = state
@@ -52,7 +52,7 @@ def step(state, action):
         assert False
 
     reward = -1
-    if (action == ACTION_DOWN and i == 2 and 1 <= j <= 10) or (
+    if (action == ACTION_DOWN and i == 2 and 1 <= j <= WORLD_WIDTH-2) or (
         action == ACTION_RIGHT and state == START):
         reward = -100
         next_state = START
