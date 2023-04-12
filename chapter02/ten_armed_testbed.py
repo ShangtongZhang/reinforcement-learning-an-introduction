@@ -209,10 +209,10 @@ def figure_2_6(runs=2000, time=1000):
                   lambda alpha: Bandit(gradient=True, step_size=alpha, gradient_baseline=True),
                   lambda coef: Bandit(epsilon=0, UCB_param=coef, sample_averages=True),
                   lambda initial: Bandit(epsilon=0, initial=initial, step_size=0.1)]
-    parameters = [np.arange(-7, -1, dtype=np.float),
-                  np.arange(-5, 2, dtype=np.float),
-                  np.arange(-4, 3, dtype=np.float),
-                  np.arange(-2, 3, dtype=np.float)]
+    parameters = [np.arange(-7, -1, dtype=float),
+                  np.arange(-5, 2, dtype=float),
+                  np.arange(-4, 3, dtype=float),
+                  np.arange(-2, 3, dtype=float)]
 
     bandits = []
     for generator, parameter in zip(generators, parameters):
