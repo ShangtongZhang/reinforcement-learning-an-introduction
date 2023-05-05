@@ -1,11 +1,10 @@
-# Reinforcement Learning: An Introduction
+# Reinforcement Learning: An Introduction for Iranian and Persian/Farsi speakers
 
-```diff
-@@ I am looking for self-motivated students interested in RL at different levels! @@
-@@ Visit https://shangtongzhang.github.io/people/ for more details. @@
-```
+This is a forked repo from [ShangtongZhang](https://github.com/ShangtongZhang/reinforcement-learning-an-introduction).
 
-[![Build Status](https://travis-ci.org/ShangtongZhang/reinforcement-learning-an-introduction.svg?branch=master)](https://travis-ci.org/ShangtongZhang/reinforcement-learning-an-introduction)
+I customized the README and updated some codes because of old versions of dependent libraries; And It's a free course for reinforcement learning enthusiastic which is gathered and prepared by [Prof. Mohammad Hossein Rezvani](https://scholar.google.com/citations?user=6RWTlo0AAAAJ&hl=en) for Persian speakers.
+
+The Full series of Reinforcement Learning videos (Theoretical section which is provided by PhD students of (QIAU) Qazvin Islamic Azad University and University of Tehran, etc. and reviewing code implementations by me at the end of each episodes) are available on the channel of [Prof. Mohammad Hossein Rezvani](https://youtu.be/fNVL7jBWBZI) YouTube channel.
 
 Python replication for Sutton & Barto's book [*Reinforcement Learning: An Introduction (2nd Edition)*](http://incompleteideas.net/book/the-book-2nd.html)
 
