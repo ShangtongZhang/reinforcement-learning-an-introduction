@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: 'Reinforcement Learning: An Introduction'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Shangtong
+    family-names: Zhang
+    orcid: 'https://orcid.org/0000-0003-4255-1364'
+identifiers:
+  - type: url
+    value: >-
+      https://github.com/ShangtongZhang/reinforcement-learning-an-introduction/commit/c7cc5389c38fe6840ab58ffb02cce76ede65a459
+    description: Latest git commit
+repository-code: >-
+  https://github.com/ShangtongZhang/reinforcement-learning-an-introduction
+abstract: >-
+  Python replication for Sutton & Barto's book Reinforcement
+  Learning: An Introduction (2nd Edition)
+keywords:
+  - reinforcement-learning
+  - artificial-intelligence
+license: MIT
