@@ -123,7 +123,7 @@ def expected_return(state, action, state_value, constant_returned_cars):
 
 def figure_4_2(constant_returned_cars=True):
     value = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
-    policy = np.zeros(value.shape, dtype=np.int)
+    policy = np.zeros(value.shape, dtype=np.int32)
 
     iterations = 0
     _, axes = plt.subplots(2, 3, figsize=(40, 20))
