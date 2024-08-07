@@ -55,7 +55,7 @@ class PolicyIteration:
         self.actions = np.arange(-MAX_MOVE, MAX_MOVE + 1)
         self.inverse_actions = {el: ind[0] for ind, el in np.ndenumerate(self.actions)}
         self.values = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
-        self.policy = np.zeros(self.values.shape, dtype=np.int)
+        self.policy = np.zeros(self.values.shape, dtype=np.int32)
         self.delta = delta
         self.gamma = gamma
         self.solve_extension = solve_4_5
@@ -151,9 +151,9 @@ class PolicyIteration:
                 reward = (real_rental_first_loc + real_rental_second_loc) * RENT_REWARD
 
                 if self.solve_extension:
-                    if num_of_cars_first_loc >= 10:
+                    if num_of_cars_first_loc > 10:
                         reward += ADDITIONAL_PARK_COST
-                    if num_of_cars_second_loc >= 10:
+                    if num_of_cars_second_loc > 10:
                         reward += ADDITIONAL_PARK_COST
 
                 num_of_cars_first_loc -= real_rental_first_loc
