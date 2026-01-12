@@ -10,7 +10,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # world height
 WORLD_HEIGHT = 4
@@ -195,7 +200,7 @@ def figure_6_4():
     plt.ylim([-100, 0])
     plt.legend()
 
-    plt.savefig('../images/figure_6_4.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_6_4.png'))
     plt.close()
 
     # display optimal policy
@@ -250,7 +255,7 @@ def figure_6_6():
     plt.ylabel('reward per episode')
     plt.legend()
 
-    plt.savefig('../images/figure_6_6.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_6_6.png'))
     plt.close()
 
 if __name__ == '__main__':

@@ -10,7 +10,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # # of states except for terminal states
 N_STATES = 1000
@@ -286,7 +291,7 @@ def figure_9_1(true_value):
     plt.ylabel('Distribution')
     plt.legend()
 
-    plt.savefig('../images/figure_9_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_9_1.png'))
     plt.close()
 
 # semi-gradient TD on 1000-state random walk
@@ -347,7 +352,7 @@ def figure_9_2(true_value):
     plt.subplot(2, 1, 2)
     figure_9_2_right(true_value)
 
-    plt.savefig('../images/figure_9_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_9_2.png'))
     plt.close()
 
 # Figure 9.5, Fourier basis and polynomials
@@ -391,7 +396,7 @@ def figure_9_5(true_value):
     plt.ylabel('RMSE')
     plt.legend()
 
-    plt.savefig('../images/figure_9_5.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_9_5.png'))
     plt.close()
 
 # Figure 9.10, it will take quite a while
@@ -447,7 +452,7 @@ def figure_9_10(true_value):
     plt.ylabel('RMSE')
     plt.legend()
 
-    plt.savefig('../images/figure_9_10.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_9_10.png'))
     plt.close()
 
 if __name__ == '__main__':

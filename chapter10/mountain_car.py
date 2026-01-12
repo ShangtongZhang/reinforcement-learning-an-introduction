@@ -10,9 +10,14 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from math import floor
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 #######################################################################
 # Following are some utilities for tile coding from Rich.
@@ -268,7 +273,7 @@ def figure_10_1():
         if ep in plot_episodes:
             print_cost(value_function, ep, axes[plot_episodes.index(ep)])
 
-    plt.savefig('../images/figure_10_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_10_1.png'))
     plt.close()
 
 # Figure 10.2, semi-gradient Sarsa with different alphas
@@ -295,7 +300,7 @@ def figure_10_2():
     plt.yscale('log')
     plt.legend()
 
-    plt.savefig('../images/figure_10_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_10_2.png'))
     plt.close()
 
 # Figure 10.3, one-step semi-gradient Sarsa vs multi-step semi-gradient Sarsa
@@ -323,7 +328,7 @@ def figure_10_3():
     plt.yscale('log')
     plt.legend()
 
-    plt.savefig('../images/figure_10_3.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_10_3.png'))
     plt.close()
 
 # Figure 10.4, effect of alpha and n on multi-step semi-gradient Sarsa
@@ -358,7 +363,7 @@ def figure_10_4():
     plt.ylim([220, max_steps])
     plt.legend()
 
-    plt.savefig('../images/figure_10_4.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_10_4.png'))
     plt.close()
 
 if __name__ == '__main__':

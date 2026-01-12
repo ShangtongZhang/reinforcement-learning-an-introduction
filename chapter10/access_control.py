@@ -10,10 +10,15 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from math import floor
 import seaborn as sns
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 #######################################################################
 # Following are some utilities for tile coding from Rich.
@@ -234,7 +239,7 @@ def figure_10_5():
     fig.set_xlabel('Number of free servers')
     fig.set_ylabel('Priority')
 
-    plt.savefig('../images/figure_10_5.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_10_5.png'))
     plt.close()
 
 if __name__ == '__main__':

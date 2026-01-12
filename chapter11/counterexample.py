@@ -10,8 +10,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # all states: state 0-5 are upper states
 STATES = np.arange(0, 7)
@@ -242,7 +247,7 @@ def figure_11_2():
     plt.subplot(2, 1, 2)
     figure_11_2_right()
 
-    plt.savefig('../images/figure_11_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_11_2.png'))
     plt.close()
 
 # Figure 11.6(left), temporal difference with gradient correction
@@ -309,7 +314,7 @@ def figure_11_6():
     plt.subplot(2, 1, 2)
     figure_11_6_right()
 
-    plt.savefig('../images/figure_11_6.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_11_6.png'))
     plt.close()
 
 # Figure 11.7, expected ETD
@@ -336,7 +341,7 @@ def figure_11_7():
     plt.title('emphatic TD')
     plt.legend()
 
-    plt.savefig('../images/figure_11_7.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_11_7.png'))
     plt.close()
 
 if __name__ == '__main__':

@@ -10,7 +10,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # 0 is the left terminal state
 # 6 is the right terminal state
@@ -120,9 +125,9 @@ def rms_error():
                     temporal_difference(current_values, alpha=alpha)
                 else:
                     monte_carlo(current_values, alpha=alpha)
-            total_errors += np.asarray(errors)
-        total_errors /= runs
-        plt.plot(total_errors, linestyle=linestyle, label=method + ', $\\alpha$ = %.02f' % (alpha))
+        total_errors += np.asarray(errors)
+    total_errors /= runs
+    plt.plot(total_errors, linestyle=linestyle, label=method + r', $\alpha$ = %.02f' % (alpha))
     plt.xlabel('Walks/Episodes')
     plt.ylabel('Empirical RMS error, averaged over states')
     plt.legend()
@@ -176,7 +181,7 @@ def example_6_2():
     rms_error()
     plt.tight_layout()
 
-    plt.savefig('../images/example_6_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'example_6_2.png'))
     plt.close()
 
 def figure_6_2():
@@ -193,7 +198,7 @@ def figure_6_2():
     plt.ylim(0, 0.25)
     plt.legend()
 
-    plt.savefig('../images/figure_6_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_6_2.png'))
     plt.close()
 
 if __name__ == '__main__':

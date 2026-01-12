@@ -9,9 +9,14 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from matplotlib.table import Table
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 WORLD_SIZE = 4
 # left, up, right, down
@@ -99,7 +104,7 @@ def figure_4_1():
     print('In-place: {} iterations'.format(asycn_iteration))
     print('Synchronous: {} iterations'.format(sync_iteration))
 
-    plt.savefig('../images/figure_4_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_4_1.png'))
     plt.close()
 
 

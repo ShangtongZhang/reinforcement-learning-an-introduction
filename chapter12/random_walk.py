@@ -10,7 +10,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # all states
 N_STATES = 19
@@ -216,7 +221,7 @@ def figure_12_3():
               np.arange(0, 0.11, 0.01)]
     parameter_sweep(OffLineLambdaReturn, 50, lambdas, alphas)
 
-    plt.savefig('../images/figure_12_3.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_12_3.png'))
     plt.close()
 
 # Figure 12.6: TD(lambda) algorithm
@@ -232,7 +237,7 @@ def figure_12_6():
               np.arange(0, 0.044, 0.004)]
     parameter_sweep(TemporalDifferenceLambda, 50, lambdas, alphas)
 
-    plt.savefig('../images/figure_12_6.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_12_6.png'))
     plt.close()
 
 # Figure 12.7: True online TD(lambda) algorithm
@@ -248,7 +253,7 @@ def figure_12_8():
               np.arange(0, 0.11, 0.01)]
     parameter_sweep(TrueOnlineTemporalDifferenceLambda, 50, lambdas, alphas)
 
-    plt.savefig('../images/figure_12_8.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_12_8.png'))
     plt.close()
 
 if __name__ == '__main__':

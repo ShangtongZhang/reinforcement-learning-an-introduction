@@ -10,6 +10,11 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 ACTION_BACK = 0
 ACTION_END = 1
@@ -53,7 +58,7 @@ def figure_5_4():
     plt.ylabel('Ordinary Importance Sampling')
     plt.xscale('log')
 
-    plt.savefig('../images/figure_5_4.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_5_4.png'))
     plt.close()
 
 if __name__ == '__main__':

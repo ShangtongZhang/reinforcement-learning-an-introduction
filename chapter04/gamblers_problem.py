@@ -9,8 +9,13 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # goal
 GOAL = 100
@@ -75,7 +80,7 @@ def figure_4_3():
     plt.xlabel('Capital')
     plt.ylabel('Final policy (stake)')
 
-    plt.savefig('../images/figure_4_3.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_4_3.png'))
     plt.close()
 
 

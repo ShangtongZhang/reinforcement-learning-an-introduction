@@ -9,9 +9,14 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from matplotlib.table import Table
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 WORLD_SIZE = 5
 A_POS = [0, 1]
@@ -137,7 +142,7 @@ def figure_3_2():
                     new_value[i, j] += ACTION_PROB * (reward + DISCOUNT * value[next_i, next_j])
         if np.sum(np.abs(value - new_value)) < 1e-4:
             draw_image(np.round(new_value, decimals=2))
-            plt.savefig('../images/figure_3_2.png')
+            plt.savefig(os.path.join(IMAGE_DIR, 'figure_3_2.png'))
             plt.close()
             break
         value = new_value
@@ -162,7 +167,7 @@ def figure_3_2_linear_system():
 
     x = np.linalg.solve(A, b)
     draw_image(np.round(x.reshape(WORLD_SIZE, WORLD_SIZE), decimals=2))
-    plt.savefig('../images/figure_3_2_linear_system.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_3_2_linear_system.png'))
     plt.close()
 
 def figure_3_5():
@@ -180,10 +185,10 @@ def figure_3_5():
                 new_value[i, j] = np.max(values)
         if np.sum(np.abs(new_value - value)) < 1e-4:
             draw_image(np.round(new_value, decimals=2))
-            plt.savefig('../images/figure_3_5.png')
+            plt.savefig(os.path.join(IMAGE_DIR, 'figure_3_5.png'))
             plt.close()
             draw_policy(new_value)
-            plt.savefig('../images/figure_3_5_policy.png')
+            plt.savefig(os.path.join(IMAGE_DIR, 'figure_3_5_policy.png'))
             plt.close()
             break
         value = new_value

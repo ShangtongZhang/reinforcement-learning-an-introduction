@@ -10,8 +10,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 import copy
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # state A
 STATE_A = 0
@@ -123,7 +128,7 @@ def figure_6_7():
     plt.ylabel('% left actions from A')
     plt.legend()
 
-    plt.savefig('../images/figure_6_7.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_6_7.png'))
     plt.close()
 
 if __name__ == '__main__':

@@ -10,7 +10,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 def true_value(p):
     """ True value of the first state
@@ -209,7 +214,7 @@ def example_13_1():
     ax.set_ylim(ymin=-105.0, ymax=5)
     ax.legend()
 
-    plt.savefig('../images/example_13_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'example_13_1.png'))
     plt.close()
 
 def figure_13_1():
@@ -237,7 +242,7 @@ def figure_13_1():
     plt.xlabel('episode')
     plt.legend(loc='lower right')
 
-    plt.savefig('../images/figure_13_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_13_1.png'))
     plt.close()
 
 def figure_13_2():
@@ -264,7 +269,7 @@ def figure_13_2():
     plt.xlabel('episode')
     plt.legend(loc='lower right')
 
-    plt.savefig('../images/figure_13_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_13_2.png'))
     plt.close()
 
 if __name__ == '__main__':

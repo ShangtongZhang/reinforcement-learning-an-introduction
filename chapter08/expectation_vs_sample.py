@@ -9,7 +9,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # for figure 8.7, run a simulation of 2 * @b steps
 def b_steps(b):
@@ -47,7 +52,7 @@ def figure_8_7():
     plt.ylabel('RMS error')
     plt.legend()
 
-    plt.savefig('../images/figure_8_7.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_8_7.png'))
     plt.close()
 
 if __name__ == '__main__':

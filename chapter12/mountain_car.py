@@ -9,8 +9,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 from math import floor
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 #######################################################################
 # Following are some utilities for tile coding from Rich.
@@ -122,7 +127,7 @@ def accumulating_trace(trace, active_tiles, lam):
 # @lam: lambda
 # @return: new trace for convenience
 def replacing_trace(trace, activeTiles, lam):
-    active = np.in1d(np.arange(len(trace)), activeTiles)
+    active = np.isin(np.arange(len(trace)), activeTiles)
     trace[active] = 1
     trace[~active] *= lam * DISCOUNT
     return trace
@@ -134,7 +139,7 @@ def replacing_trace(trace, activeTiles, lam):
 # @clearingTiles: tiles to be cleared
 # @return: new trace for convenience
 def replacing_trace_with_clearing(trace, active_tiles, lam, clearing_tiles):
-    active = np.in1d(np.arange(len(trace)), active_tiles)
+    active = np.isin(np.arange(len(trace)), active_tiles)
     trace[~active] *= lam * DISCOUNT
     trace[clearing_tiles] = 0
     trace[active] = 1
@@ -284,7 +289,7 @@ def figure_12_10():
     plt.ylim([180, 300])
     plt.legend()
 
-    plt.savefig('../images/figure_12_10.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_12_10.png'))
     plt.close()
 
 # figure 12.11, summary comparision of Sarsa(lambda) algorithms
@@ -321,7 +326,7 @@ def figure_12_11():
     plt.ylim([-550, -150])
     plt.legend()
 
-    plt.savefig('../images/figure_12_11.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_12_11.png'))
     plt.close()
 
 if __name__ == '__main__':

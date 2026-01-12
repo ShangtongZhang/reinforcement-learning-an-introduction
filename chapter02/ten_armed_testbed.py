@@ -11,9 +11,14 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from tqdm import trange
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 
 class Bandit:
@@ -119,7 +124,7 @@ def figure_2_1():
     plt.violinplot(dataset=np.random.randn(200, 10) + np.random.randn(10))
     plt.xlabel("Action")
     plt.ylabel("Reward distribution")
-    plt.savefig('../images/figure_2_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_1.png'))
     plt.close()
 
 
@@ -132,19 +137,19 @@ def figure_2_2(runs=2000, time=1000):
 
     plt.subplot(2, 1, 1)
     for eps, rewards in zip(epsilons, rewards):
-        plt.plot(rewards, label='$\epsilon = %.02f$' % (eps))
+        plt.plot(rewards, label=r'$\epsilon = %.02f$' % (eps))
     plt.xlabel('steps')
     plt.ylabel('average reward')
     plt.legend()
 
     plt.subplot(2, 1, 2)
     for eps, counts in zip(epsilons, best_action_counts):
-        plt.plot(counts, label='$\epsilon = %.02f$' % (eps))
+        plt.plot(counts, label=r'$\epsilon = %.02f$' % (eps))
     plt.xlabel('steps')
     plt.ylabel('% optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_2.png'))
     plt.close()
 
 
@@ -154,13 +159,13 @@ def figure_2_3(runs=2000, time=1000):
     bandits.append(Bandit(epsilon=0.1, initial=0, step_size=0.1))
     best_action_counts, _ = simulate(runs, time, bandits)
 
-    plt.plot(best_action_counts[0], label='$\epsilon = 0, q = 5$')
-    plt.plot(best_action_counts[1], label='$\epsilon = 0.1, q = 0$')
+    plt.plot(best_action_counts[0], label=r'$\epsilon = 0, q = 5$')
+    plt.plot(best_action_counts[1], label=r'$\epsilon = 0.1, q = 0$')
     plt.xlabel('Steps')
     plt.ylabel('% optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_3.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_3.png'))
     plt.close()
 
 
@@ -171,12 +176,12 @@ def figure_2_4(runs=2000, time=1000):
     _, average_rewards = simulate(runs, time, bandits)
 
     plt.plot(average_rewards[0], label='UCB $c = 2$')
-    plt.plot(average_rewards[1], label='epsilon greedy $\epsilon = 0.1$')
+    plt.plot(average_rewards[1], label=r'epsilon greedy $\epsilon = 0.1$')
     plt.xlabel('Steps')
     plt.ylabel('Average reward')
     plt.legend()
 
-    plt.savefig('../images/figure_2_4.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_4.png'))
     plt.close()
 
 
@@ -198,7 +203,7 @@ def figure_2_5(runs=2000, time=1000):
     plt.ylabel('% Optimal action')
     plt.legend()
 
-    plt.savefig('../images/figure_2_5.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_5.png'))
     plt.close()
 
 
@@ -209,10 +214,10 @@ def figure_2_6(runs=2000, time=1000):
                   lambda alpha: Bandit(gradient=True, step_size=alpha, gradient_baseline=True),
                   lambda coef: Bandit(epsilon=0, UCB_param=coef, sample_averages=True),
                   lambda initial: Bandit(epsilon=0, initial=initial, step_size=0.1)]
-    parameters = [np.arange(-7, -1, dtype=np.float),
-                  np.arange(-5, 2, dtype=np.float),
-                  np.arange(-4, 3, dtype=np.float),
-                  np.arange(-2, 3, dtype=np.float)]
+    parameters = [np.arange(-7, -1, dtype=float),
+                  np.arange(-5, 2, dtype=float),
+                  np.arange(-4, 3, dtype=float),
+                  np.arange(-2, 3, dtype=float)]
 
     bandits = []
     for generator, parameter in zip(generators, parameters):
@@ -231,7 +236,7 @@ def figure_2_6(runs=2000, time=1000):
     plt.ylabel('Average reward')
     plt.legend()
 
-    plt.savefig('../images/figure_2_6.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_2_6.png'))
     plt.close()
 
 

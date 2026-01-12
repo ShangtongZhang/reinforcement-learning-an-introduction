@@ -8,9 +8,14 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # 2 actions
 ACTIONS = [0, 1]
@@ -151,7 +156,7 @@ def figure_8_8():
     plt.subplot(2, 1, 2)
     plt.xlabel('computation time, in expected updates')
 
-    plt.savefig('../images/figure_8_8.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_8_8.png'))
     plt.close()
 
 

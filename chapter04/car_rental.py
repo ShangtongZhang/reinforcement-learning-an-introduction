@@ -10,10 +10,15 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import seaborn as sns
 from scipy.stats import poisson
 
 matplotlib.use('Agg')
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # maximum # of cars in each location
 MAX_CARS = 20
@@ -123,7 +128,7 @@ def expected_return(state, action, state_value, constant_returned_cars):
 
 def figure_4_2(constant_returned_cars=True):
     value = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
-    policy = np.zeros(value.shape, dtype=np.int)
+    policy = np.zeros(value.shape, dtype=int)
 
     iterations = 0
     _, axes = plt.subplots(2, 3, figsize=(40, 20))
@@ -175,7 +180,7 @@ def figure_4_2(constant_returned_cars=True):
 
         iterations += 1
 
-    plt.savefig('../images/figure_4_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_4_2.png'))
     plt.close()
 
 

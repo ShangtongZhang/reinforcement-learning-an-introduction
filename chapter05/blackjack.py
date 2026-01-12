@@ -11,8 +11,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 import seaborn as sns
 from tqdm import tqdm
+
+# Setup image directory path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), 'images')
 
 # actions: hit or stand
 ACTION_HIT = 0
@@ -20,7 +25,7 @@ ACTION_STAND = 1  #  "strike" in the book
 ACTIONS = [ACTION_HIT, ACTION_STAND]
 
 # policy for player
-POLICY_PLAYER = np.zeros(22, dtype=np.int)
+POLICY_PLAYER = np.zeros(22, dtype=int)
 for i in range(12, 20):
     POLICY_PLAYER[i] = ACTION_HIT
 POLICY_PLAYER[20] = ACTION_STAND
@@ -301,7 +306,7 @@ def figure_5_1():
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title(title, fontsize=30)
 
-    plt.savefig('../images/figure_5_1.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_5_1.png'))
     plt.close()
 
 def figure_5_2():
@@ -335,7 +340,7 @@ def figure_5_2():
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title(title, fontsize=30)
 
-    plt.savefig('../images/figure_5_2.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_5_2.png'))
     plt.close()
 
 def figure_5_3():
@@ -360,7 +365,7 @@ def figure_5_3():
     plt.xscale('log')
     plt.legend()
 
-    plt.savefig('../images/figure_5_3.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'figure_5_3.png'))
     plt.close()
 
 
