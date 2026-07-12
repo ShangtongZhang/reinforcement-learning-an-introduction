@@ -6,7 +6,7 @@ Python replication for Sutton & Barto's book [*Reinforcement Learning: An Introd
 
 > If you have any confusion about the code or want to report a bug, please open an issue instead of emailing me directly, and unfortunately I do not have exercise answers for the book.
 
-# Contents 
+# Contents
 
 ### Chapter 1
 1. Tic-Tac-Toe
@@ -86,7 +86,7 @@ Python replication for Sutton & Barto's book [*Reinforcement Learning: An Introd
 
 
 # Environment
-* python 3.6 
+* python 3.6
 * numpy
 * matplotlib
 * [seaborn](https://seaborn.pydata.org/index.html)
@@ -99,4 +99,4 @@ python any_file_you_want.py
 ```
 
 # Contribution
-If you want to contribute some missing examples or fix some bugs, feel free to open an issue or make a pull request. 
+If you want to contribute some missing examples or fix some bugs, feel free to open an issue or make a pull request.
