@@ -55,7 +55,7 @@ class PolicyIteration:
         self.actions = np.arange(-MAX_MOVE, MAX_MOVE + 1)
         self.inverse_actions = {el: ind[0] for ind, el in np.ndenumerate(self.actions)}
         self.values = np.zeros((MAX_CARS + 1, MAX_CARS + 1))
-        self.policy = np.zeros(self.values.shape, dtype=np.int)
+        self.policy = np.zeros(self.values.shape, dtype=int)
         self.delta = delta
         self.gamma = gamma
         self.solve_extension = solve_4_5
